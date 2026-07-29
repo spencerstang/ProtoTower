@@ -1,0 +1,22 @@
+name: Database Validation
+on:
+  pull_request:
+    paths: ["supabase/**", "packages/database/**", ".github/workflows/database.yml"]
+  push:
+    branches: [main]
+    paths: ["supabase/**", "packages/database/**", ".github/workflows/database.yml"]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: supabase/setup-cli@v2
+        with: { version: 2.109.1 }
+      - run: supabase start
+      - run: supabase db reset
+      - run: supabase db lint --level warning
+      - run: supabase test db
+      - if: always()
+        run: supabase stop --no-backup

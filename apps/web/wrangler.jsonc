@@ -1,0 +1,69 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "protostack-web-local",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-07-01",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "global_fetch_strictly_public"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "protostack-web-local"
+    }
+  ],
+  "vars": {
+    "APP_ENV": "local",
+    "NEXT_PUBLIC_APP_ENV": "local",
+    "NEXT_PUBLIC_APP_NAME": "ProtoStack"
+  },
+  "env": {
+    "preview": {
+      "name": "protostack-web-preview",
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "protostack-web-preview"
+        }
+      ],
+      "vars": {
+        "APP_ENV": "preview",
+        "NEXT_PUBLIC_APP_ENV": "preview",
+        "NEXT_PUBLIC_APP_NAME": "ProtoStack"
+      }
+    },
+    "staging": {
+      "name": "protostack-web-staging",
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "protostack-web-staging"
+        }
+      ],
+      "vars": {
+        "APP_ENV": "staging",
+        "NEXT_PUBLIC_APP_ENV": "staging",
+        "NEXT_PUBLIC_APP_NAME": "ProtoStack"
+      }
+    },
+    "production": {
+      "name": "protostack-web-production",
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "protostack-web-production"
+        }
+      ],
+      "vars": {
+        "APP_ENV": "production",
+        "NEXT_PUBLIC_APP_ENV": "production",
+        "NEXT_PUBLIC_APP_NAME": "ProtoStack"
+      }
+    }
+  }
+}

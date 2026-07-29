@@ -1,0 +1,179 @@
+name: Deploy Staging
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_database:
+        description: "Apply committed migrations to the linked staging Supabase project"
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    uses: ./.github/workflows/reusable-verify.yml
+
+  migrate:
+    if: inputs.deploy_database
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: staging
+    steps:
+      - uses: actions/checkout@v6
+      - uses: supabase/setup-cli@v2
+        with:
+          version: 2.109.1
+      - name: Validate database deployment inputs
+        shell: bash
+        env:
+          SUPABASE_ACCESS_TOKEN: "${{ secrets.SUPABASE_ACCESS_TOKEN }}"
+          SUPABASE_PROJECT_ID: "${{ secrets.SUPABASE_PROJECT_ID }}"
+          SUPABASE_DB_PASSWORD: "${{ secrets.SUPABASE_DB_PASSWORD }}"
+        run: |
+          test -n "$SUPABASE_ACCESS_TOKEN"
+          test -n "$SUPABASE_PROJECT_ID"
+          test -n "$SUPABASE_DB_PASSWORD"
+      - name: Link staging database
+        run: >-
+          supabase link
+          --project-ref "$SUPABASE_PROJECT_ID"
+          --password "$SUPABASE_DB_PASSWORD"
+        env:
+          SUPABASE_ACCESS_TOKEN: "${{ secrets.SUPABASE_ACCESS_TOKEN }}"
+          SUPABASE_PROJECT_ID: "${{ secrets.SUPABASE_PROJECT_ID }}"
+          SUPABASE_DB_PASSWORD: "${{ secrets.SUPABASE_DB_PASSWORD }}"
+      - name: Apply committed migrations
+        run: supabase db push --include-all
+        env:
+          SUPABASE_ACCESS_TOKEN: "${{ secrets.SUPABASE_ACCESS_TOKEN }}"
+
+  deploy-web:
+    needs: [validate, migrate]
+    if: >-
+      always() &&
+      needs.validate.result == 'success' &&
+      (needs.migrate.result == 'success' || needs.migrate.result == 'skipped')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: staging
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.17.0
+          run_install: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.16.0
+      - name: Install dependencies
+        run: pnpm install
+      - name: Validate web deployment inputs
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: "${{ secrets.CLOUDFLARE_API_TOKEN }}"
+          CLOUDFLARE_ACCOUNT_ID: "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
+          ADMIN_DIAGNOSTICS_TOKEN: "${{ secrets.ADMIN_DIAGNOSTICS_TOKEN }}"
+          PUBLIC_APP_URL: "${{ vars.PUBLIC_APP_URL }}"
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          test "${#ADMIN_DIAGNOSTICS_TOKEN}" -ge 32
+          case "$PUBLIC_APP_URL" in
+            https://*) ;;
+            *) echo "PUBLIC_APP_URL must begin with https://" >&2; exit 1 ;;
+          esac
+      - name: Set build metadata
+        id: metadata
+        shell: bash
+        run: |
+          echo "build_time=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+      - name: Prepare staging Worker configuration
+        shell: bash
+        env:
+          APP_VERSION: "0.1.0"
+          BUILD_TIME: "${{ steps.metadata.outputs.build_time }}"
+          GIT_SHA: "${{ github.sha }}"
+          PUBLIC_APP_URL: "${{ vars.PUBLIC_APP_URL }}"
+        run: |
+          node <<'NODE'
+          const fs = require("node:fs");
+          const path = "apps/web/wrangler.jsonc";
+          const config = JSON.parse(fs.readFileSync(path, "utf8"));
+          const staging = config.env.staging.vars;
+          staging.APP_VERSION = process.env.APP_VERSION;
+          staging.BUILD_TIME = process.env.BUILD_TIME;
+          staging.GIT_SHA = process.env.GIT_SHA;
+          staging.PUBLIC_APP_URL = process.env.PUBLIC_APP_URL;
+          fs.writeFileSync(path, `${JSON.stringify(config, null, 2)}\n`);
+          NODE
+      - name: Build OpenNext Worker
+        run: pnpm --filter @protostack/web exec opennextjs-cloudflare build
+        env:
+          APP_ENV: staging
+          APP_VERSION: "0.1.0"
+          BUILD_TIME: "${{ steps.metadata.outputs.build_time }}"
+          GIT_SHA: "${{ github.sha }}"
+          PUBLIC_APP_URL: "${{ vars.PUBLIC_APP_URL }}"
+          ADMIN_DIAGNOSTICS_TOKEN: "${{ secrets.ADMIN_DIAGNOSTICS_TOKEN }}"
+          NEXT_PUBLIC_APP_ENV: staging
+          NEXT_PUBLIC_APP_NAME: ProtoStack
+      - name: Deploy staging Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: "${{ secrets.CLOUDFLARE_API_TOKEN }}"
+          accountId: "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
+          workingDirectory: apps/web
+          wranglerVersion: "4.114.0"
+          command: deploy --env staging
+          secrets: |
+            ADMIN_DIAGNOSTICS_TOKEN
+        env:
+          ADMIN_DIAGNOSTICS_TOKEN: "${{ secrets.ADMIN_DIAGNOSTICS_TOKEN }}"
+      - name: Verify staging endpoints
+        shell: bash
+        env:
+          ADMIN_DIAGNOSTICS_TOKEN: "${{ secrets.ADMIN_DIAGNOSTICS_TOKEN }}"
+          EXPECTED_GIT_SHA: "${{ github.sha }}"
+          PUBLIC_APP_URL: "${{ vars.PUBLIC_APP_URL }}"
+        run: |
+          node <<'NODE'
+          const baseUrl = process.env.PUBLIC_APP_URL.replace(/\/$/, "");
+          const sleep = (milliseconds) =>
+            new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+          async function fetchWithRetry(path, init) {
+            let lastError;
+            for (let attempt = 1; attempt <= 10; attempt += 1) {
+              try {
+                const response = await fetch(`${baseUrl}${path}`, init);
+                if (response.ok) return response;
+                lastError = new Error(`${path} returned ${response.status}`);
+              } catch (error) {
+                lastError = error;
+              }
+              await sleep(5_000);
+            }
+            throw lastError ?? new Error(`${path} did not respond`);
+          }
+
+          const healthResponse = await fetchWithRetry("/api/health");
+          const health = await healthResponse.json();
+          if (health.status !== "ok") {
+            throw new Error("Staging health response was not ok");
+          }
+
+          const buildResponse = await fetchWithRetry("/api/admin/build-info", {
+            headers: {
+              authorization: `Bearer ${process.env.ADMIN_DIAGNOSTICS_TOKEN}`,
+            },
+          });
+          const build = await buildResponse.json();
+          if (build.gitSha !== process.env.EXPECTED_GIT_SHA) {
+            throw new Error("Staging build SHA does not match the deployed commit");
+          }
+          console.log("Staging health and protected build diagnostics verified.");
+          NODE
