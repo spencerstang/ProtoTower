@@ -32,6 +32,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  allowedDevOrigins: ["127.0.0.1"],
   poweredByHeader: false,
   transpilePackages: ["@protostack/configuration", "@protostack/ui"],
   async headers() {
