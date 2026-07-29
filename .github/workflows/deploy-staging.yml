@@ -160,13 +160,17 @@ jobs:
           const sleep = (milliseconds) =>
             new Promise((resolve) => setTimeout(resolve, milliseconds));
 
-          async function fetchWithRetry(path, init) {
+          async function fetchJsonWithRetry(path, init, isExpected) {
             let lastError;
             for (let attempt = 1; attempt <= 10; attempt += 1) {
               try {
                 const response = await fetch(`${baseUrl}${path}`, init);
-                if (response.ok) return response;
-                lastError = new Error(`${path} returned ${response.status}`);
+                if (!response.ok) {
+                  throw new Error(`${path} returned ${response.status}`);
+                }
+                const body = await response.json();
+                if (isExpected(body)) return body;
+                lastError = new Error(`${path} returned stale content`);
               } catch (error) {
                 lastError = error;
               }
@@ -175,20 +179,19 @@ jobs:
             throw lastError ?? new Error(`${path} did not respond`);
           }
 
-          const healthResponse = await fetchWithRetry("/api/health");
-          const health = await healthResponse.json();
-          if (health.status !== "ok") {
-            throw new Error("Staging health response was not ok");
-          }
-
-          const buildResponse = await fetchWithRetry("/api/admin/build-info", {
-            headers: {
-              authorization: `Bearer ${process.env.ADMIN_DIAGNOSTICS_TOKEN}`,
+          await fetchJsonWithRetry(
+            "/api/health",
+            undefined,
+            (health) => health.status === "ok",
+          );
+          await fetchJsonWithRetry(
+            "/api/admin/build-info",
+            {
+              headers: {
+                authorization: `Bearer ${process.env.ADMIN_DIAGNOSTICS_TOKEN}`,
+              },
             },
-          });
-          const build = await buildResponse.json();
-          if (build.gitSha !== process.env.EXPECTED_GIT_SHA) {
-            throw new Error("Staging build SHA does not match the deployed commit");
-          }
+            (build) => build.gitSha === process.env.EXPECTED_GIT_SHA,
+          );
           console.log("Staging health and protected build diagnostics verified.");
           NODE
