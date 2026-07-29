@@ -58,6 +58,8 @@ Independent post-deployment checks confirmed:
 - Replaced strict JSON parsing of `wrangler.jsonc` with TypeScript's JSONC parser.
 - Corrected Cloudflare secret upload so the administrative token targets the staging Worker explicitly.
 - Replaced invalid browser-transferred provider tokens without logging or committing their values.
+- Pinned patched `sharp` and `postcss` transitive versions after the registry
+  published new high-severity advisories during final acceptance.
 
 ## Rollback review
 
