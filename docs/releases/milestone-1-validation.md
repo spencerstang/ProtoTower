@@ -2,11 +2,11 @@
 
 Validation date: 2026-07-29
 
-Application commit: `ff59358`
+Accepted application commit: `49bba8b`
 
 Staging URL: <https://protostack-web-staging.spencer-4e6.workers.dev>
 
-Successful deployment: [GitHub Actions run 30477634243](https://github.com/spencerstang/Protostack/actions/runs/30477634243)
+Successful deployment: [GitHub Actions run 30484202192](https://github.com/spencerstang/Protostack/actions/runs/30484202192)
 
 ## Local verification
 
@@ -36,7 +36,7 @@ The final local verification used Node.js `v25.9.0` and pnpm `11.17.0`. GitHub A
 
 ## Protected staging verification
 
-The `staging` GitHub environment has a required reviewer and environment-scoped deployment credentials. Run `30477634243` completed all three protected jobs:
+The `staging` GitHub environment has a required reviewer and environment-scoped deployment credentials. Run `30484202192` completed all three protected jobs:
 
 1. `validate / verify` passed with a frozen lockfile install and the full `pnpm verify` gate.
 2. `migrate` linked the dedicated synthetic-data Supabase staging project and successfully applied all committed forward-only migrations.
@@ -60,6 +60,8 @@ Independent post-deployment checks confirmed:
 - Replaced invalid browser-transferred provider tokens without logging or committing their values.
 - Pinned patched `sharp` and `postcss` transitive versions after the registry
   published new high-severity advisories during final acceptance.
+- Retried protected build diagnostics through Cloudflare propagation so a
+  successful deployment cannot fail the gate on a briefly stale edge response.
 
 ## Rollback review
 
