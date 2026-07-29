@@ -1,11 +1,6 @@
 export type LogLevel = "debug" | "info" | "warn" | "error";
 export type LogValue =
-  | string
-  | number
-  | boolean
-  | null
-  | readonly LogValue[]
-  | { readonly [key: string]: LogValue };
+  string | number | boolean | null | readonly LogValue[] | { readonly [key: string]: LogValue };
 export type LogFields = Readonly<Record<string, unknown>>;
 
 const sensitiveKey = new RegExp(
@@ -43,9 +38,7 @@ function sanitize(value: unknown, depth = 0): LogValue {
     return { name: value.name };
   }
   if (Array.isArray(value)) {
-    return value
-      .slice(0, maxCollectionEntries)
-      .map((item) => sanitize(item, depth + 1));
+    return value.slice(0, maxCollectionEntries).map((item) => sanitize(item, depth + 1));
   }
   if (typeof value === "object") {
     return sanitizeRecord(value as Readonly<Record<string, unknown>>, depth + 1);
@@ -58,13 +51,8 @@ function sanitizeRecord(
   depth = 0,
 ): Record<string, LogValue> {
   const output: Record<string, LogValue> = {};
-  for (const [key, nestedValue] of Object.entries(value).slice(
-    0,
-    maxCollectionEntries,
-  )) {
-    output[key] = sensitiveKey.test(key)
-      ? "[REDACTED]"
-      : sanitize(nestedValue, depth);
+  for (const [key, nestedValue] of Object.entries(value).slice(0, maxCollectionEntries)) {
+    output[key] = sensitiveKey.test(key) ? "[REDACTED]" : sanitize(nestedValue, depth);
   }
   return output;
 }
@@ -93,11 +81,7 @@ export function createStructuredLogger(
   const write = options?.write ?? ((line: string) => console.log(line));
   const context = options?.context ?? {};
 
-  const emit = (
-    level: LogLevel,
-    message: string,
-    fields: LogFields = {},
-  ): void => {
+  const emit = (level: LogLevel, message: string, fields: LogFields = {}): void => {
     if (ranking[level] < ranking[minimum]) return;
     write(
       JSON.stringify({

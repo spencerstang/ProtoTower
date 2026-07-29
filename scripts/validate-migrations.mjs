@@ -23,9 +23,7 @@ for (const name of migrationNames) {
   }
 }
 
-for (const name of (await readdir("supabase/seed")).filter((item) =>
-  item.endsWith(".sql"),
-)) {
+for (const name of (await readdir("supabase/seed")).filter((item) => item.endsWith(".sql"))) {
   const sql = await readFile(join("supabase/seed", name), "utf8");
   if (/\b(create|alter|drop)\s+(table|schema|type|function)\b/i.test(sql)) {
     throw new Error(`${name} contains schema DDL; seeds must contain data only.`);

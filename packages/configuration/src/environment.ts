@@ -4,28 +4,18 @@ const blankToUndefined = (value: unknown): unknown =>
   typeof value === "string" && value.trim() === "" ? undefined : value;
 
 const optionalUrl = z.preprocess(blankToUndefined, z.url().optional());
-const optionalString = z.preprocess(
-  blankToUndefined,
-  z.string().min(1).optional(),
-);
+const optionalString = z.preprocess(blankToUndefined, z.string().min(1).optional());
 const optionalIsoDateTime = z.preprocess(
   blankToUndefined,
   z.iso.datetime({ offset: true }).optional(),
 );
 
-export const appEnvironmentSchema = z.enum([
-  "local",
-  "preview",
-  "staging",
-  "production",
-]);
+export const appEnvironmentSchema = z.enum(["local", "preview", "staging", "production"]);
 export type AppEnvironment = z.infer<typeof appEnvironmentSchema>;
 
 const serverEnvironmentSchema = z
   .object({
-    NODE_ENV: z
-      .enum(["development", "test", "production"])
-      .default("development"),
+    NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
     APP_ENV: appEnvironmentSchema.default("local"),
     APP_VERSION: z.string().min(1).default("0.1.0-dev"),
     GIT_SHA: z.string().min(1).default("unknown"),
@@ -37,17 +27,14 @@ const serverEnvironmentSchema = z
     ADMIN_DIAGNOSTICS_TOKEN: optionalString,
   })
   .superRefine((environment, context) => {
-    const isProtectedEnvironment = ["staging", "production"].includes(
-      environment.APP_ENV,
-    );
+    const isProtectedEnvironment = ["staging", "production"].includes(environment.APP_ENV);
 
     if (isProtectedEnvironment) {
       if (!environment.PUBLIC_APP_URL) {
         context.addIssue({
           code: "custom",
           path: ["PUBLIC_APP_URL"],
-          message:
-            "PUBLIC_APP_URL is required in staging and production environments.",
+          message: "PUBLIC_APP_URL is required in staging and production environments.",
         });
       } else if (new URL(environment.PUBLIC_APP_URL).protocol !== "https:") {
         context.addIssue({
@@ -61,8 +48,7 @@ const serverEnvironmentSchema = z
         context.addIssue({
           code: "custom",
           path: ["ADMIN_DIAGNOSTICS_TOKEN"],
-          message:
-            "ADMIN_DIAGNOSTICS_TOKEN is required in staging and production.",
+          message: "ADMIN_DIAGNOSTICS_TOKEN is required in staging and production.",
         });
       } else if (environment.ADMIN_DIAGNOSTICS_TOKEN.length < 32) {
         context.addIssue({
@@ -79,8 +65,7 @@ const serverEnvironmentSchema = z
       context.addIssue({
         code: "custom",
         path: [hasSupabaseUrl ? "SUPABASE_ANON_KEY" : "SUPABASE_URL"],
-        message:
-          "SUPABASE_URL and SUPABASE_ANON_KEY must be configured together.",
+        message: "SUPABASE_URL and SUPABASE_ANON_KEY must be configured together.",
       });
     }
   });

@@ -8,15 +8,11 @@ import {
 
 describe("environment validation", () => {
   it("accepts a minimal local environment", () => {
-    expect(parseServerEnvironment({ APP_ENV: "local" }).APP_ENV).toBe(
-      "local",
-    );
+    expect(parseServerEnvironment({ APP_ENV: "local" }).APP_ENV).toBe("local");
   });
 
   it("requires protected diagnostics in production", () => {
-    expect(() =>
-      parseServerEnvironment({ APP_ENV: "production" }),
-    ).toThrow();
+    expect(() => parseServerEnvironment({ APP_ENV: "production" })).toThrow();
   });
 
   it("rejects incomplete Supabase configuration", () => {
@@ -52,9 +48,7 @@ describe("environment validation", () => {
 
 describe("feature flags", () => {
   it("keeps all future product capabilities disabled", () => {
-    expect(Object.values(featureFlags).every((value) => value === false)).toBe(
-      true,
-    );
+    expect(Object.values(featureFlags).every((value) => value === false)).toBe(true);
     expect(isFeatureEnabled("authentication")).toBe(false);
     expect(Object.isFrozen(featureFlags)).toBe(true);
   });

@@ -25,9 +25,7 @@ export default defineConfig({
   testDir: "tests",
   fullyParallel: true,
   ...ciOptions,
-  reporter: process.env.CI
-    ? [["html", { open: "never" }], ["github"]]
-    : "list",
+  reporter: process.env.CI ? [["html", { open: "never" }], ["github"]] : "list",
   use: {
     baseURL,
     trace: "retain-on-failure",

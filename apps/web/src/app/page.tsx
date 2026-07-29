@@ -19,10 +19,9 @@ export default function LandingPage() {
         <p className="eyebrow">Health protocols, evaluated with discipline</p>
         <h1>Build a clearer picture of what you try—and what actually helps.</h1>
         <p className="hero-copy">
-          ProtoStack is being built as a model-neutral workspace for
-          self-directed adults to discover, combine, track, and evaluate health
-          and wellness protocols without locking the core product to any AI,
-          analytics, email, hosting, or database provider.
+          ProtoStack is being built as a model-neutral workspace for self-directed adults to
+          discover, combine, track, and evaluate health and wellness protocols without locking the
+          core product to any AI, analytics, email, hosting, or database provider.
         </p>
         <div className="hero-actions">
           <a className="primary-action" href="#foundation">
@@ -34,21 +33,14 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section
-        className="foundation"
-        id="foundation"
-        aria-labelledby="foundation-heading"
-      >
+      <section className="foundation" id="foundation" aria-labelledby="foundation-heading">
         <div>
           <p className="eyebrow">Milestone 1</p>
-          <h2 id="foundation-heading">
-            A production-ready base, before product complexity.
-          </h2>
+          <h2 id="foundation-heading">A production-ready base, before product complexity.</h2>
           <p>
-            The initial repository focuses on deployment portability, strict
-            validation, version-controlled migrations, protected diagnostics,
-            structured logging, automated checks, and disabled-by-default
-            feature boundaries.
+            The initial repository focuses on deployment portability, strict validation,
+            version-controlled migrations, protected diagnostics, structured logging, automated
+            checks, and disabled-by-default feature boundaries.
           </p>
         </div>
         <ul className="capability-grid">

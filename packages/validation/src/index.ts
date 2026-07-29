@@ -16,9 +16,7 @@ export type ValidationIssue = Readonly<{
   message: string;
 }>;
 
-export function validationIssues(
-  error: z.ZodError,
-): readonly ValidationIssue[] {
+export function validationIssues(error: z.ZodError): readonly ValidationIssue[] {
   return error.issues.map((issue) => ({
     path: issue.path,
     message: issue.message,

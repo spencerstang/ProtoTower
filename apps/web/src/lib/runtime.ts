@@ -13,26 +13,19 @@ export function getServerEnvironment(): ServerEnvironment {
 }
 
 function configuredLogLevel(value: string | undefined): LogLevel {
-  return value === "debug" ||
-    value === "info" ||
-    value === "warn" ||
-    value === "error"
+  return value === "debug" || value === "info" || value === "warn" || value === "error"
     ? value
     : "info";
 }
 
 export const logger = createStructuredLogger({
-  minimumLevel: configuredLogLevel(process.env.LOG_LEVEL),
+  minimumLevel: configuredLogLevel(process.env["LOG_LEVEL"]),
   context: {
     service: "protostack-web",
-    environment: process.env.APP_ENV ?? "local",
+    environment: process.env["APP_ENV"] ?? "local",
   },
 });
 
 export function requestId(headers: Headers): string {
-  return (
-    headers.get("cf-ray") ??
-    headers.get("x-request-id") ??
-    crypto.randomUUID()
-  );
+  return headers.get("cf-ray") ?? headers.get("x-request-id") ?? crypto.randomUUID();
 }

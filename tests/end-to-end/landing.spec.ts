@@ -2,9 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test("public landing page renders without external services", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "what actually helps",
-  );
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("what actually helps");
   await expect(page.getByText("Foundation online")).toBeVisible();
 });
 

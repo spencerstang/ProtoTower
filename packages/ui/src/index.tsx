@@ -1,10 +1,12 @@
 import type { ReactNode } from "react";
 
-export function UnavailableState(props: Readonly<{
-  title: string;
-  description: string;
-  action?: ReactNode;
-}>): ReactNode {
+export function UnavailableState(
+  props: Readonly<{
+    title: string;
+    description: string;
+    action?: ReactNode;
+  }>,
+): ReactNode {
   return (
     <section className="state-card" role="status" aria-live="polite">
       <p className="eyebrow">Temporarily unavailable</p>

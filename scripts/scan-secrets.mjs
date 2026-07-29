@@ -45,10 +45,7 @@ async function files(directory) {
     const path = join(directory, entry.name);
     if (entry.isDirectory()) {
       output.push(...(await files(path)));
-    } else if (
-      textExtensions.has(extname(entry.name)) ||
-      entry.name.startsWith(".env")
-    ) {
+    } else if (textExtensions.has(extname(entry.name)) || entry.name.startsWith(".env")) {
       output.push(path);
     }
   }

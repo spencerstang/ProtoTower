@@ -55,6 +55,4 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
-console.log(
-  `Repository structure check passed (${required.length} required paths).`,
-);
+console.log(`Repository structure check passed (${required.length} required paths).`);

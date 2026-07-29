@@ -5,13 +5,11 @@ export type BuildInfo = Readonly<{
   environment: string;
 }>;
 
-export function createBuildInfo(
-  input: Record<string, string | undefined>,
-): BuildInfo {
+export function createBuildInfo(input: Record<string, string | undefined>): BuildInfo {
   return {
-    version: input.APP_VERSION ?? "0.1.0-dev",
-    gitSha: input.GIT_SHA ?? "unknown",
-    builtAt: input.BUILD_TIME ?? null,
-    environment: input.APP_ENV ?? "local",
+    version: input["APP_VERSION"] ?? "0.1.0-dev",
+    gitSha: input["GIT_SHA"] ?? "unknown",
+    builtAt: input["BUILD_TIME"] ?? null,
+    environment: input["APP_ENV"] ?? "local",
   };
 }

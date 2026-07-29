@@ -13,8 +13,8 @@ export default function GlobalError({
           <p className="eyebrow">ProtoStack unavailable</p>
           <h1>The application could not start.</h1>
           <p>
-            Refresh the page or try again shortly. No personal data was
-            submitted by this Milestone 1 page.
+            Refresh the page or try again shortly. No personal data was submitted by this Milestone
+            1 page.
           </p>
           <button className="primary-action" type="button" onClick={reset}>
             Try again

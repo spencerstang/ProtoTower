@@ -13,8 +13,7 @@ const bannedPatterns = [
 ];
 
 const exactVersion = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
-const allowedWorkspaceVersion =
-  /^(?:workspace:(?:\*|\^|~|\d+\.\d+\.\d+)|catalog:)$/;
+const allowedWorkspaceVersion = /^(?:workspace:(?:\*|\^|~|\d+\.\d+\.\d+)|catalog:)$/;
 
 const manifests = ["package.json"];
 for (const root of ["apps", "packages"]) {
@@ -27,11 +26,7 @@ const providerViolations = [];
 const versionViolations = [];
 for (const manifestPath of manifests) {
   const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
-  for (const section of [
-    "dependencies",
-    "devDependencies",
-    "peerDependencies",
-  ]) {
+  for (const section of ["dependencies", "devDependencies", "peerDependencies"]) {
     for (const [name, version] of Object.entries(manifest[section] ?? {})) {
       if (bannedPatterns.some((pattern) => pattern.test(name))) {
         providerViolations.push(`${manifestPath}: ${name}`);
@@ -57,9 +52,7 @@ if (providerViolations.length > 0 || versionViolations.length > 0) {
     );
   }
   if (versionViolations.length > 0) {
-    console.error(
-      `Direct dependencies must use exact versions:\n${versionViolations.join("\n")}`,
-    );
+    console.error(`Direct dependencies must use exact versions:\n${versionViolations.join("\n")}`);
   }
   process.exit(1);
 }

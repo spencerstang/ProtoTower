@@ -8,9 +8,7 @@ export const metadata: Metadata = {
     "A model-neutral foundation for discovering, combining, tracking, and evaluating self-directed health protocols.",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{ children: ReactNode }>) {
+export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="en">
       <body>

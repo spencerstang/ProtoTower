@@ -1,23 +1,12 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
-  "globalDependencies": [
-    ".env*",
-    "tsconfig.base.json",
-    "eslint.config.mjs",
-    "prettier.config.mjs"
-  ],
+  "globalDependencies": [".env*", "tsconfig.base.json", "eslint.config.mjs", "prettier.config.mjs"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**", ".open-next/**"],
-      "env": [
-        "APP_ENV",
-        "APP_VERSION",
-        "GIT_SHA",
-        "BUILD_TIME",
-        "NEXT_PUBLIC_APP_ENV"
-      ]
+      "env": ["APP_ENV", "APP_VERSION", "GIT_SHA", "BUILD_TIME", "NEXT_PUBLIC_APP_ENV"]
     },
     "dev": {
       "cache": false,
