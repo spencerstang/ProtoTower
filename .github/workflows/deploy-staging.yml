@@ -130,6 +130,16 @@ jobs:
           ADMIN_DIAGNOSTICS_TOKEN: "${{ secrets.ADMIN_DIAGNOSTICS_TOKEN }}"
           NEXT_PUBLIC_APP_ENV: staging
           NEXT_PUBLIC_APP_NAME: ProtoStack
+      - name: Upload staging Worker secrets
+        shell: bash
+        env:
+          ADMIN_DIAGNOSTICS_TOKEN: "${{ secrets.ADMIN_DIAGNOSTICS_TOKEN }}"
+          CLOUDFLARE_ACCOUNT_ID: "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
+          CLOUDFLARE_API_TOKEN: "${{ secrets.CLOUDFLARE_API_TOKEN }}"
+        run: |
+          printf '%s' "$ADMIN_DIAGNOSTICS_TOKEN" |
+            pnpm --filter @protostack/web exec wrangler secret put \
+              ADMIN_DIAGNOSTICS_TOKEN --env staging
       - name: Deploy staging Worker
         uses: cloudflare/wrangler-action@v3
         with:
@@ -138,10 +148,6 @@ jobs:
           workingDirectory: apps/web
           wranglerVersion: "4.114.0"
           command: deploy --env staging
-          secrets: |
-            ADMIN_DIAGNOSTICS_TOKEN
-        env:
-          ADMIN_DIAGNOSTICS_TOKEN: "${{ secrets.ADMIN_DIAGNOSTICS_TOKEN }}"
       - name: Verify staging endpoints
         shell: bash
         env:
