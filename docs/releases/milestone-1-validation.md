@@ -1,32 +1,64 @@
 # Milestone 1 validation record
 
-Validation date: 2026-07-28
+Validation date: 2026-07-29
 
-## Passed in the repository-generation environment
+Application commit: `ff59358`
 
-- `node scripts/check-repository.mjs`
-- `node scripts/check-dependency-policy.mjs`
-- `node scripts/scan-secrets.mjs`
-- `node scripts/validate-migrations.mjs`
-- Node syntax checks for repository scripts and root JavaScript configuration
-- JSON parsing for manifests, Turborepo, and Wrangler configuration
-- TOML parsing for local Supabase configuration
-- YAML parsing for all GitHub workflows and Dependabot configuration
-- Shell syntax check for `scripts/bootstrap.sh`
-- TypeScript/TSX syntax transpilation for all 60 implementation, test, and configuration files
-- Strict TypeScript no-emit and build-output checks, using the environment's available TypeScript 5.8 compiler, for packages without third-party imports
-- Runtime smoke checks for feature-flag immutability, disabled authentication, build metadata, and structured-log redaction
+Staging URL: <https://protostack-web-staging.spencer-4e6.workers.dev>
 
-## Not executable in the generation environment
+Successful deployment: [GitHub Actions run 30477634243](https://github.com/spencerstang/Protostack/actions/runs/30477634243)
 
-The configured package gateway returned HTTP 503, while direct npm registry access failed DNS resolution. Therefore no `pnpm-lock.yaml` could be generated and these dependency-backed checks were not run:
+## Local verification
 
-- `pnpm install`
-- Prettier and ESLint
-- the repository-declared TypeScript 7 project checks
-- Vitest unit and coverage tests
-- Next.js and OpenNext builds
-- Playwright browser, accessibility, security, and performance tests
-- Supabase Docker reset, lint, and pgTAP tests
+The following checks passed against the completed Milestone 1 repository:
 
-No Cloudflare, Supabase, GitHub, or DNS credentials were available, so no staging deployment was attempted or claimed.
+- `CI=true pnpm install --frozen-lockfile`
+- `CI=true pnpm verify`
+  - formatting
+  - repository policy
+  - dependency policy and audit
+  - secret scanning
+  - migration validation
+  - linting
+  - strict type checking
+  - unit tests
+  - production builds
+- `pnpm db:reset`
+  - local Supabase reset and seeds
+  - schema lint
+  - all 4 pgTAP database tests
+- `pnpm test:browsers`
+  - all 6 browser, accessibility, security-header, and performance tests
+- JSONC parsing for the staging Wrangler configuration
+- `bash -n scripts/bootstrap.sh`
+
+The final local verification used Node.js `v25.9.0` and pnpm `11.17.0`. GitHub Actions repeated the gate with the repository-pinned pnpm version and Node.js `22.16.0`.
+
+## Protected staging verification
+
+The `staging` GitHub environment has a required reviewer and environment-scoped deployment credentials. Run `30477634243` completed all three protected jobs:
+
+1. `validate / verify` passed with a frozen lockfile install and the full `pnpm verify` gate.
+2. `migrate` linked the dedicated synthetic-data Supabase staging project and successfully applied all committed forward-only migrations.
+3. `deploy-web` built the OpenNext Worker, uploaded the administrative diagnostics token specifically to the staging Worker, deployed to Cloudflare, and passed its automated public and authenticated endpoint checks.
+
+Independent post-deployment checks confirmed:
+
+- the landing page loaded successfully and was visually reviewed;
+- `GET /api/health` returned HTTP 200 with `status: "ok"`;
+- unauthenticated `GET /api/admin/build-info` returned HTTP 404;
+- the workflow's authenticated build-info check matched the deployed Git SHA;
+- no real user data was introduced.
+
+## Corrective work completed during acceptance
+
+- Updated deprecated local Supabase email configuration from `[inbucket]` to `[local_smtp]`.
+- Replaced placeholder code owners with `@spencerstang`.
+- Required frozen lockfile installs in CI, staging deployment, reusable verification, and bootstrap flows.
+- Replaced strict JSON parsing of `wrangler.jsonc` with TypeScript's JSONC parser.
+- Corrected Cloudflare secret upload so the administrative token targets the staging Worker explicitly.
+- Replaced invalid browser-transferred provider tokens without logging or committing their values.
+
+## Rollback review
+
+The documented rollback path was dry-run reviewed. Web rollback can redeploy the last known-good commit. Database changes remain forward-only; a corrective migration must be prepared instead of reversing an applied migration. No destructive rollback was required.
