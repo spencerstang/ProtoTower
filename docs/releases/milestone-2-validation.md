@@ -46,6 +46,11 @@ synthetic seeds, deploys the accepted Git SHA, and verifies health, protected bu
 metadata, catalog listing visibility, latest-version detail content, and exclusion of
 draft and retired records.
 
+The first protected run deployed the application successfully but exposed a brittle
+raw-HTML assertion: React streamed the visible `Version 2` text with an internal
+comment separator. Public inspection confirmed the v2-only step and all other
+content. The verifier now uses that stable v2-only step as its latest-version marker.
+
 ## Visual review
 
 The local landing page, catalog, and detail layouts were reviewed on 2026-07-29 at

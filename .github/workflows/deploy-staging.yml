@@ -238,7 +238,7 @@ jobs:
             "/protocols/morning-light-routine",
             (body) =>
               body.includes("Morning outdoor cue") &&
-              body.includes("Version 2") &&
+              body.includes("Pick a repeatable cue") &&
               body.includes("General educational wellness information"),
           );
           console.log(
