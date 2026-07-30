@@ -2,11 +2,13 @@
 
 Validation date: 2026-07-29
 
-Accepted application commit: pending final gate
+Accepted application commit:
+`4642fb35bf193a41b550ba5667b28e507b25efd0`
 
 Staging URL: <https://protostack-web-staging.spencer-4e6.workers.dev>
 
-Successful deployment: pending final gate
+Successful deployment:
+<https://github.com/spencerstang/Protostack/actions/runs/30510134006>
 
 ## Local verification
 
@@ -41,23 +43,47 @@ repeat the gate with Node.js `22.16.0` and pnpm `11.17.0`.
 
 ## Protected staging verification
 
-Populate this section after the protected workflow applies committed migrations and
-synthetic seeds, deploys the accepted Git SHA, and verifies health, protected build
-metadata, catalog listing visibility, latest-version detail content, and exclusion of
-draft and retired records.
+The protected staging workflow completed successfully for the accepted application
+commit:
+
+- `validate / verify` passed in 1 minute 21 seconds, including a frozen install and
+  the complete `pnpm verify` gate on Node.js `22.16.0`.
+- `migrate` passed in 18 seconds after linking the protected Supabase project and
+  applying the committed migrations plus deterministic synthetic seeds.
+- `deploy-web` passed in 1 minute 4 seconds after building the OpenNext Worker,
+  uploading its protected runtime secrets, deploying the Worker, and verifying the
+  staging endpoints.
+
+Independent checks against the public staging URL confirmed:
+
+- `/api/health` returned `status: ok`;
+- `/protocols` rendered all three active protocols and the latest published
+  `Morning outdoor cue` version;
+- the unpublished `Unpublished evening revision` and retired
+  `Retired synthetic routine` were absent;
+- `/protocols/morning-light-routine` rendered the v2-only
+  `Pick a repeatable cue` step and the general-education disclaimer; and
+- the superseded `Morning light routine` v1 title was absent from the detail page.
 
 The first protected run deployed the application successfully but exposed a brittle
 raw-HTML assertion: React streamed the visible `Version 2` text with an internal
 comment separator. Public inspection confirmed the v2-only step and all other
 content. The verifier now uses that stable v2-only step as its latest-version marker.
+The corrected run above passed without changing application behavior. The first run
+is retained as corrective-work evidence at
+<https://github.com/spencerstang/Protostack/actions/runs/30509511452>.
+
+The successful run emitted a non-blocking GitHub Actions annotation that
+`cloudflare/wrangler-action@v3` still targets the deprecated Node.js 20 action
+runtime; GitHub forced the action to Node.js 24 and the deployment passed.
 
 ## Visual review
 
-The local landing page, catalog, and detail layouts were reviewed on 2026-07-29 at
-desktop width and at a 390×844 mobile viewport. The layouts had no horizontal
-overflow, the catalog cards collapsed to one column, safety content remained
-prominent, and browser console inspection reported no warnings or errors. Repeat
-this review against the accepted staging commit before completing this record.
+The local and deployed staging landing page, catalog, and detail layouts were
+reviewed on 2026-07-29 at 1280×720 desktop width and at a 390×844 mobile viewport.
+Both staging viewports had no horizontal overflow, the mobile catalog cards
+collapsed to one column, safety content and the education disclaimer remained
+prominent, and staging browser console inspection reported no warnings or errors.
 
 ## Rollback review
 
