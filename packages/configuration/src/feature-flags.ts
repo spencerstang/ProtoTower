@@ -1,4 +1,5 @@
-const disabledFeatureFlags = {
+const reviewedFeatureFlags = {
+  protocolCatalog: true,
   authentication: false,
   protocolPublishing: false,
   protocolTracking: false,
@@ -10,7 +11,7 @@ const disabledFeatureFlags = {
   readOnlyMcp: false,
 } as const;
 
-export const featureFlags = Object.freeze(disabledFeatureFlags);
+export const featureFlags = Object.freeze(reviewedFeatureFlags);
 
 export type FeatureFlagName = keyof typeof featureFlags;
 

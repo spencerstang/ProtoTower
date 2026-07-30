@@ -1,17 +1,31 @@
-# ProtoStack
+# ProtoTower
 
-ProtoStack is an AI-native, model-neutral platform for self-directed adults to discover, combine, track, and evaluate health and wellness protocols. This repository currently contains **Milestone 1 only: repository and infrastructure foundation**.
+ProtoTower is a model-neutral wellness product for assembling understandable
+protocols into a durable tower of great habits. The codebase retains the ProtoStack
+repository and `@protostack/*` package names to avoid an unnecessary internal rename.
+The public product name and future production domain are **ProtoTower** and
+**ProtoTower.ai**.
+
+This repository currently contains **Milestone 2: a read-only, versioned protocol
+catalog**. ProtoTower.ai is reserved but is not yet connected to a production
+deployment.
 
 ## What is included
 
 - pnpm/Turborepo modular monolith
 - Next.js App Router application with strict TypeScript
-- provider-neutral domain package boundaries
-- local Supabase configuration, migrations, synthetic seeds, and pgTAP tests
+- provider-neutral protocol rules and runtime validation
+- immutable published versions with anonymous read-only PostgreSQL policies
+- deterministic synthetic wellness examples and generated database types
+- a fetch-based PostgREST adapter that fails independently from core routes
+- public `/protocols` and `/protocols/[slug]` experiences
+- local Supabase migrations, schema lint, and pgTAP security tests
 - Cloudflare Workers deployment through OpenNext
-- GitHub Actions for quality, browser, database, dependency, and secret checks
-- public landing page, non-sensitive health endpoint, protected build diagnostics
-- disabled-by-default feature flags, structured redacted logging, and error states
+- quality, browser, accessibility, security, performance, dependency, and secret
+  gates
+
+Authentication, protocol authoring or publishing UI, personal towers, tracking,
+outcomes, AI, analytics, notifications, email, payments, and MCP remain disabled.
 
 ## Prerequisites
 
@@ -27,15 +41,18 @@ corepack prepare pnpm@11.17.0 --activate
 pnpm install
 cp .env.example .env.local
 pnpm db:start
+pnpm db:reset
 pnpm dev
 ```
 
-Open `http://127.0.0.1:3000`. Supabase Studio is normally available at `http://127.0.0.1:54323`.
+Use `pnpm db:status` to obtain the local anonymous key, then place that public local
+value in `.env.local`. Open <http://127.0.0.1:3000>.
 
 ## Verification
 
 ```bash
-pnpm verify
+CI=true pnpm verify
+pnpm audit --audit-level=high --prod
 pnpm db:reset
 pnpm db:lint
 pnpm db:test
@@ -43,4 +60,7 @@ pnpm playwright:install
 pnpm test:browsers
 ```
 
-See `docs/operations/local-setup.md` for details and `AGENTS.md` before any AI-assisted coding session. The staging workflow and human account steps are documented in `docs/operations/staging-deployment.md`; the clean-checkout acceptance checklist is in `docs/operations/milestone-1-gate.md`.
+Read `AGENTS.md` before an AI-assisted coding session. Local operations are in
+`docs/operations/local-setup.md`, staging delivery is in
+`docs/operations/staging-deployment.md`, and the Milestone 2 acceptance gate is in
+`docs/operations/milestone-2-gate.md`.

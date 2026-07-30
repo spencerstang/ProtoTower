@@ -47,8 +47,13 @@ describe("environment validation", () => {
 });
 
 describe("feature flags", () => {
-  it("keeps all future product capabilities disabled", () => {
-    expect(Object.values(featureFlags).every((value) => value === false)).toBe(true);
+  it("enables only the reviewed read-only catalog capability", () => {
+    const enabledFeatures = Object.entries(featureFlags)
+      .filter(([, enabled]) => enabled)
+      .map(([name]) => name);
+
+    expect(enabledFeatures).toEqual(["protocolCatalog"]);
+    expect(isFeatureEnabled("protocolCatalog")).toBe(true);
     expect(isFeatureEnabled("authentication")).toBe(false);
     expect(Object.isFrozen(featureFlags)).toBe(true);
   });

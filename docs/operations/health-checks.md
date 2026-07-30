@@ -12,6 +12,13 @@ The response contains only:
 
 It must not expose versions, environment variables, credentials, database state, or user information.
 
+## Catalog availability
+
+`GET /protocols` is an optional-dependency readiness surface, not a liveness
+endpoint. When PostgREST is missing, slow, rejects the request, or returns malformed
+JSON, the route renders an explicit unavailable state. Do not change
+`/api/health` to fail because the catalog is unavailable.
+
 ## Build diagnostics
 
 `GET /api/admin/build-info` exposes build metadata only:
@@ -30,6 +37,11 @@ curl --fail --show-error https://STAGING_HOST/api/health
 curl --fail --show-error \
   -H "Authorization: Bearer $ADMIN_DIAGNOSTICS_TOKEN" \
   https://STAGING_HOST/api/admin/build-info
+curl --fail --show-error https://STAGING_HOST/protocols
+curl --fail --show-error \
+  https://STAGING_HOST/protocols/morning-light-routine
 ```
 
-Do not paste the real diagnostics token into a ticket, terminal recording, chat, or repository.
+Confirm the catalog includes the latest published synthetic version and does not
+include drafts or retired records. Do not paste the real diagnostics token into a
+ticket, terminal recording, chat, or repository.

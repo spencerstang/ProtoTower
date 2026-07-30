@@ -66,6 +66,9 @@ importers:
       '@protostack/configuration':
         specifier: workspace:*
         version: link:../../packages/configuration
+      '@protostack/protocol-engine':
+        specifier: workspace:*
+        version: link:../../packages/protocol-engine
       '@protostack/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -106,7 +109,11 @@ importers:
 
   packages/outcomes-engine: {}
 
-  packages/protocol-engine: {}
+  packages/protocol-engine:
+    dependencies:
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
 
   packages/tracking-engine: {}
 

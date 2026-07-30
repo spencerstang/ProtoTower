@@ -80,7 +80,7 @@ export function parseServerEnvironment(
 
 export const clientEnvironmentSchema = z.object({
   NEXT_PUBLIC_APP_ENV: appEnvironmentSchema.default("local"),
-  NEXT_PUBLIC_APP_NAME: z.string().min(1).default("ProtoStack"),
+  NEXT_PUBLIC_APP_NAME: z.string().min(1).default("ProtoTower"),
 });
 
 export type ClientEnvironment = z.infer<typeof clientEnvironmentSchema>;

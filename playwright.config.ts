@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
+const catalogMockURL = "http://127.0.0.1:54329";
 const desktopChrome = devices["Desktop Chrome"];
 
 if (!desktopChrome) {
@@ -13,12 +14,24 @@ const ciOptions = process.env.CI
 const localWebServer = process.env.PLAYWRIGHT_BASE_URL
   ? {}
   : {
-      webServer: {
-        command: "pnpm --filter @protostack/web dev",
-        url: baseURL,
-        reuseExistingServer: !process.env.CI,
-        timeout: 120_000,
-      },
+      webServer: [
+        {
+          command: "node tests/support/protocol-catalog-server.mjs",
+          url: `${catalogMockURL}/health`,
+          reuseExistingServer: !process.env.CI,
+          timeout: 30_000,
+        },
+        {
+          command: "pnpm --filter @protostack/web dev",
+          url: baseURL,
+          reuseExistingServer: !process.env.CI,
+          timeout: 120_000,
+          env: {
+            SUPABASE_URL: catalogMockURL,
+            SUPABASE_ANON_KEY: "synthetic-playwright-anon-key",
+          },
+        },
+      ],
     };
 
 export default defineConfig({

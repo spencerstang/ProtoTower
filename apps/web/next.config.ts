@@ -34,7 +34,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   allowedDevOrigins: ["127.0.0.1"],
   poweredByHeader: false,
-  transpilePackages: ["@protostack/configuration", "@protostack/ui"],
+  transpilePackages: ["@protostack/configuration", "@protostack/protocol-engine", "@protostack/ui"],
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },

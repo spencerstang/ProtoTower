@@ -1,23 +1,60 @@
 # Staging deployment
 
-Staging uses a protected GitHub environment and the manually triggered `Deploy Staging` workflow. The workflow validates the repository, optionally applies committed migrations, builds the OpenNext Worker, injects non-secret build metadata into the runner's temporary Wrangler configuration, uploads the administrative token as a Cloudflare Worker secret, deploys the staging Worker, and verifies both the public health endpoint and protected build SHA.
+Staging uses a protected GitHub environment and the manually triggered
+`Deploy Staging` workflow. The workflow validates the repository, optionally applies
+committed migrations and idempotent synthetic seeds, builds the OpenNext Worker,
+uploads runtime secrets, deploys the staging Worker, and verifies health, protected
+build identity, catalog visibility, and the latest protocol version.
 
 ## Current staging configuration
 
 - GitHub environment: `staging`, protected by a required reviewer
-- Cloudflare Worker URL: <https://protostack-web-staging.spencer-4e6.workers.dev>
+- Cloudflare Worker URL:
+  <https://protostack-web-staging.spencer-4e6.workers.dev>
 - Supabase project: dedicated staging project with synthetic data only
+- Public product brand: ProtoTower
+- Reserved production domain: ProtoTower.ai, not connected by Milestone 2
 - Code owner: `@spencerstang`
 - Cloudflare token scope: account-level Workers Scripts Write only
 - Cloudflare token rotation deadline: 2026-10-27
 - Supabase access-token rotation deadline: 2026-08-28
 
-The GitHub environment contains `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_ID`, `SUPABASE_DB_PASSWORD`, and `ADMIN_DIAGNOSTICS_TOKEN` as secrets. `PUBLIC_APP_URL` is an environment variable. Never copy their values into documentation, logs, issues, or chat.
+The GitHub environment contains these secrets:
+
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
+- `SUPABASE_ACCESS_TOKEN`
+- `SUPABASE_PROJECT_ID`
+- `SUPABASE_DB_PASSWORD`
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `ADMIN_DIAGNOSTICS_TOKEN`
+
+`PUBLIC_APP_URL` is an environment variable. `SUPABASE_ANON_KEY` is safe for
+anonymous browser use but remains environment-scoped to prevent configuration drift.
+Never copy any values into documentation, logs, issues, or chat.
 
 ## Deployment
 
-Run **Deploy Staging** from GitHub Actions. Leave `deploy_database` enabled unless intentionally deploying web-only changes after confirming migrations are already current.
+Run **Deploy Staging** from GitHub Actions. Leave `deploy_database` enabled unless
+intentionally deploying web-only changes after confirming migrations and synthetic
+catalog seeds are already current.
 
-The workflow performs automated endpoint verification, but a human should still inspect the deployed landing page and confirm the hostname, health response, and protected build information documented in `health-checks.md`. Record the commit SHA, deployment URL, workflow run, and truthful results in the release record.
+The workflow:
 
-The Milestone 1 staging deployment and acceptance evidence are recorded in `docs/releases/milestone-1-validation.md`.
+1. repeats the full repository verification gate;
+2. links the dedicated staging project;
+3. runs `supabase db push --include-all --include-seed`;
+4. builds the dynamic catalog routes;
+5. uploads the diagnostics token plus catalog URL and anonymous key to the staging
+   Worker;
+6. deploys through the protected environment;
+7. verifies `/api/health`, authenticated build metadata, `/protocols`, and
+   `/protocols/morning-light-routine`.
+
+The catalog checks require the latest published Morning Outdoor Cue, reject stale
+draft and retired seed content, and confirm the educational disclaimer.
+
+A human must still inspect the deployed landing, listing, and detail layouts. Record
+the accepted commit, deployment URL, workflow run, exact results, and rollback review
+in `docs/releases/milestone-2-validation.md`.
