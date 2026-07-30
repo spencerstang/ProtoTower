@@ -17,4 +17,7 @@ Do not open a public issue for a suspected vulnerability. Report it privately to
 The current CSP permits inline scripts required by the framework. A nonce-based CSP
 should be introduced before authenticated or sensitive application surfaces are
 added. Catalog-specific risks and controls are documented in
-`docs/security/threat-model-protocol-catalog.md`.
+`docs/security/threat-model-protocol-catalog.md`. The proposed authentication,
+ownership, private-title, session, and cache controls for Milestone 3 are documented
+in `docs/security/threat-model-authenticated-towers.md`; none are claimed as
+implemented yet.

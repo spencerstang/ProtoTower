@@ -27,6 +27,10 @@ deployment.
 Authentication, protocol authoring or publishing UI, personal towers, tracking,
 outcomes, AI, analytics, notifications, email, payments, and MCP remain disabled.
 
+The proposed next slice is **Milestone 3: invite-only magic-link authentication and
+multiple private, goal-specific towers**. Its scope is documented in
+`docs/product/milestone-3-scope.md`; it is not implemented or enabled yet.
+
 ## Prerequisites
 
 - Node.js 22.16 or a newer supported release below Node 27
@@ -63,4 +67,6 @@ pnpm test:browsers
 Read `AGENTS.md` before an AI-assisted coding session. Local operations are in
 `docs/operations/local-setup.md`, staging delivery is in
 `docs/operations/staging-deployment.md`, and the Milestone 2 acceptance gate is in
-`docs/operations/milestone-2-gate.md`.
+`docs/operations/milestone-2-gate.md`. The proposed Milestone 3 design and gate are
+in `docs/architecture/milestone-3-authenticated-towers.md` and
+`docs/operations/milestone-3-gate.md`.
