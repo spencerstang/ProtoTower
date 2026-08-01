@@ -10,6 +10,14 @@ Do not open a public issue for a suspected vulnerability. Report it privately to
 - Treat logs as potentially durable; record operational facts, not sensitive payloads.
 - Run both the local secret scanner and the GitHub secret-scanning workflow.
 - Database changes require version-controlled migrations and review.
-- Authorization remains deny-by-default until a dedicated milestone implements it.
+- Authorization is deny-by-default; authenticated tower access is owner-only and
+  enforced again by PostgreSQL RLS and bounded RPCs.
+- Anonymous protocol access is read-only and limited to active published versions.
+- Published protocol versions are immutable; corrections require a higher version.
 
-The Milestone 1 CSP permits inline scripts required by the framework. A nonce-based CSP should be introduced before authenticated or sensitive application surfaces are added.
+Production responses use a per-response script nonce and authenticated responses
+are private and non-cacheable. Session cookies are server-only and `HttpOnly`.
+Catalog-specific risks and controls are documented in
+`docs/security/threat-model-protocol-catalog.md`. The proposed authentication,
+ownership, private-title, session, and cache controls for Milestone 3 are documented
+in `docs/security/threat-model-authenticated-towers.md`.

@@ -2,7 +2,7 @@
   "name": "protostack",
   "version": "0.1.0",
   "private": true,
-  "description": "ProtoStack production application monorepo.",
+  "description": "ProtoTower production application in the ProtoStack monorepo.",
   "license": "UNLICENSED",
   "packageManager": "pnpm@11.17.0",
   "engines": {

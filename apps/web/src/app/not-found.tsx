@@ -5,7 +5,7 @@ export default function NotFound() {
   return (
     <UnavailableState
       title="Page not found"
-      description="This route is not part of the Milestone 1 application."
+      description="This page is not part of the published ProtoTower catalog."
       action={
         <Link className="primary-action" href="/">
           Return home

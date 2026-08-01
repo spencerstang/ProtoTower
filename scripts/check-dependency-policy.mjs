@@ -48,7 +48,7 @@ for (const manifestPath of manifests) {
 if (providerViolations.length > 0 || versionViolations.length > 0) {
   if (providerViolations.length > 0) {
     console.error(
-      `Provider dependencies forbidden in Milestone 1:\n${providerViolations.join("\n")}`,
+      `Provider dependencies forbidden in the active milestone:\n${providerViolations.join("\n")}`,
     );
   }
   if (versionViolations.length > 0) {

@@ -18,12 +18,23 @@ pnpm dev
 
 Open `http://127.0.0.1:3000`. Use `pnpm db:status` to retrieve the local Supabase URLs and anonymous key, then place only the anonymous key in `.env.local`. Never commit `.env.local`.
 
-The repository uses exact direct dependency versions. Generate and commit `pnpm-lock.yaml` from the first successful install before accepting dependency changes, then change CI and setup commands to `pnpm install --frozen-lockfile`.
+`pnpm db:reset` applies all forward migrations and loads deterministic synthetic
+catalog records. Local Supabase captures authentication mail at
+`http://127.0.0.1:54324`; never copy token-bearing links into durable logs or
+artifacts. The browser harness provisions and removes only reserved synthetic Auth
+users through a process-scoped local administrative key. `/protocols`, `/sign-in`,
+and `/towers` show scoped unavailable states when their providers are unreachable;
+`/` and `/api/health` remain independent.
+
+The repository uses exact direct dependency versions and a committed lockfile.
+Acceptance and CI use `CI=true pnpm install --frozen-lockfile`.
 
 ## Verification
 
 ```bash
 pnpm verify
+pnpm audit --audit-level=high --prod
+pnpm db:reset
 pnpm db:lint
 pnpm db:test
 pnpm playwright:install

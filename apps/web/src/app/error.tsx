@@ -11,7 +11,7 @@ export default function ErrorBoundary({
   reset: () => void;
 }>) {
   useEffect(() => {
-    console.error("ProtoStack route error", {
+    console.error("ProtoTower route error", {
       name: error.name,
       digest: error.digest,
     });

@@ -46,8 +46,8 @@ jobs:
           SUPABASE_ACCESS_TOKEN: "${{ secrets.SUPABASE_ACCESS_TOKEN }}"
           SUPABASE_PROJECT_ID: "${{ secrets.SUPABASE_PROJECT_ID }}"
           SUPABASE_DB_PASSWORD: "${{ secrets.SUPABASE_DB_PASSWORD }}"
-      - name: Apply committed migrations
-        run: supabase db push --include-all
+      - name: Apply committed migrations and synthetic catalog seed
+        run: supabase db push --include-all --include-seed
         env:
           SUPABASE_ACCESS_TOKEN: "${{ secrets.SUPABASE_ACCESS_TOKEN }}"
 
@@ -77,14 +77,21 @@ jobs:
           CLOUDFLARE_API_TOKEN: "${{ secrets.CLOUDFLARE_API_TOKEN }}"
           CLOUDFLARE_ACCOUNT_ID: "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
           ADMIN_DIAGNOSTICS_TOKEN: "${{ secrets.ADMIN_DIAGNOSTICS_TOKEN }}"
+          SUPABASE_URL: "${{ secrets.SUPABASE_URL }}"
+          SUPABASE_ANON_KEY: "${{ secrets.SUPABASE_ANON_KEY }}"
           PUBLIC_APP_URL: "${{ vars.PUBLIC_APP_URL }}"
         run: |
           test -n "$CLOUDFLARE_API_TOKEN"
           test -n "$CLOUDFLARE_ACCOUNT_ID"
           test "${#ADMIN_DIAGNOSTICS_TOKEN}" -ge 32
+          test "${#SUPABASE_ANON_KEY}" -ge 20
           case "$PUBLIC_APP_URL" in
             https://*) ;;
             *) echo "PUBLIC_APP_URL must begin with https://" >&2; exit 1 ;;
+          esac
+          case "$SUPABASE_URL" in
+            https://*.supabase.co) ;;
+            *) echo "SUPABASE_URL must identify the staging Supabase project" >&2; exit 1 ;;
           esac
       - name: Set build metadata
         id: metadata
@@ -129,17 +136,25 @@ jobs:
           PUBLIC_APP_URL: "${{ vars.PUBLIC_APP_URL }}"
           ADMIN_DIAGNOSTICS_TOKEN: "${{ secrets.ADMIN_DIAGNOSTICS_TOKEN }}"
           NEXT_PUBLIC_APP_ENV: staging
-          NEXT_PUBLIC_APP_NAME: ProtoStack
-      - name: Upload staging Worker secrets
+          NEXT_PUBLIC_APP_NAME: ProtoTower
+      - name: Upload staging Worker runtime secrets
         shell: bash
         env:
           ADMIN_DIAGNOSTICS_TOKEN: "${{ secrets.ADMIN_DIAGNOSTICS_TOKEN }}"
           CLOUDFLARE_ACCOUNT_ID: "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
           CLOUDFLARE_API_TOKEN: "${{ secrets.CLOUDFLARE_API_TOKEN }}"
+          SUPABASE_URL: "${{ secrets.SUPABASE_URL }}"
+          SUPABASE_ANON_KEY: "${{ secrets.SUPABASE_ANON_KEY }}"
         run: |
           printf '%s' "$ADMIN_DIAGNOSTICS_TOKEN" |
             pnpm --filter @protostack/web exec wrangler secret put \
               ADMIN_DIAGNOSTICS_TOKEN --env staging
+          printf '%s' "$SUPABASE_URL" |
+            pnpm --filter @protostack/web exec wrangler secret put \
+              SUPABASE_URL --env staging
+          printf '%s' "$SUPABASE_ANON_KEY" |
+            pnpm --filter @protostack/web exec wrangler secret put \
+              SUPABASE_ANON_KEY --env staging
       - name: Deploy staging Worker
         uses: cloudflare/wrangler-action@v3
         with:
@@ -179,6 +194,25 @@ jobs:
             throw lastError ?? new Error(`${path} did not respond`);
           }
 
+          async function fetchTextWithRetry(path, isExpected) {
+            let lastError;
+            for (let attempt = 1; attempt <= 10; attempt += 1) {
+              try {
+                const response = await fetch(`${baseUrl}${path}`);
+                if (!response.ok) {
+                  throw new Error(`${path} returned ${response.status}`);
+                }
+                const body = await response.text();
+                if (isExpected(body)) return body;
+                lastError = new Error(`${path} returned stale content`);
+              } catch (error) {
+                lastError = error;
+              }
+              await sleep(5_000);
+            }
+            throw lastError ?? new Error(`${path} did not respond`);
+          }
+
           await fetchJsonWithRetry(
             "/api/health",
             undefined,
@@ -193,5 +227,21 @@ jobs:
             },
             (build) => build.gitSha === process.env.EXPECTED_GIT_SHA,
           );
-          console.log("Staging health and protected build diagnostics verified.");
+          await fetchTextWithRetry(
+            "/protocols",
+            (body) =>
+              body.includes("Morning outdoor cue") &&
+              !body.includes("Unpublished evening revision") &&
+              !body.includes("Retired synthetic routine"),
+          );
+          await fetchTextWithRetry(
+            "/protocols/morning-light-routine",
+            (body) =>
+              body.includes("Morning outdoor cue") &&
+              body.includes("Pick a repeatable cue") &&
+              body.includes("General educational wellness information"),
+          );
+          console.log(
+            "Staging health, protected build diagnostics, and public catalog verified.",
+          );
           NODE

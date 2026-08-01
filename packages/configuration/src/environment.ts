@@ -24,6 +24,8 @@ const serverEnvironmentSchema = z
     LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
     SUPABASE_URL: optionalUrl,
     SUPABASE_ANON_KEY: optionalString,
+    PROTOCOL_CATALOG_URL: optionalUrl,
+    PROTOCOL_CATALOG_ANON_KEY: optionalString,
     ADMIN_DIAGNOSTICS_TOKEN: optionalString,
   })
   .superRefine((environment, context) => {
@@ -68,6 +70,14 @@ const serverEnvironmentSchema = z
         message: "SUPABASE_URL and SUPABASE_ANON_KEY must be configured together.",
       });
     }
+
+    if (environment.PROTOCOL_CATALOG_ANON_KEY && !environment.PROTOCOL_CATALOG_URL) {
+      context.addIssue({
+        code: "custom",
+        path: ["PROTOCOL_CATALOG_URL"],
+        message: "PROTOCOL_CATALOG_URL is required with a catalog-specific key.",
+      });
+    }
   });
 
 export type ServerEnvironment = z.infer<typeof serverEnvironmentSchema>;
@@ -80,7 +90,7 @@ export function parseServerEnvironment(
 
 export const clientEnvironmentSchema = z.object({
   NEXT_PUBLIC_APP_ENV: appEnvironmentSchema.default("local"),
-  NEXT_PUBLIC_APP_NAME: z.string().min(1).default("ProtoStack"),
+  NEXT_PUBLIC_APP_NAME: z.string().min(1).default("ProtoTower"),
 });
 
 export type ClientEnvironment = z.infer<typeof clientEnvironmentSchema>;

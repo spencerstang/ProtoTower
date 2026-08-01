@@ -1,62 +1,86 @@
-import { StatusPill } from "@protostack/ui";
+import { SiteFooter, SiteHeader } from "@/components/site-chrome";
+import Link from "next/link";
 
-const futureCapabilities = [
-  "Versioned protocol library",
-  "Adherence and outcome tracking",
-  "AI-ready exports and prompts",
-  "Aggregate evidence intelligence",
-];
+const capabilities = [
+  {
+    title: "Versioned protocol catalog",
+    status: "Available now · Synthetic and read-only",
+  },
+  {
+    title: "Personal tower builder",
+    status: "Available now · Private invite-only alpha",
+  },
+  {
+    title: "Adherence and outcome learning",
+    status: "Planned · Not active in Milestone 2",
+  },
+  {
+    title: "Model-neutral interoperability",
+    status: "Planned · Not active in Milestone 2",
+  },
+] as const;
 
 export default function LandingPage() {
   return (
     <main id="main-content">
-      <nav className="site-nav" aria-label="Primary navigation">
-        <span className="wordmark">ProtoStack</span>
-        <StatusPill>Foundation online</StatusPill>
-      </nav>
+      <SiteHeader status="Milestone 3" />
 
-      <section className="hero">
-        <p className="eyebrow">Health protocols, evaluated with discipline</p>
-        <h1>Build a clearer picture of what you try—and what actually helps.</h1>
-        <p className="hero-copy">
-          ProtoStack is being built as a model-neutral workspace for self-directed adults to
-          discover, combine, track, and evaluate health and wellness protocols without locking the
-          core product to any AI, analytics, email, hosting, or database provider.
-        </p>
-        <div className="hero-actions">
-          <a className="primary-action" href="#foundation">
-            See the foundation
-          </a>
-          <a className="secondary-action" href="/api/health">
-            Service health
-          </a>
+      <section className="hero tower-hero">
+        <div>
+          <p className="eyebrow">Small protocols. Stronger foundations.</p>
+          <h1>Build a beautiful tower of great habits.</h1>
+          <p className="hero-copy">
+            ProtoTower pairs a careful catalog of versioned wellness routines with private,
+            goal-specific towers. Keep a sleep routine separate from marathon preparation, while
+            reusing the protocol blocks that fit each goal.
+          </p>
+          <div className="hero-actions">
+            <Link className="primary-action" href="/protocols">
+              Browse protocols
+            </Link>
+            <Link className="secondary-action" href="/towers">
+              Open my towers
+            </Link>
+            <a className="secondary-action" href="/api/health">
+              Service health
+            </a>
+          </div>
+        </div>
+
+        <div
+          className="tower-mark"
+          role="img"
+          aria-label="Five offset blocks forming a rising tower"
+        >
+          <span>Explore</span>
+          <span>Understand</span>
+          <span>Choose</span>
+          <span>Practice</span>
+          <span>Grow</span>
         </div>
       </section>
 
       <section className="foundation" id="foundation" aria-labelledby="foundation-heading">
         <div>
-          <p className="eyebrow">Milestone 1</p>
-          <h2 id="foundation-heading">A production-ready base, before product complexity.</h2>
+          <p className="eyebrow">Milestone 3</p>
+          <h2 id="foundation-heading">The first trustworthy building blocks.</h2>
           <p>
-            The initial repository focuses on deployment portability, strict validation,
-            version-controlled migrations, protected diagnostics, structured logging, automated
-            checks, and disabled-by-default feature boundaries.
+            Published protocol versions stay immutable, private towers are isolated by owner, and
+            public catalog browsing continues independently. Tower titles are private goal labels;
+            the catalog remains synthetic educational content.
           </p>
         </div>
         <ul className="capability-grid">
-          {futureCapabilities.map((capability) => (
-            <li key={capability}>
-              {capability}
-              <span>Planned—disabled in Milestone 1</span>
+          {capabilities.map((capability) => (
+            <li key={capability.title}>
+              {capability.title}
+              <span>{capability.status}</span>
             </li>
           ))}
         </ul>
       </section>
 
-      <footer>
-        <span>ProtoStack</span>
-        <span>Production foundation · No real user data</span>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }
