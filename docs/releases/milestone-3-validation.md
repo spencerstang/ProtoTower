@@ -1,6 +1,6 @@
 # Milestone 3 validation record
 
-Status: Complete local gate passed; protected staging pending
+Status: Complete local and hosted PR gate passed; protected staging pending
 
 ## Accepted boundary
 
@@ -31,5 +31,19 @@ Status: Complete local gate passed; protected staging pending
 - The final production-mode Playwright gate passed all 20 tests across end-to-end,
   accessibility, security, and performance projects in 30.3 seconds.
 
-Exact final command results, accepted commit, workflow run, and staging evidence are
-recorded only after the complete gate actually succeeds.
+## Hosted pull-request evidence
+
+- Accepted implementation commit: `c80c3359c85ad309e80c9692d659d9f8158cb706`
+  (`Implement authenticated personal towers`).
+- Draft pull request: `#10`, targeting `main` from
+  `codex/milestone-3-authenticated-towers`.
+- GitHub Actions passed at that commit: Continuous Integration quality (1m30s),
+  Continuous Integration browser (4m14s), Database Validation (2m47s), Secret Scan
+  (13s), and Dependency Review (10s).
+- Dependency Review initially reported that the repository Dependency Graph was
+  disabled. It passed after that GitHub repository security setting was enabled and
+  the check was rerun; no application code or dependency policy exception was added.
+
+Protected staging remains deliberately unrun. It requires the separately approved
+Supabase Auth configuration and designated synthetic alpha accounts; it does not
+authorize public signup, production DNS cutover, or Milestone 4 work.
