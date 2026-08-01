@@ -11,6 +11,7 @@ describe("content security policy", () => {
     expect(scriptDirective).toContain("'strict-dynamic'");
     expect(scriptDirective).not.toContain("'unsafe-inline'");
     expect(scriptDirective).not.toContain("'unsafe-eval'");
+    expect(policy).not.toContain("http://127.0.0.1:54321");
   });
 
   it("limits development exceptions to the script directive", () => {
