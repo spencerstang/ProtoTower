@@ -34,6 +34,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      personal_tower_items: {
+        Row: {
+          created_at: string
+          position: number
+          protocol_id: string
+          protocol_version: number
+          tower_id: string
+        }
+        Insert: {
+          created_at?: string
+          position: number
+          protocol_id: string
+          protocol_version: number
+          tower_id: string
+        }
+        Update: {
+          created_at?: string
+          position?: number
+          protocol_id?: string
+          protocol_version?: number
+          tower_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personal_tower_items_protocol_version_fkey"
+            columns: ["protocol_id", "protocol_version"]
+            isOneToOne: false
+            referencedRelation: "protocol_versions"
+            referencedColumns: ["protocol_id", "version"]
+          },
+          {
+            foreignKeyName: "personal_tower_items_tower_id_fkey"
+            columns: ["tower_id"]
+            isOneToOne: false
+            referencedRelation: "personal_towers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      personal_towers: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          revision: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          revision?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          revision?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       protocol_versions: {
         Row: {
           cautions: Json
@@ -128,7 +194,35 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      create_personal_tower: {
+        Args: { candidate_title: string }
+        Returns: {
+          created_at: string
+          id: string
+          revision: number
+          title: string
+          updated_at: string
+        }[]
+      }
+      delete_personal_tower: {
+        Args: { candidate_id: string; expected_revision: number }
+        Returns: boolean
+      }
+      save_personal_tower: {
+        Args: {
+          candidate_id: string
+          candidate_items: Json
+          candidate_title: string
+          expected_revision: number
+        }
+        Returns: {
+          created_at: string
+          id: string
+          revision: number
+          title: string
+          updated_at: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

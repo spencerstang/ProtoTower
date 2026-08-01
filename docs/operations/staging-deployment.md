@@ -13,7 +13,7 @@ build identity, catalog visibility, and the latest protocol version.
   <https://protostack-web-staging.spencer-4e6.workers.dev>
 - Supabase project: dedicated staging project with synthetic data only
 - Public product brand: ProtoTower
-- Reserved production domain: ProtoTower.ai, not connected by Milestone 2
+- Reserved production domain: ProtoTower.ai, not connected by Milestone 3
 - Code owner: `@spencerstang`
 - Cloudflare token scope: account-level Workers Scripts Write only
 - Cloudflare token rotation deadline: 2026-10-27
@@ -55,6 +55,12 @@ The workflow:
 The catalog checks require the latest published Morning Outdoor Cue, reject stale
 draft and retired seed content, and confirm the educational disclaimer.
 
-A human must still inspect the deployed landing, listing, and detail layouts. Record
-the accepted commit, deployment URL, workflow run, exact results, and rollback review
-in `docs/releases/milestone-2-validation.md`.
+Before authenticated staging acceptance, an operator must enable the email provider,
+keep new-user signup disabled, provision only designated test accounts, install the
+committed scanner-resistant magic-link template in the hosted Auth settings, and set
+an exact Site URL/redirect allowlist. Do not put the mailbox or message content in
+the repository or workflow logs.
+
+A human must still inspect the deployed public and private layouts. Record the
+accepted commit, deployment URL, workflow run, exact results, and rollback review in
+`docs/releases/milestone-3-validation.md`.

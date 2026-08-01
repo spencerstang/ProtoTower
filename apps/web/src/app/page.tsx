@@ -8,7 +8,7 @@ const capabilities = [
   },
   {
     title: "Personal tower builder",
-    status: "Planned · Not active in Milestone 2",
+    status: "Available now · Private invite-only alpha",
   },
   {
     title: "Adherence and outcome learning",
@@ -23,20 +23,23 @@ const capabilities = [
 export default function LandingPage() {
   return (
     <main id="main-content">
-      <SiteHeader status="Milestone 2" />
+      <SiteHeader status="Milestone 3" />
 
       <section className="hero tower-hero">
         <div>
           <p className="eyebrow">Small protocols. Stronger foundations.</p>
           <h1>Build a beautiful tower of great habits.</h1>
           <p className="hero-copy">
-            ProtoTower begins with a careful catalog of versioned wellness routines. Explore one
-            building block at a time—and, in future milestones, stack the ones that fit into
-            something distinctly yours.
+            ProtoTower pairs a careful catalog of versioned wellness routines with private,
+            goal-specific towers. Keep a sleep routine separate from marathon preparation, while
+            reusing the protocol blocks that fit each goal.
           </p>
           <div className="hero-actions">
             <Link className="primary-action" href="/protocols">
               Browse protocols
+            </Link>
+            <Link className="secondary-action" href="/towers">
+              Open my towers
             </Link>
             <a className="secondary-action" href="/api/health">
               Service health
@@ -59,12 +62,12 @@ export default function LandingPage() {
 
       <section className="foundation" id="foundation" aria-labelledby="foundation-heading">
         <div>
-          <p className="eyebrow">Milestone 2</p>
+          <p className="eyebrow">Milestone 3</p>
           <h2 id="foundation-heading">The first trustworthy building blocks.</h2>
           <p>
-            Published protocol versions are immutable, anonymous access is read-only, and the
-            catalog fails independently from the core application. Every example is synthetic
-            educational content, never personal or medical data.
+            Published protocol versions stay immutable, private towers are isolated by owner, and
+            public catalog browsing continues independently. Tower titles are private goal labels;
+            the catalog remains synthetic educational content.
           </p>
         </div>
         <ul className="capability-grid">

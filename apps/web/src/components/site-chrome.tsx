@@ -12,6 +12,12 @@ export function SiteHeader(props: Readonly<{ status?: ReactNode }>): ReactNode {
         <Link className="nav-link" href="/protocols">
           Protocols
         </Link>
+        <Link className="nav-link" href="/towers">
+          My towers
+        </Link>
+        <Link className="nav-link" href="/sign-in">
+          Sign in
+        </Link>
         <StatusPill>{props.status ?? "Read-only catalog"}</StatusPill>
       </div>
     </nav>
@@ -22,7 +28,7 @@ export function SiteFooter(): ReactNode {
   return (
     <footer>
       <span>ProtoTower</span>
-      <span>Synthetic educational catalog · No personal data</span>
+      <span>Private goal towers · Synthetic educational protocols</span>
     </footer>
   );
 }

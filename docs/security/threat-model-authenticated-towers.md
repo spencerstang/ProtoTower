@@ -1,6 +1,6 @@
-# Proposed authenticated personal towers threat model
+# Authenticated personal towers threat model
 
-Status: Proposed for Milestone 3 implementation approval
+Status: Implemented and acceptance-gated in Milestone 3
 
 ## Assets
 

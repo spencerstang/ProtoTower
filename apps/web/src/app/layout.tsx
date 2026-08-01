@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 
+// A per-response CSP nonce requires every document to be rendered for that request.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: {
     default: "ProtoTower",

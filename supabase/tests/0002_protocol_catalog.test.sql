@@ -2,9 +2,13 @@ begin;
 select plan(18);
 
 select results_eq(
-  $$ select (value ->> 'milestone')::integer from app_private.platform_metadata where key = 'schema_stage' $$,
-  array[2],
-  'schema metadata records Milestone 2'
+  $$
+    select (value ->> 'milestone')::integer >= 2
+    from app_private.platform_metadata
+    where key = 'schema_stage'
+  $$,
+  array[true],
+  'schema metadata includes the Milestone 2 catalog'
 );
 
 select has_table('public', 'protocols', 'protocol identity table exists');

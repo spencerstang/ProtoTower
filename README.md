@@ -6,9 +6,9 @@ repository and `@protostack/*` package names to avoid an unnecessary internal re
 The public product name and future production domain are **ProtoTower** and
 **ProtoTower.ai**.
 
-This repository currently contains **Milestone 2: a read-only, versioned protocol
-catalog**. ProtoTower.ai is reserved but is not yet connected to a production
-deployment.
+This repository currently contains **Milestone 3: invite-only authentication and
+private, goal-specific towers**. ProtoTower.ai is reserved but is not yet connected
+to a production deployment.
 
 ## What is included
 
@@ -19,17 +19,18 @@ deployment.
 - deterministic synthetic wellness examples and generated database types
 - a fetch-based PostgREST adapter that fails independently from core routes
 - public `/protocols` and `/protocols/[slug]` experiences
+- scanner-resistant Supabase Auth email links with server-only `HttpOnly` sessions
+- multiple private goal towers with exact protocol-version pinning and revisions
+- forced RLS, direct-write denial, bounded RPCs, and two-user isolation coverage
 - local Supabase migrations, schema lint, and pgTAP security tests
 - Cloudflare Workers deployment through OpenNext
 - quality, browser, accessibility, security, performance, dependency, and secret
   gates
 
-Authentication, protocol authoring or publishing UI, personal towers, tracking,
-outcomes, AI, analytics, notifications, email, payments, and MCP remain disabled.
-
-The proposed next slice is **Milestone 3: invite-only magic-link authentication and
-multiple private, goal-specific towers**. Its scope is documented in
-`docs/product/milestone-3-scope.md`; it is not implemented or enabled yet.
+Public registration, password authentication, protocol authoring or publishing UI,
+tracking, outcomes, AI, analytics, non-authentication notifications, payments, and
+MCP remain disabled. The active boundary is documented in
+`docs/product/milestone-3-scope.md`; Milestone 4 has not begun.
 
 ## Prerequisites
 
@@ -66,7 +67,5 @@ pnpm test:browsers
 
 Read `AGENTS.md` before an AI-assisted coding session. Local operations are in
 `docs/operations/local-setup.md`, staging delivery is in
-`docs/operations/staging-deployment.md`, and the Milestone 2 acceptance gate is in
-`docs/operations/milestone-2-gate.md`. The proposed Milestone 3 design and gate are
-in `docs/architecture/milestone-3-authenticated-towers.md` and
+`docs/operations/staging-deployment.md`, and the Milestone 3 acceptance gate is in
 `docs/operations/milestone-3-gate.md`.

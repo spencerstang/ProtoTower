@@ -8,7 +8,7 @@ test("public landing page renders without external services", async ({ page }) =
   await expect(
     page
       .getByRole("navigation", { name: "Primary navigation" })
-      .getByText("Milestone 2", { exact: true }),
+      .getByText("Milestone 3", { exact: true }),
   ).toBeVisible();
 });
 

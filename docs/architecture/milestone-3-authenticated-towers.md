@@ -1,6 +1,6 @@
 # Milestone 3 proposed architecture: authenticated personal towers
 
-Status: Proposed for implementation approval
+Status: Accepted and implemented
 
 ## Boundaries
 

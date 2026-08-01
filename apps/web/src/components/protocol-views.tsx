@@ -2,10 +2,13 @@ import type { CatalogQueryResult, PublishedProtocol } from "@protostack/protocol
 import { UnavailableState } from "@protostack/ui";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import type { PersonalTower } from "@protostack/tower-engine";
+import { addProtocolToSelectedTower } from "@/app/towers/actions";
 
 export function ProtocolCatalogView(
   props: Readonly<{
     result: CatalogQueryResult<readonly PublishedProtocol[]>;
+    towers?: readonly PersonalTower[];
   }>,
 ): ReactNode {
   if (props.result.status === "unavailable") {
@@ -50,6 +53,22 @@ export function ProtocolCatalogView(
             >
               View this building block <span aria-hidden="true">→</span>
             </Link>
+            {props.towers && props.towers.length > 0 ? (
+              <form action={addProtocolToSelectedTower} className="catalog-add-form">
+                <input type="hidden" name="protocolId" value={protocol.id} />
+                <label htmlFor={`destination-${protocol.id}`}>Add to a private tower</label>
+                <select id={`destination-${protocol.id}`} name="destination">
+                  {props.towers.map((tower) => (
+                    <option key={tower.id} value={`${tower.id}:${tower.revision}`}>
+                      {tower.title}
+                    </option>
+                  ))}
+                </select>
+                <button className="secondary-action" type="submit">
+                  Add protocol
+                </button>
+              </form>
+            ) : null}
           </article>
         </li>
       ))}

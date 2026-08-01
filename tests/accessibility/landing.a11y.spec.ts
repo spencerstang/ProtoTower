@@ -33,3 +33,23 @@ test("protocol detail has no automatically detectable serious accessibility viol
   );
   expect(serious).toEqual([]);
 });
+
+test("sign-in has no automatically detectable serious accessibility violations", async ({
+  page,
+}) => {
+  await page.goto("/sign-in");
+  const results = await new AxeBuilder({ page }).analyze();
+  const serious = results.violations.filter((violation) =>
+    ["serious", "critical"].includes(violation.impact ?? ""),
+  );
+  expect(serious).toEqual([]);
+});
+
+test("generic confirmation failure is accessible", async ({ page }) => {
+  await page.goto("/auth/confirm?error=invalid");
+  const results = await new AxeBuilder({ page }).analyze();
+  const serious = results.violations.filter((violation) =>
+    ["serious", "critical"].includes(violation.impact ?? ""),
+  );
+  expect(serious).toEqual([]);
+});

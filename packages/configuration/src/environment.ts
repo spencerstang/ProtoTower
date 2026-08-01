@@ -24,6 +24,8 @@ const serverEnvironmentSchema = z
     LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
     SUPABASE_URL: optionalUrl,
     SUPABASE_ANON_KEY: optionalString,
+    PROTOCOL_CATALOG_URL: optionalUrl,
+    PROTOCOL_CATALOG_ANON_KEY: optionalString,
     ADMIN_DIAGNOSTICS_TOKEN: optionalString,
   })
   .superRefine((environment, context) => {
@@ -66,6 +68,14 @@ const serverEnvironmentSchema = z
         code: "custom",
         path: [hasSupabaseUrl ? "SUPABASE_ANON_KEY" : "SUPABASE_URL"],
         message: "SUPABASE_URL and SUPABASE_ANON_KEY must be configured together.",
+      });
+    }
+
+    if (environment.PROTOCOL_CATALOG_ANON_KEY && !environment.PROTOCOL_CATALOG_URL) {
+      context.addIssue({
+        code: "custom",
+        path: ["PROTOCOL_CATALOG_URL"],
+        message: "PROTOCOL_CATALOG_URL is required with a catalog-specific key.",
       });
     }
   });

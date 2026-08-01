@@ -1,6 +1,7 @@
 const reviewedFeatureFlags = {
   protocolCatalog: true,
-  authentication: false,
+  authentication: true,
+  personalTowers: true,
   protocolPublishing: false,
   protocolTracking: false,
   outcomes: false,

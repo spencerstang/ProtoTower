@@ -17,4 +17,4 @@ export type DatabaseHealth = Readonly<{
   checkedAt: string;
 }>;
 
-export type { Database } from "./generated/database.types";
+export type { Database, Json } from "./generated/database.types";

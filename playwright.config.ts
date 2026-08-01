@@ -22,20 +22,20 @@ const localWebServer = process.env.PLAYWRIGHT_BASE_URL
           timeout: 30_000,
         },
         {
-          command: "pnpm --filter @protostack/web dev",
+          command: process.env.CI
+            ? "pnpm --filter @protostack/web build && node tests/support/start-web.mjs"
+            : "node tests/support/start-web.mjs",
           url: baseURL,
           reuseExistingServer: !process.env.CI,
           timeout: 120_000,
-          env: {
-            SUPABASE_URL: catalogMockURL,
-            SUPABASE_ANON_KEY: "synthetic-playwright-anon-key",
-          },
         },
       ],
     };
 
 export default defineConfig({
   testDir: "tests",
+  globalSetup: "./tests/support/global-setup.mjs",
+  globalTeardown: "./tests/support/global-teardown.mjs",
   fullyParallel: true,
   ...ciOptions,
   reporter: process.env.CI ? [["html", { open: "never" }], ["github"]] : "list",

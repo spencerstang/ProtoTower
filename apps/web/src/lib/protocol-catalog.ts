@@ -161,8 +161,8 @@ export function createServerProtocolCatalogRepository(): ProtocolCatalogReposito
 
     return createProtocolCatalogRepository({
       connection: {
-        baseUrl: new URL(environment.SUPABASE_URL),
-        anonKey: environment.SUPABASE_ANON_KEY,
+        baseUrl: new URL(environment.PROTOCOL_CATALOG_URL ?? environment.SUPABASE_URL),
+        anonKey: environment.PROTOCOL_CATALOG_ANON_KEY ?? environment.SUPABASE_ANON_KEY,
       },
     });
   } catch {

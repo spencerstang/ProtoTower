@@ -1,11 +1,19 @@
 import { ProtocolCatalogView } from "@/components/protocol-views";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { createServerProtocolCatalogRepository } from "@/lib/protocol-catalog";
+import { getVerifiedPrincipal } from "@/lib/auth";
+import { createServerPersonalTowerRepository } from "@/lib/personal-towers";
 
 export const dynamic = "force-dynamic";
 
 export default async function ProtocolCatalogPage() {
   const result = await createServerProtocolCatalogRepository().listPublished();
+  const principal = await getVerifiedPrincipal();
+  const towerResult =
+    principal.status === "available" && principal.principal.kind === "authenticated"
+      ? await (await createServerPersonalTowerRepository()).list()
+      : null;
+  const towers = towerResult?.status === "available" ? towerResult.value : [];
 
   return (
     <main id="main-content">
@@ -19,7 +27,7 @@ export default async function ProtocolCatalogPage() {
         </p>
       </header>
       <section className="catalog-content" aria-label="Catalog results">
-        <ProtocolCatalogView result={result} />
+        <ProtocolCatalogView result={result} towers={towers} />
       </section>
       <SiteFooter />
     </main>
