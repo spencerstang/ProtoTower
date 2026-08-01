@@ -4,6 +4,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { serverOnlyCookieOptions } from "./lib/supabase/cookies";
 import { buildContentSecurityPolicy } from "./lib/security-headers";
 
+// OpenNext Cloudflare supports Edge Middleware but not Next.js 16's Node.js Proxy yet.
+// Keep this deprecated filename until the adapter adds Node Middleware support.
 function applyResponseHeaders(
   response: NextResponse,
   policy: string,
@@ -28,7 +30,7 @@ function applyResponseHeaders(
   }
 }
 
-export async function proxy(request: NextRequest): Promise<NextResponse> {
+export async function middleware(request: NextRequest): Promise<NextResponse> {
   const nonce = btoa(crypto.randomUUID());
   const policy = buildContentSecurityPolicy(nonce, process.env.NODE_ENV !== "production");
   const requestHeaders = new Headers(request.headers);
