@@ -1,6 +1,6 @@
 # Milestone 4 architecture: private practice check-ins
 
-Status: Approved; implementation has not begun
+Status: Implemented; local automated gate passed; protected staging acceptance pending
 
 ## Boundaries
 

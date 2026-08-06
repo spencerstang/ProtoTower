@@ -1,6 +1,6 @@
 # Private practice check-ins threat model
 
-Status: Approved for Milestone 4; implementation has not begun
+Status: Implemented for Milestone 4; protected staging acceptance pending
 
 ## Assets
 

@@ -1,6 +1,6 @@
 # Milestone 4 acceptance gate
 
-Status: Planned; implementation has not begun
+Status: Local automated gate passed; manual review and protected staging pending
 
 Run from a clean checkout with the repository-supported Node.js and pnpm versions.
 Use synthetic local identities, dates, towers, catalog content, and activity only.

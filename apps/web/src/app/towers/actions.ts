@@ -13,9 +13,16 @@ import {
   type TowerRevision,
 } from "@protostack/tower-engine";
 import { protocolIdSchema } from "@protostack/protocol-engine";
+import { isFeatureEnabled } from "@protostack/configuration";
+import {
+  assertPracticeDateWithinWindow,
+  parseSetPracticeCheckInInput,
+  type SetPracticeCheckInInput,
+} from "@protostack/tracking-engine";
 import { redirect } from "next/navigation";
 import { getVerifiedPrincipal } from "@/lib/auth";
 import { createServerPersonalTowerRepository } from "@/lib/personal-towers";
+import { createServerPracticeCheckInRepository } from "@/lib/practice-checkins";
 import { createServerProtocolCatalogRepository } from "@/lib/protocol-catalog";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -168,6 +175,43 @@ export async function moveTowerItemDown(formData: FormData): Promise<never> {
 
 export async function removeTowerItemAction(formData: FormData): Promise<never> {
   return changeTowerItem(formData, "remove");
+}
+
+export async function setPracticeCheckIn(formData: FormData): Promise<never> {
+  await requirePrincipal();
+  const rawTowerId = formString(formData, "towerId");
+  let input: SetPracticeCheckInInput;
+  try {
+    const recorded = formString(formData, "recorded");
+    input = parseSetPracticeCheckInInput({
+      towerId: rawTowerId,
+      protocolId: formString(formData, "protocolId"),
+      protocolVersion: Number(formString(formData, "protocolVersion")),
+      practiceDate: formString(formData, "practiceDate"),
+      recorded: recorded === "true" ? true : recorded === "false" ? false : null,
+    });
+    assertPracticeDateWithinWindow(input.practiceDate, new Date());
+  } catch {
+    const towerId = towerIdSchema.safeParse(rawTowerId);
+    if (towerId.success) redirect(`/towers/${towerId.data}?error=practice-invalid`);
+    redirect("/towers?error=invalid");
+  }
+  if (!isFeatureEnabled("protocolTracking")) {
+    redirect(`/towers/${input.towerId}?error=practice-unavailable`);
+  }
+  const result = await (await createServerPracticeCheckInRepository()).set(input);
+  if (result.status === "available") {
+    redirect(
+      `/towers/${input.towerId}?status=${result.recorded ? "practice-recorded" : "practice-undone"}`,
+    );
+  }
+  if (result.status === "rejected" && result.reason === "not_found") {
+    redirect(`/towers/${input.towerId}?error=practice-not-found`);
+  }
+  if (result.status === "rejected") {
+    redirect(`/towers/${input.towerId}?error=practice-invalid`);
+  }
+  redirect(`/towers/${input.towerId}?error=practice-unavailable`);
 }
 
 export async function deleteTower(formData: FormData): Promise<never> {

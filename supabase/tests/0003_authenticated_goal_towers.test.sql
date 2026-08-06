@@ -61,9 +61,9 @@ values
   );
 
 select results_eq(
-  $$ select (value ->> 'milestone')::integer from app_private.platform_metadata where key = 'schema_stage' $$,
-  array[3],
-  'schema metadata records Milestone 3'
+  $$ select (value ->> 'milestone')::integer >= 3 from app_private.platform_metadata where key = 'schema_stage' $$,
+  array[true],
+  'schema metadata records Milestone 3 or later'
 );
 select has_table('public', 'personal_towers', 'personal towers table exists');
 select has_table('public', 'personal_tower_items', 'personal tower items table exists');

@@ -6,10 +6,10 @@ repository and `@protostack/*` package names to avoid an unnecessary internal re
 The public product name and future production domain are **ProtoTower** and
 **ProtoTower.ai**.
 
-This repository contains the accepted **Milestone 3: invite-only authentication and
-private, goal-specific towers** implementation. **Milestone 4: private practice
-check-ins** is approved but implementation has not begun. ProtoTower.ai is reserved
-but is not connected to a production deployment.
+This repository contains the **Milestone 4: private practice check-ins**
+implementation for the invite-only synthetic alpha. Users can record and undo one
+bounded calendar-date check-in for an exact protocol version inside an owner-isolated
+tower. ProtoTower.ai is reserved but is not connected to a production deployment.
 
 ## What is included
 
@@ -22,6 +22,7 @@ but is not connected to a production deployment.
 - public `/protocols` and `/protocols/[slug]` experiences
 - scanner-resistant Supabase Auth email links with server-only `HttpOnly` sessions
 - multiple private goal towers with exact protocol-version pinning and revisions
+- bounded private practice check-ins with exact-version history and idempotent undo
 - forced RLS, direct-write denial, bounded RPCs, and two-user isolation coverage
 - local Supabase migrations, schema lint, and pgTAP security tests
 - Cloudflare Workers deployment through OpenNext
@@ -29,9 +30,9 @@ but is not connected to a production deployment.
   gates
 
 Public registration, password authentication, protocol authoring or publishing UI,
-practice tracking, outcomes, AI, analytics, non-authentication notifications,
-payments, and MCP remain disabled. The approved next boundary is documented in
-`docs/product/milestone-4-scope.md`; approval does not enable the feature.
+outcomes, scores, streaks, notes, AI, analytics, non-authentication notifications,
+payments, and MCP remain disabled. Milestone 4 does not authorize real-user data
+collection or a public production launch.
 
 ## Prerequisites
 
@@ -68,5 +69,5 @@ pnpm test:browsers
 
 Read `AGENTS.md` before an AI-assisted coding session. Local operations are in
 `docs/operations/local-setup.md`, staging delivery is in
-`docs/operations/staging-deployment.md`, and the planned Milestone 4 acceptance gate
-is in `docs/operations/milestone-4-gate.md`.
+`docs/operations/staging-deployment.md`, and the Milestone 4 acceptance gate is in
+`docs/operations/milestone-4-gate.md`.

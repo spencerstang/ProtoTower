@@ -26,6 +26,7 @@
     "@protostack/database": "workspace:*",
     "@protostack/protocol-engine": "workspace:*",
     "@protostack/authorization": "workspace:*",
+    "@protostack/tracking-engine": "workspace:*",
     "@protostack/tower-engine": "workspace:*",
     "@protostack/ui": "workspace:*",
     "@supabase/ssr": "0.12.4",

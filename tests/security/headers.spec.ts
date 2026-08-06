@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { requestAndConfirm } from "../support/auth";
 
 test("baseline security headers use per-response script nonces", async ({ request }) => {
   const policies: string[] = [];
@@ -72,4 +73,33 @@ test("catalog responses do not expose provider configuration or unpublished cont
   expect(body).not.toMatch(/synthetic-playwright-anon-key|supabase\.co|authorization/i);
   expect(body).not.toContain("Unpublished evening revision");
   expect(body).not.toContain("Retired synthetic routine");
+});
+
+test("authenticated practice responses are private and cannot replay into an anonymous browser", async ({
+  browser,
+  page,
+  request,
+}) => {
+  await requestAndConfirm(page, request, "practice-security@example.test");
+  await page.getByRole("link", { name: "Create your first tower" }).click();
+  await page.getByLabel("Goal or context").fill("Synthetic private cache check");
+  await page.getByRole("button", { name: "Create tower" }).click();
+  await page.getByRole("button", { name: "Add to Synthetic private cache check" }).first().click();
+  await page.getByRole("button", { name: /Record .* as practiced/u }).click();
+  const towerPath = new URL(page.url()).pathname;
+  const privateDate = await page.locator(".practice-history-list time").getAttribute("datetime");
+  expect(privateDate).toBeTruthy();
+
+  const authenticatedResponse = await page.goto(towerPath);
+  expect(authenticatedResponse?.headers()["cache-control"]).toContain("private");
+  expect(authenticatedResponse?.headers()["cache-control"]).toContain("no-store");
+
+  const anonymousContext = await browser.newContext();
+  const anonymousPage = await anonymousContext.newPage();
+  const anonymousResponse = await anonymousPage.goto(towerPath);
+  expect(anonymousResponse?.url()).toContain("/sign-in");
+  const anonymousBody = await anonymousPage.content();
+  expect(anonymousBody).not.toContain("Recorded practice");
+  expect(anonymousBody).not.toContain(privateDate ?? "unreachable-private-date");
+  await anonymousContext.close();
 });

@@ -1,84 +1,8 @@
-import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import { isSessionCookie, requestAndConfirm } from "../support/auth";
 
-const mailpitUrl = "http://127.0.0.1:54324";
 const alphaEmail = "tower-alpha@example.test";
 const betaEmail = "tower-beta@example.test";
-
-function isSessionCookie(name: string): boolean {
-  return name.includes("auth-token") && !name.includes("code-verifier");
-}
-
-function record(input: unknown): Readonly<Record<string, unknown>> | null {
-  return typeof input === "object" && input !== null && !Array.isArray(input)
-    ? (input as Readonly<Record<string, unknown>>)
-    : null;
-}
-
-function messageForRecipient(input: unknown, email: string): string | null {
-  const inbox = record(input);
-  const messages = inbox?.["messages"];
-  if (!Array.isArray(messages)) return null;
-  for (const candidate of messages) {
-    const message = record(candidate);
-    const recipients = message?.["To"];
-    const id = message?.["ID"];
-    if (
-      typeof id === "string" &&
-      Array.isArray(recipients) &&
-      recipients.some((recipient) => record(recipient)?.["Address"] === email)
-    ) {
-      return id;
-    }
-  }
-  return null;
-}
-
-async function latestMagicLink(request: APIRequestContext, email: string): Promise<string> {
-  let messageId: string | null = null;
-  await expect
-    .poll(
-      async () => {
-        const response = await request.get(`${mailpitUrl}/api/v1/messages`);
-        messageId = messageForRecipient(await response.json(), email);
-        return messageId;
-      },
-      { timeout: 10_000 },
-    )
-    .not.toBeNull();
-  if (!messageId) throw new Error("Synthetic authentication email was not captured.");
-
-  const response = await request.get(`${mailpitUrl}/api/v1/message/${messageId}`);
-  const message = record(await response.json());
-  const html = message?.["HTML"];
-  if (typeof html !== "string") throw new Error("Captured email has no HTML body.");
-  const href = html.match(/href="([^"]+)"/u)?.[1]?.replaceAll("&amp;", "&");
-  if (!href) throw new Error("Captured email has no sign-in link.");
-  return href;
-}
-
-async function requestAndConfirm(
-  page: Page,
-  request: APIRequestContext,
-  email: string,
-): Promise<string> {
-  await page.goto("/sign-in");
-  await page.getByLabel("Email address").fill(email);
-  await page.getByRole("button", { name: "Email me a sign-in link" }).click();
-  await expect(page).toHaveURL(/\/auth\/check-email$/u);
-  const link = await latestMagicLink(request, email);
-
-  await page.goto(link);
-  await expect(page).toHaveURL(/\/auth\/confirm$/u);
-  await expect(page.getByRole("button", { name: "Confirm and open my towers" })).toBeVisible();
-  expect((await page.context().cookies()).some((cookie) => isSessionCookie(cookie.name))).toBe(
-    false,
-  );
-  expect(await page.content()).not.toContain(new URL(link).searchParams.get("token_hash"));
-
-  await page.getByRole("button", { name: "Confirm and open my towers" }).click();
-  await expect(page).toHaveURL(/\/towers$/u);
-  return link;
-}
 
 test("valid and unknown addresses receive the same application response", async ({ page }) => {
   await page.goto("/sign-in");
@@ -90,9 +14,11 @@ test("valid and unknown addresses receive the same application response", async 
 
 test("scanner-safe sign-in persists isolated goal-specific towers", async ({
   browser,
-  page,
+  page: initialPage,
   request,
 }) => {
+  test.setTimeout(90_000);
+  let page = initialPage;
   const alphaLink = await requestAndConfirm(page, request, alphaEmail);
   const authCookies = (await page.context().cookies()).filter((cookie) =>
     isSessionCookie(cookie.name),
@@ -118,8 +44,44 @@ test("scanner-safe sign-in persists isolated goal-specific towers", async ({
     "Evening wind-down",
     "Desk movement breaks",
   ]);
-  await page.getByRole("button", { name: "Remove" }).first().click();
+  let practicedBlock = page
+    .locator(".tower-item-list > li")
+    .filter({ hasText: "Evening wind-down" });
+  await practicedBlock
+    .getByRole("button", { name: "Record Evening wind-down as practiced" })
+    .click();
+  await expect(page.getByText("Practice recorded.")).toBeVisible();
+  await expect(page.locator(".practice-history-list > li")).toHaveCount(1);
+  await page
+    .locator(".tower-item-list > li")
+    .filter({ hasText: "Evening wind-down" })
+    .getByRole("button", { name: "Record Evening wind-down as practiced" })
+    .click();
+  await expect(page.locator(".practice-history-list > li")).toHaveCount(1);
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Recorded practice" })).toBeVisible();
+
+  await page.goto("/towers");
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await expect(page).toHaveURL(/\/?status=signed-out$/u);
+  await page.goto("/towers");
+  await expect(page).toHaveURL(/\/sign-in$/u);
+
+  const renewedContext = await browser.newContext();
+  const renewedPage = await renewedContext.newPage();
+  await requestAndConfirm(renewedPage, request, alphaEmail);
+  await page.close();
+  page = renewedPage;
+  await page.goto(alphaTowerPath);
+  await expect(page.locator(".practice-history-list > li")).toHaveCount(1);
+
+  practicedBlock = page.locator(".tower-item-list > li").filter({ hasText: "Evening wind-down" });
+  await practicedBlock.getByRole("button", { name: "Remove" }).click();
   await expect(page.getByText("1 of 20 protocol blocks")).toBeVisible();
+  await expect(page.getByText("Removed from current tower")).toBeVisible();
+  await page.getByRole("button", { name: /Undo Evening wind-down practice on/u }).click();
+  await expect(page.getByText("Practice record removed.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "No recent practice recorded" })).toBeVisible();
 
   const stalePage = await page.context().newPage();
   await stalePage.goto(alphaTowerPath);
@@ -133,6 +95,8 @@ test("scanner-safe sign-in persists isolated goal-specific towers", async ({
   await stalePage.close();
   await page.reload();
   await expect(page.getByText("1 of 20 protocol blocks")).toBeVisible();
+  await page.getByRole("button", { name: "Record Desk movement breaks as practiced" }).click();
+  await expect(page.locator(".practice-history-list > li")).toHaveCount(1);
 
   await page.goto("/towers/new");
   await page.getByLabel("Goal or context").fill("Run a marathon");
@@ -146,6 +110,7 @@ test("scanner-safe sign-in persists isolated goal-specific towers", async ({
   await page.getByRole("button", { name: "Add protocol" }).first().click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Run a marathon");
   await expect(page.getByText("1 of 20 protocol blocks")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "No recent practice recorded" })).toBeVisible();
 
   await page.goto("/towers/new");
   const xssTitle = '<img src=x onerror="alert(1)">';
@@ -179,4 +144,5 @@ test("scanner-safe sign-in persists isolated goal-specific towers", async ({
     replayPage.getByRole("heading", { name: "This sign-in link cannot be confirmed" }),
   ).toBeVisible();
   await replayContext.close();
+  await renewedContext.close();
 });

@@ -26,6 +26,11 @@ users through a process-scoped local administrative key. `/protocols`, `/sign-in
 and `/towers` show scoped unavailable states when their providers are unreachable;
 `/` and `/api/health` remain independent.
 
+Private practice check-ins use the same local user-scoped Supabase client and require
+no additional service or secret. Each check-in is bounded to the reviewed date
+window, pins the exact protocol version, and is deleted with its tower or synthetic
+Auth user. Use only the browser harness identities and synthetic activity locally.
+
 The repository uses exact direct dependency versions and a committed lockfile.
 Acceptance and CI use `CI=true pnpm install --frozen-lockfile`.
 
