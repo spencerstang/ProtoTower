@@ -1,6 +1,6 @@
 # Milestone 3 proposed scope: authenticated personal towers
 
-Status: Approved and implemented; acceptance gate in progress
+Status: Accepted and implemented
 
 ## Outcome
 

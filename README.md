@@ -6,9 +6,10 @@ repository and `@protostack/*` package names to avoid an unnecessary internal re
 The public product name and future production domain are **ProtoTower** and
 **ProtoTower.ai**.
 
-This repository currently contains **Milestone 3: invite-only authentication and
-private, goal-specific towers**. ProtoTower.ai is reserved but is not yet connected
-to a production deployment.
+This repository contains the accepted **Milestone 3: invite-only authentication and
+private, goal-specific towers** implementation. **Milestone 4: private practice
+check-ins** is approved but implementation has not begun. ProtoTower.ai is reserved
+but is not connected to a production deployment.
 
 ## What is included
 
@@ -28,9 +29,9 @@ to a production deployment.
   gates
 
 Public registration, password authentication, protocol authoring or publishing UI,
-tracking, outcomes, AI, analytics, non-authentication notifications, payments, and
-MCP remain disabled. The active boundary is documented in
-`docs/product/milestone-3-scope.md`; Milestone 4 has not begun.
+practice tracking, outcomes, AI, analytics, non-authentication notifications,
+payments, and MCP remain disabled. The approved next boundary is documented in
+`docs/product/milestone-4-scope.md`; approval does not enable the feature.
 
 ## Prerequisites
 
@@ -67,5 +68,5 @@ pnpm test:browsers
 
 Read `AGENTS.md` before an AI-assisted coding session. Local operations are in
 `docs/operations/local-setup.md`, staging delivery is in
-`docs/operations/staging-deployment.md`, and the Milestone 3 acceptance gate is in
-`docs/operations/milestone-3-gate.md`.
+`docs/operations/staging-deployment.md`, and the planned Milestone 4 acceptance gate
+is in `docs/operations/milestone-4-gate.md`.

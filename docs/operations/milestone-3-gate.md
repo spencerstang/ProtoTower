@@ -1,6 +1,6 @@
 # Milestone 3 acceptance gate
 
-Status: Active
+Status: Completed; see `docs/releases/milestone-3-validation.md`
 
 Run from a clean checkout with the repository-supported Node.js and pnpm versions.
 Use synthetic local identities and test content only. Do not record the designated
