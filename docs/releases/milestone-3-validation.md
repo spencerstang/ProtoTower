@@ -1,7 +1,6 @@
 # Milestone 3 validation record
 
-Status: Code, database, and public protected-staging gates passed; hosted
-authenticated email acceptance pending
+Status: Accepted
 
 ## Accepted boundary
 
@@ -80,15 +79,43 @@ authenticated email acceptance pending
   manual account linking disabled, anonymous sign-in disabled, and email confirmation
   enabled.
 
-## Remaining hosted acceptance
+## Hosted authenticated acceptance
 
-The scanner-resistant hosted magic-link template cannot be installed until a custom
-SMTP provider, sender domain, and credentials are configured. Two designated
-synthetic alpha mailboxes are also required to exercise the full hosted flow without
-using personal or production data. Until those human-controlled prerequisites exist,
-the hosted magic-link request and explicit confirmation, session-cookie inspection,
-two-user isolation, tower CRUD/reorder/reload, and sign-out denial checks remain
-pending.
+- On 2026-08-05, the dedicated authentication subdomain passed Resend sending and
+  receiving DNS verification. Link and open tracking remained disabled. A
+  domain-restricted sending credential was transferred directly to the hosted Auth
+  configuration without being printed or committed.
+- Hosted Auth used the exact staging Site URL and confirmation allowlist entry,
+  custom SMTP, the committed scanner-resistant magic-link subject and body, email
+  confirmation, and two operator-provisioned synthetic test accounts. Public signup,
+  anonymous sign-in, and manual account linking remained disabled after setup.
+- Two isolated browser sessions requested and received separate hosted magic links.
+  Each scanner-style `GET` redirected to a clean `/auth/confirm` URL without signing
+  in; the deliberate confirmation `POST` then authenticated the intended session and
+  opened `/towers`.
+- The first account created two differently named synthetic goal towers. Different
+  published protocol versions were pinned across the towers; membership was added,
+  reordered, removed, and reloaded. Sign-out denied `/towers`, and a new hosted
+  magic-link sign-in showed both towers with their separate persisted contents.
+- The second account had an empty workspace, did not receive either first-account
+  tower as a catalog destination, and received the same not-found surface for both
+  direct first-account tower routes without title, rename, delete, or mutation
+  controls.
+- A post-flow public check returned HTTP 200 for `/api/health` and `/protocols`, and
+  HTTP 307 from anonymous `/towers` to `/sign-in`. The existing protected deployment
+  evidence remains the build-metadata proof for accepted commit
+  `880f6834ab2dc689fa52f12bc3c494e23a870044`; no deployment occurred during this
+  external acceptance run.
 
-This remaining acceptance does not authorize public signup, production DNS cutover,
-or Milestone 4 work.
+## Final manual security inspection
+
+- On 2026-08-05, the operator completed the protected-staging DevTools inspection
+  without recording cookie names, values, tokens, email addresses, or private tower
+  content.
+- The authenticated `/towers` document response had the expected private no-store and
+  no-referrer protections.
+- The hosted Supabase session cookies had the expected server-only attributes:
+  `HttpOnly`, `Secure`, `SameSite=Lax`, and path `/`.
+
+Milestone 3 is accepted. This acceptance does not authorize public signup, production
+DNS cutover, or Milestone 4 work; those require a separately approved scope.
