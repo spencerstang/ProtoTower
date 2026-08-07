@@ -852,6 +852,71 @@ footer {
   margin-top: 1.5rem;
 }
 
+.practice-record-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: end;
+  margin-top: 1rem;
+}
+
+.practice-record-form label {
+  width: 100%;
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.practice-record-form input[type="date"] {
+  min-height: 2.7rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 0.55rem;
+}
+
+.practice-history {
+  padding-top: 3.5rem;
+}
+
+.practice-history .compact-heading p:last-child {
+  max-width: 720px;
+  color: var(--muted);
+}
+
+.practice-state {
+  width: auto;
+  padding: 1.4rem;
+  margin: 1.5rem 0 0;
+  box-shadow: none;
+}
+
+.practice-history-list {
+  display: grid;
+  gap: 0.8rem;
+  padding: 0;
+  margin: 1.5rem 0 0;
+  list-style: none;
+}
+
+.practice-history-list > li {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 0.9rem;
+}
+
+.practice-history-list h3 {
+  margin: 0.15rem 0;
+}
+
+.practice-history-list p {
+  margin: 0;
+  color: var(--muted);
+}
+
 button {
   font: inherit;
 }
@@ -868,6 +933,7 @@ button {
   .section-heading,
   .tower-builder-heading,
   .tower-item-list > li,
+  .practice-history-list > li,
   .add-protocol-list > li {
     align-items: stretch;
     flex-direction: column;
@@ -884,6 +950,11 @@ button {
 
   .tower-rename label {
     grid-column: auto;
+  }
+
+  .practice-record-form {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .tower-mark {

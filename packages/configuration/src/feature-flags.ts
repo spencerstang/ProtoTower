@@ -3,7 +3,7 @@ const reviewedFeatureFlags = {
   authentication: true,
   personalTowers: true,
   protocolPublishing: false,
-  protocolTracking: false,
+  protocolTracking: true,
   outcomes: false,
   payments: false,
   aggregateAnalytics: false,

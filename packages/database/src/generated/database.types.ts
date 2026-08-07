@@ -100,6 +100,51 @@ export type Database = {
         }
         Relationships: []
       }
+      protocol_practice_checkins: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          practice_date: string
+          protocol_id: string
+          protocol_version: number
+          tower_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          practice_date: string
+          protocol_id: string
+          protocol_version: number
+          tower_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          practice_date?: string
+          protocol_id?: string
+          protocol_version?: number
+          tower_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "protocol_practice_checkins_protocol_version_fkey"
+            columns: ["protocol_id", "protocol_version"]
+            isOneToOne: false
+            referencedRelation: "protocol_versions"
+            referencedColumns: ["protocol_id", "version"]
+          },
+          {
+            foreignKeyName: "protocol_practice_checkins_tower_owner_fkey"
+            columns: ["tower_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "personal_towers"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
       protocol_versions: {
         Row: {
           cautions: Json
@@ -222,6 +267,16 @@ export type Database = {
           title: string
           updated_at: string
         }[]
+      }
+      set_protocol_practice_checkin: {
+        Args: {
+          candidate_practice_date: string
+          candidate_protocol_id: string
+          candidate_protocol_version: number
+          candidate_recorded: boolean
+          candidate_tower_id: string
+        }
+        Returns: boolean
       }
     }
     Enums: {

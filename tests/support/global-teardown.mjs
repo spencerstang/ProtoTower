@@ -1,6 +1,12 @@
 import { readLocalSupabaseStatus } from "./local-supabase.mjs";
 
-const syntheticUsers = ["tower-alpha@example.test", "tower-beta@example.test"];
+const syntheticUsers = [
+  "tower-alpha@example.test",
+  "tower-beta@example.test",
+  "practice-a11y@example.test",
+  "practice-security@example.test",
+  "practice-performance@example.test",
+];
 const forbiddenUnknownUser = "unknown-invite@example.test";
 
 export default async function globalTeardown() {

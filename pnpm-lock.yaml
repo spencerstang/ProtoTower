@@ -78,6 +78,9 @@ importers:
       '@protostack/tower-engine':
         specifier: workspace:*
         version: link:../../packages/tower-engine
+      '@protostack/tracking-engine':
+        specifier: workspace:*
+        version: link:../../packages/tracking-engine
       '@protostack/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -143,7 +146,17 @@ importers:
         specifier: 4.4.3
         version: 4.4.3
 
-  packages/tracking-engine: {}
+  packages/tracking-engine:
+    dependencies:
+      '@protostack/protocol-engine':
+        specifier: workspace:*
+        version: link:../protocol-engine
+      '@protostack/tower-engine':
+        specifier: workspace:*
+        version: link:../tower-engine
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
 
   packages/ui:
     devDependencies:

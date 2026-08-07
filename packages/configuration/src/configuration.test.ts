@@ -47,15 +47,20 @@ describe("environment validation", () => {
 });
 
 describe("feature flags", () => {
-  it("enables only the reviewed Milestone 3 capabilities", () => {
+  it("enables only the reviewed Milestone 4 capabilities", () => {
     const enabledFeatures = Object.entries(featureFlags)
       .filter(([, enabled]) => enabled)
       .map(([name]) => name);
 
-    expect(enabledFeatures).toEqual(["protocolCatalog", "authentication", "personalTowers"]);
+    expect(enabledFeatures).toEqual([
+      "protocolCatalog",
+      "authentication",
+      "personalTowers",
+      "protocolTracking",
+    ]);
     expect(isFeatureEnabled("protocolCatalog")).toBe(true);
     expect(isFeatureEnabled("authentication")).toBe(true);
-    expect(isFeatureEnabled("protocolTracking")).toBe(false);
+    expect(isFeatureEnabled("protocolTracking")).toBe(true);
     expect(Object.isFrozen(featureFlags)).toBe(true);
   });
 });
