@@ -1,6 +1,7 @@
 # Milestone 4 validation record
 
-Status: Local automated gate passed; manual review and protected staging acceptance pending
+Status: Protected staging deployment and synthetic acceptance passed; final human
+screen-reader spot-check remains
 
 ## Accepted boundary
 
@@ -50,22 +51,84 @@ Status: Local automated gate passed; manual review and protected staging accepta
   harness assertion, and retried one unrelated header test. The renewed-sign-in flow
   now uses a clean browser context and a reviewed 90-second journey budget; its
   focused rerun and the final 23-test gate both pass cleanly.
+- The staging-evidence pull request exposed a retry-state race in the same synthetic
+  tower journey: the first attempt navigated away before the second create action was
+  proven complete, and retries inherited the first attempt's owned towers. The test
+  now removes only its designated account's synthetic towers at the start of every
+  attempt and waits for the second tower detail before navigating onward.
 
-## Remaining manual local review
+## Manual review evidence
 
-- Complete a human visual and screen-reader review of date selection, record, removed
-  history, undo, and generic errors at desktop and narrow widths.
-- Inspect local network metadata, console output, and production artifacts for
-  private activity or unexpected third-party requests.
-- Confirm the documented application rollback and forward-only compensating-migration
-  process before protected staging deployment.
+- The deployed public landing, catalog, private tower list, tower detail, practice
+  controls, recent history, removed-history state, and generic cross-owner not-found
+  state were inspected through the public Cloudflare hostname without retaining
+  private staging values.
+- A 390-by-844 private-tower viewport reported matching content and viewport widths
+  with no horizontal overflow. The private page produced no browser console warnings
+  or errors during the acceptance flow.
+- Accessible names and landmark structure were present for date selection, record,
+  history, undo, tower membership, and navigation. The hosted automated keyboard and
+  serious/critical accessibility gate remained green. A final human screen-reader
+  spot-check remains because scripted Enter activation did not submit the hosted
+  form in the browser-control session.
+- Production and hosted verification retained the existing secret, log-redaction,
+  dependency, CSP, private-cache, and no-unexpected-provider-request automated gates.
 
-## Protected staging gate
+## Protected staging evidence
 
-No Milestone 4 migration, application revision, feature enablement, or synthetic
-practice acceptance has been run against protected staging yet. Follow
-`docs/operations/milestone-4-gate.md`; record only non-sensitive command results,
-accepted commit/workflow identifiers, cache controls, and rollback evidence here.
+- Pull request [#17](https://github.com/spencerstang/Protostack/pull/17) merged into
+  `main` as `43580101c22e4857329cd41c0e1682f2c2680111` after quality, browser,
+  database validation, dependency review, and secret scan all passed.
+- Protected workflow
+  [31197069440](https://github.com/spencerstang/Protostack/actions/runs/31197069440)
+  ran from 2026-08-07T16:20:14Z through 2026-08-07T16:24:36Z against that exact
+  merge commit. The protected `staging` environment was approved separately for the
+  migration and web deployment jobs.
+- `validate / verify` passed in 1 minute 35 seconds. `migrate` linked the dedicated
+  synthetic staging project and passed `supabase db push --include-all
+--include-seed` in 20 seconds. `deploy-web` passed input validation, OpenNext
+  build, secret upload, Cloudflare deployment, and endpoint verification in 1 minute
+  10 seconds.
+- The accepted deployment URL is
+  <https://protostack-web-staging.spencer-4e6.workers.dev>. Workflow verification
+  passed health, protected build identity, published catalog visibility, stale
+  catalog rejection, protocol detail, and educational-disclaimer checks.
+- With the first designated synthetic account, two separate towers recorded
+  check-ins at different pinned protocol versions. Duplicate retry remained one row,
+  reload preserved the row, and each tower exposed only its own history.
+- An allowed recent date recorded and undid successfully. Malformed, future, and
+  out-of-window enforcement remains covered by the green hosted browser and pgTAP
+  gates; the native hosted date control prevented the browser-control session from
+  transmitting those invalid values.
+- Removing a practiced current block retained and clearly marked its history, removed
+  the current record control, allowed the retained row to be undone, and allowed the
+  protocol membership to be restored with clean history.
+- The second designated synthetic account did not list the first account's private
+  tower. Direct navigation to the first-account destination returned the generic
+  not-found state without tower-editor or practice controls.
+- A disposable synthetic tower with practice history was deleted. Its destination
+  disappeared while a separate tower's practice history remained, proving the tower
+  cascade was scoped. The surviving acceptance record was then undone, leaving no
+  practice rows created by this acceptance run.
+- Public, sign-in, and anonymous private-route responses through Cloudflare returned
+  private no-store cache controls, nonce CSP, frame denial, permission restrictions,
+  and no-referrer or strict-origin referrer policy as appropriate. Anonymous
+  `/towers` redirected to `/sign-in`; `/api/health` returned `status: ok` after the
+  acceptance flow.
+- Direct authenticated mutation and `Set-Cookie` header capture was not exposed by
+  the browser-control surface. The green hosted security suite remains the evidence
+  for authenticated and mutation no-store behavior; no private values were copied
+  out to work around that limitation.
+
+## Rollback review
+
+- The application rollback target must understand the forward-only practice schema
+  and disable only the practice UI while public catalog and private non-practice
+  routes remain available.
+- Any database reversal requires a reviewed forward-only compensating migration.
+  Accepted rows must not be dropped or rewritten as an application rollback shortcut.
+- The deployed adapter's scoped-unavailable behavior and existing public/private
+  route coverage remain the verified fallback if practice storage is unavailable.
 
 Milestone 4 does not authorize public signup, real-user practice data, production DNS
 cutover, outcomes, analytics, notifications, AI, payments, or MCP.
