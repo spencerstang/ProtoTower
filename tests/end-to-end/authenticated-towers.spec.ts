@@ -1,8 +1,27 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { isSessionCookie, requestAndConfirm } from "../support/auth";
 
 const alphaEmail = "tower-alpha@example.test";
 const betaEmail = "tower-beta@example.test";
+
+async function removeOwnedTowers(page: Page): Promise<void> {
+  await page.goto("/towers");
+  const towerPaths = await page.locator(".tower-grid a").evaluateAll((links) =>
+    links.flatMap((link) => {
+      const href = link.getAttribute("href");
+      return href?.match(/^\/towers\/[0-9a-f-]{36}$/u) ? [href] : [];
+    }),
+  );
+
+  for (const towerPath of towerPaths) {
+    await page.goto(towerPath);
+    await page.getByRole("button", { name: "Delete tower" }).click();
+    await expect(page).toHaveURL(/\/towers\?status=deleted$/u);
+  }
+
+  await page.goto("/towers");
+  await expect(page.getByRole("heading", { name: "Start with one goal." })).toBeVisible();
+}
 
 test("valid and unknown addresses receive the same application response", async ({ page }) => {
   await page.goto("/sign-in");
@@ -20,6 +39,7 @@ test("scanner-safe sign-in persists isolated goal-specific towers", async ({
   test.setTimeout(90_000);
   let page = initialPage;
   const alphaLink = await requestAndConfirm(page, request, alphaEmail);
+  await removeOwnedTowers(page);
   const authCookies = (await page.context().cookies()).filter((cookie) =>
     isSessionCookie(cookie.name),
   );
@@ -101,6 +121,7 @@ test("scanner-safe sign-in persists isolated goal-specific towers", async ({
   await page.goto("/towers/new");
   await page.getByLabel("Goal or context").fill("Run a marathon");
   await page.getByRole("button", { name: "Create tower" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Run a marathon");
   await page.goto("/towers");
   await expect(page.getByRole("link", { name: /Sleep deeply/u })).toBeVisible();
   await expect(page.getByRole("link", { name: /Run a marathon/u })).toBeVisible();

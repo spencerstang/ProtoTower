@@ -51,6 +51,11 @@ screen-reader spot-check remains
   harness assertion, and retried one unrelated header test. The renewed-sign-in flow
   now uses a clean browser context and a reviewed 90-second journey budget; its
   focused rerun and the final 23-test gate both pass cleanly.
+- The staging-evidence pull request exposed a retry-state race in the same synthetic
+  tower journey: the first attempt navigated away before the second create action was
+  proven complete, and retries inherited the first attempt's owned towers. The test
+  now removes only its designated account's synthetic towers at the start of every
+  attempt and waits for the second tower detail before navigating onward.
 
 ## Manual review evidence
 
