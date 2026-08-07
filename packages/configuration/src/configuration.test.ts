@@ -15,6 +15,40 @@ describe("environment validation", () => {
     expect(() => parseServerEnvironment({ APP_ENV: "production" })).toThrow();
   });
 
+  it("requires the canonical origin and a domain support address in production", () => {
+    const common = {
+      APP_ENV: "production",
+      ADMIN_DIAGNOSTICS_TOKEN: "test-token-that-is-at-least-32-chars",
+    } as const;
+
+    expect(() =>
+      parseServerEnvironment({
+        ...common,
+        PUBLIC_APP_URL: "https://www.prototower.ai",
+        PUBLIC_SUPPORT_EMAIL: "support@prototower.ai",
+      }),
+    ).toThrow();
+    expect(() =>
+      parseServerEnvironment({
+        ...common,
+        PUBLIC_APP_URL: "https://prototower.ai",
+        PUBLIC_SUPPORT_EMAIL: "support@example.com",
+      }),
+    ).toThrow();
+  });
+
+  it("accepts the reviewed invite-only production origin", () => {
+    const environment = parseServerEnvironment({
+      APP_ENV: "production",
+      PUBLIC_APP_URL: "https://prototower.ai",
+      PUBLIC_SUPPORT_EMAIL: "privacy@prototower.ai",
+      ADMIN_DIAGNOSTICS_TOKEN: "test-token-that-is-at-least-32-chars",
+    });
+
+    expect(environment.APP_ENV).toBe("production");
+    expect(environment.PUBLIC_SUPPORT_EMAIL).toBe("privacy@prototower.ai");
+  });
+
   it("rejects incomplete Supabase configuration", () => {
     expect(() =>
       parseServerEnvironment({

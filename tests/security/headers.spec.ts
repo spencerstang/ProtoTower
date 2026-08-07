@@ -3,7 +3,14 @@ import { requestAndConfirm } from "../support/auth";
 
 test("baseline security headers use per-response script nonces", async ({ request }) => {
   const policies: string[] = [];
-  for (const path of ["/", "/protocols", "/protocols/morning-light-routine", "/sign-in"]) {
+  for (const path of [
+    "/",
+    "/protocols",
+    "/protocols/morning-light-routine",
+    "/privacy",
+    "/account-deletion",
+    "/sign-in",
+  ]) {
     const response = await request.get(path);
     expect(response.headers()["x-content-type-options"]).toBe("nosniff");
     expect(response.headers()["x-frame-options"]).toBe("DENY");

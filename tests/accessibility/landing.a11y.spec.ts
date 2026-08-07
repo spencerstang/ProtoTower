@@ -40,6 +40,13 @@ test("sign-in has no automatically detectable serious accessibility violations",
   expect(seriousViolations(results)).toEqual([]);
 });
 
+test("privacy and deletion pages have no serious accessibility violations", async ({ page }) => {
+  for (const path of ["/privacy", "/account-deletion"]) {
+    await page.goto(path);
+    expect(seriousViolations(await new AxeBuilder({ page }).analyze())).toEqual([]);
+  }
+});
+
 test("generic confirmation failure is accessible", async ({ page }) => {
   await page.goto("/auth/confirm?error=invalid");
   const results = await new AxeBuilder({ page }).analyze();

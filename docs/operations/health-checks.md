@@ -30,7 +30,7 @@ Unauthorized staging and production requests receive `404` rather than advertisi
 
 ## Post-deployment verification
 
-After a staging deployment, verify:
+After a staging or pre-DNS production deployment, verify:
 
 ```bash
 curl --fail --show-error https://STAGING_HOST/api/health
@@ -45,3 +45,7 @@ curl --fail --show-error \
 Confirm the catalog includes the latest published synthetic version and does not
 include drafts or retired records. Do not paste the real diagnostics token into a
 ticket, terminal recording, chat, or repository.
+
+Production additionally verifies `/privacy`, `/account-deletion`, `/sign-in`, the
+exact accepted Git SHA, CSP, private/no-store behavior, the canonical root origin, and
+the permanent `www` redirect after DNS cutover.

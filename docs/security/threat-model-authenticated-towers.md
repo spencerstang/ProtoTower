@@ -70,6 +70,7 @@ Status: Implemented and acceptance-gated in Milestone 3
 
 Possession of the invited email account is sufficient to obtain a ProtoTower session;
 MFA is not included. A compromised browser can act as the signed-in user. Supabase
-Auth and email delivery remain external dependencies. Operator-assisted account
-deletion is acceptable only for the invite-only alpha and blocks public production.
+Auth and email delivery remain external dependencies. Time-bounded operator-assisted
+account deletion is accepted for the small invite-only production beta but blocks
+broader or self-service access.
 The selected SSR package is beta and may require a reviewed upgrade or revised ADR.
