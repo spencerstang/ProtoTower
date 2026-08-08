@@ -12,7 +12,7 @@ over.
 
 ## Evidence pending
 
-- Owner policy/mailbox approval
+- Support mailbox send/receive verification
 - Hosted verification
 - Protected production environment configuration
 - Pre-DNS Worker deployment and synthetic acceptance
@@ -39,6 +39,10 @@ over.
   contained neither the synthetic diagnostics token nor privileged provider key
   names.
 - The live production dependency advisory query reported no known vulnerabilities.
+- On 2026-08-08, hosted CI detected newly reviewed advisory
+  `GHSA-2v37-7h3g-55p8` in transitive `nanoid@3.3.16`. The approved resolution pins
+  patched `nanoid@3.3.17`; the refreshed production audit reported no known
+  vulnerabilities and the full local verification gate passed.
 
 No production provider resource was created, migrated, deployed, or connected during
 local validation.
