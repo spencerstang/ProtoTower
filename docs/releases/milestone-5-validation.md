@@ -45,14 +45,17 @@ local validation.
 
 ## External configuration evidence
 
+- On 2026-08-07, the owner approved the published privacy/deletion wording, the
+  seven-calendar-day verified deletion commitment, and `privacy@prototower.ai` as the
+  public production contact. Mailbox send/receive verification remains pending.
 - GitHub environment `production` was created on 2026-08-07 with protected-branch
   deployment policy and `@spencerstang` as the required reviewer.
 - Non-secret environment variables were set to the canonical
   `PUBLIC_APP_URL=https://prototower.ai` and the reviewed pre-DNS production Workers
   hostname for `DEPLOYMENT_HEALTH_URL`.
-- `PUBLIC_SUPPORT_EMAIL` and every production secret remain unset. No Supabase
-  project, production Worker deployment, DNS route, Auth user, or real-user record was
-  created by this configuration step.
+- `PUBLIC_SUPPORT_EMAIL` is approved for configuration. Every production secret
+  remains unset. No Supabase project, production Worker deployment, DNS route, Auth
+  user, or real-user record was created by this configuration step.
 
 Do not change this status to accepted until the exact commands, workflow links,
 accepted SHA, observed results, cleanup, rollback evidence, and remaining limitations
