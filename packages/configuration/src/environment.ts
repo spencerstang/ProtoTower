@@ -5,6 +5,7 @@ const blankToUndefined = (value: unknown): unknown =>
 
 const optionalUrl = z.preprocess(blankToUndefined, z.url().optional());
 const optionalString = z.preprocess(blankToUndefined, z.string().min(1).optional());
+const optionalEmail = z.preprocess(blankToUndefined, z.email().optional());
 const optionalIsoDateTime = z.preprocess(
   blankToUndefined,
   z.iso.datetime({ offset: true }).optional(),
@@ -21,6 +22,7 @@ const serverEnvironmentSchema = z
     GIT_SHA: z.string().min(1).default("unknown"),
     BUILD_TIME: optionalIsoDateTime,
     PUBLIC_APP_URL: optionalUrl,
+    PUBLIC_SUPPORT_EMAIL: optionalEmail,
     LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
     SUPABASE_URL: optionalUrl,
     SUPABASE_ANON_KEY: optionalString,
@@ -57,6 +59,24 @@ const serverEnvironmentSchema = z
           code: "custom",
           path: ["ADMIN_DIAGNOSTICS_TOKEN"],
           message: "ADMIN_DIAGNOSTICS_TOKEN must contain at least 32 characters.",
+        });
+      }
+    }
+
+    if (environment.APP_ENV === "production") {
+      if (environment.PUBLIC_APP_URL !== "https://prototower.ai") {
+        context.addIssue({
+          code: "custom",
+          path: ["PUBLIC_APP_URL"],
+          message: "Production PUBLIC_APP_URL must be the canonical https://prototower.ai origin.",
+        });
+      }
+
+      if (!environment.PUBLIC_SUPPORT_EMAIL?.toLowerCase().endsWith("@prototower.ai")) {
+        context.addIssue({
+          code: "custom",
+          path: ["PUBLIC_SUPPORT_EMAIL"],
+          message: "Production requires a public support address on the prototower.ai domain.",
         });
       }
     }

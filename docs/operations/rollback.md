@@ -19,11 +19,18 @@ A rollback immediately creates a new deployment of the selected Worker version. 
 
 Do not use an application rollback to hide or reverse a database migration.
 
+For production, substitute `--env production`, select only a version whose build
+identity and schema compatibility were previously accepted, and keep invitations
+disabled throughout the incident. If the canonical domain itself is unsafe or stale,
+disable or remove its Worker route until the known-good deployment is verified on the
+production Workers hostname. Do not repoint production to staging.
+
 ## Database
 
 Supabase migrations are forward-only. Do not edit an applied migration or delete a
 published protocol version. Correct catalog content with a higher immutable version;
 correct schema or policy defects with a reviewed compensating migration. For
-destructive incidents, stop deployment, preserve evidence, and use the staging
-project's verified backup/restore process. Milestone 2 does not claim a remote
-restore test has been performed.
+destructive incidents, stop deployment, preserve evidence, and use the correct
+environment's verified backup/restore process. Production is not accepted until a
+backup has been restored to a disposable protected project and verified without
+exposing identifiers or private content.

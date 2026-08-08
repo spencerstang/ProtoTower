@@ -6,10 +6,11 @@ repository and `@protostack/*` package names to avoid an unnecessary internal re
 The public product name and future production domain are **ProtoTower** and
 **ProtoTower.ai**.
 
-This repository contains the **Milestone 4: private practice check-ins**
-implementation for the invite-only synthetic alpha. Users can record and undo one
-bounded calendar-date check-in for an exact protocol version inside an owner-isolated
-tower. ProtoTower.ai is reserved but is not connected to a production deployment.
+This repository contains the completed **Milestone 4: private practice check-ins**
+implementation and the **Milestone 5: invite-only production beta** launch boundary.
+Users can record and undo one bounded calendar-date check-in for an exact protocol
+version inside an owner-isolated tower. ProtoTower.ai remains disconnected until the
+Milestone 5 production, policy, backup, accessibility, and final DNS gates pass.
 
 ## What is included
 
@@ -31,8 +32,9 @@ tower. ProtoTower.ai is reserved but is not connected to a production deployment
 
 Public registration, password authentication, protocol authoring or publishing UI,
 outcomes, scores, streaks, notes, AI, analytics, non-authentication notifications,
-payments, and MCP remain disabled. Milestone 4 does not authorize real-user data
-collection or a public production launch.
+payments, and MCP remain disabled. Milestone 5 authorizes implementation of an
+invite-only production path; it does not authorize DNS cutover or real-user admission
+without the separately recorded final go/no-go.
 
 ## Prerequisites
 
@@ -69,5 +71,5 @@ pnpm test:browsers
 
 Read `AGENTS.md` before an AI-assisted coding session. Local operations are in
 `docs/operations/local-setup.md`, staging delivery is in
-`docs/operations/staging-deployment.md`, and the Milestone 4 acceptance gate is in
-`docs/operations/milestone-4-gate.md`.
+`docs/operations/staging-deployment.md`, and the protected invite-only production
+path is in `docs/operations/production-deployment.md`.

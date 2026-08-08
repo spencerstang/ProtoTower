@@ -1,10 +1,15 @@
-# Invite-only alpha account deletion
+# Invite-only account deletion
 
-Milestone 3 uses operator-assisted deletion. A designated account owner must verify
-the request through the private support channel, then delete the user in the Supabase
-Auth dashboard for the correct environment. Do not copy the email address, Auth user
-ID, tower titles, token, or session details into a repository, issue, chat, command
-history, screenshot, or shared log.
+The invite-only alpha and production beta use operator-assisted deletion. A
+designated account owner must verify the request through the private support channel,
+then delete the user in the Supabase Auth dashboard for the correct environment. Do
+not copy the email address, Auth user ID, tower titles, token, or session details into
+a repository, issue, chat, command history, screenshot, or shared log.
+
+Production requests arrive through the public `@prototower.ai` support mailbox. The
+operator must acknowledge a valid request, complete it, and send confirmation within
+seven calendar days. Never ask the requester to include tower titles, practice dates,
+tokens, or other private content.
 
 The database foreign key from `personal_towers.owner_id` to `auth.users.id` cascades
 through the user's towers and tower items. After deletion, verify only that the Auth

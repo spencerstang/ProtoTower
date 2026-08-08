@@ -27,8 +27,14 @@ export function SiteHeader(props: Readonly<{ status?: ReactNode }>): ReactNode {
 export function SiteFooter(): ReactNode {
   return (
     <footer>
-      <span>ProtoTower</span>
-      <span>Private goal towers · Synthetic educational protocols</span>
+      <div>
+        <span>ProtoTower</span>
+        <span>Private goal towers · Synthetic educational protocols</span>
+      </div>
+      <nav className="footer-links" aria-label="Privacy and account information">
+        <Link href="/privacy">Privacy</Link>
+        <Link href="/account-deletion">Delete my account</Link>
+      </nav>
     </footer>
   );
 }

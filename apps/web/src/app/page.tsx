@@ -8,7 +8,7 @@ const capabilities = [
   },
   {
     title: "Personal tower builder",
-    status: "Available now · Private invite-only alpha",
+    status: "Available now · Private invite-only access",
   },
   {
     title: "Private practice check-ins",
@@ -16,18 +16,18 @@ const capabilities = [
   },
   {
     title: "Outcomes and aggregate learning",
-    status: "Planned · Not active in Milestone 4",
+    status: "Planned · Not active in the invite-only beta",
   },
   {
     title: "Model-neutral interoperability",
-    status: "Planned · Not active in Milestone 4",
+    status: "Planned · Not active in the invite-only beta",
   },
 ] as const;
 
 export default function LandingPage() {
   return (
     <main id="main-content">
-      <SiteHeader status="Milestone 4" />
+      <SiteHeader status="Invite-only beta" />
 
       <section className="hero tower-hero">
         <div>
@@ -66,7 +66,7 @@ export default function LandingPage() {
 
       <section className="foundation" id="foundation" aria-labelledby="foundation-heading">
         <div>
-          <p className="eyebrow">Milestone 4</p>
+          <p className="eyebrow">Invite-only beta</p>
           <h2 id="foundation-heading">The first trustworthy building blocks.</h2>
           <p>
             Published protocol versions stay immutable, towers and practice history are isolated by

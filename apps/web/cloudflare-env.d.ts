@@ -8,6 +8,7 @@ interface CloudflareEnv {
   GIT_SHA?: string;
   BUILD_TIME?: string;
   PUBLIC_APP_URL?: string;
+  PUBLIC_SUPPORT_EMAIL?: string;
   LOG_LEVEL?: "debug" | "info" | "warn" | "error";
   SUPABASE_URL?: string;
   SUPABASE_ANON_KEY?: string;

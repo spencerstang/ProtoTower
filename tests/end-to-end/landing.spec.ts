@@ -8,8 +8,24 @@ test("public landing page renders without external services", async ({ page }) =
   await expect(
     page
       .getByRole("navigation", { name: "Primary navigation" })
-      .getByText("Milestone 4", { exact: true }),
+      .getByText("Invite-only beta", { exact: true }),
   ).toBeVisible();
+});
+
+test("privacy and deletion routes disclose the invite-only data lifecycle", async ({ page }) => {
+  await page.goto("/privacy");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Privacy in the invite-only beta.",
+  );
+  await expect(page.getByText("seven calendar days")).toBeVisible();
+  await expect(page.getByText(/does not sell personal data/u)).toBeVisible();
+
+  await page.getByRole("link", { name: "account deletion process" }).click();
+  await expect(page).toHaveURL(/\/account-deletion$/u);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Request complete account deletion.",
+  );
+  await expect(page.getByText(/Deleting the authentication account cascades/u)).toBeVisible();
 });
 
 test("catalog lists only the latest synthetic published protocols", async ({ page }) => {

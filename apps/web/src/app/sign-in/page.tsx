@@ -11,7 +11,7 @@ export default async function SignInPage(props: {
 
   return (
     <main id="main-content">
-      <SiteHeader status="Invite-only alpha" />
+      <SiteHeader status="Invite-only access" />
       <section className="auth-shell" aria-labelledby="sign-in-heading">
         <p className="eyebrow">Private goal towers</p>
         <h1 id="sign-in-heading">Sign in with your invitation.</h1>
