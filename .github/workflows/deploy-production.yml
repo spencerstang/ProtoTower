@@ -75,8 +75,8 @@ jobs:
           SUPABASE_ACCESS_TOKEN: "${{ secrets.SUPABASE_ACCESS_TOKEN }}"
           SUPABASE_PROJECT_ID: "${{ secrets.SUPABASE_PROJECT_ID }}"
           SUPABASE_DB_PASSWORD: "${{ secrets.SUPABASE_DB_PASSWORD }}"
-      - name: Apply committed migrations and reviewed synthetic catalog
-        run: supabase db push --include-all --include-seed
+      - name: Apply committed production migrations
+        run: supabase db push --include-all
         env:
           SUPABASE_ACCESS_TOKEN: "${{ secrets.SUPABASE_ACCESS_TOKEN }}"
 

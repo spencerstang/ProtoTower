@@ -29,7 +29,7 @@ export function SiteFooter(): ReactNode {
     <footer>
       <div>
         <span>ProtoTower</span>
-        <span>Private goal towers · Synthetic educational protocols</span>
+        <span>Private goal towers · Versioned educational protocols</span>
       </div>
       <nav className="footer-links" aria-label="Privacy and account information">
         <Link href="/privacy">Privacy</Link>

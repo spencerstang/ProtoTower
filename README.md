@@ -18,7 +18,7 @@ Milestone 5 production, policy, backup, accessibility, and final DNS gates pass.
 - Next.js App Router application with strict TypeScript
 - provider-neutral protocol rules and runtime validation
 - immutable published versions with anonymous read-only PostgreSQL policies
-- deterministic synthetic wellness examples and generated database types
+- isolated non-production wellness fixtures and generated database types
 - a fetch-based PostgREST adapter that fails independently from core routes
 - public `/protocols` and `/protocols/[slug]` experiences
 - scanner-resistant Supabase Auth email links with server-only `HttpOnly` sessions

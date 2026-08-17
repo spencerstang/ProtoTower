@@ -4,7 +4,7 @@ import Link from "next/link";
 const capabilities = [
   {
     title: "Versioned protocol catalog",
-    status: "Available now · Synthetic and read-only",
+    status: "Available now · Reviewed and read-only",
   },
   {
     title: "Personal tower builder",
