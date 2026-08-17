@@ -22,7 +22,7 @@ export default async function ProtocolCatalogPage() {
         <p className="eyebrow">The protocol catalog</p>
         <h1>Choose the first blocks for a better habit tower.</h1>
         <p>
-          Explore synthetic, versioned wellness routines. Every published version is read-only, so
+          Explore reviewed, versioned wellness routines. Every published version is read-only, so
           the steps you see cannot silently change beneath you.
         </p>
       </header>

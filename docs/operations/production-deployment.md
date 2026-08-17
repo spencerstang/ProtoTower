@@ -46,8 +46,8 @@ Run **Deploy Production** from the accepted `main` commit. Paste the exact commi
 type `DEPLOY INVITE-ONLY PRODUCTION`, and enable the database input for the first
 deployment. Approve migration and web jobs separately.
 
-The workflow validates the repository, applies forward-only migrations plus the
-reviewed synthetic catalog seed, builds with production settings, uploads only the
+The workflow validates the repository, applies forward-only production migrations
+without loading development or test seed fixtures, builds with production settings, uploads only the
 required runtime secrets, deploys the production Worker, and verifies health, exact
 build identity, catalog visibility, CSP, privacy, deletion, and invite-only sign-in.
 
@@ -75,7 +75,7 @@ token.
 Immediately verify health, accepted build SHA, public pages, privacy/deletion pages,
 security headers, exact Auth redirect, and rollback access.
 
-Then complete the full synthetic two-account invitation, scanner-safe confirmation,
+Then complete the full designated-test-account invitation, scanner-safe confirmation,
 owner isolation, private caching, record/undo, cascade, and cleanup acceptance on the
 canonical domain. Complete the human screen-reader flow there as well. Remove every
 temporary Auth user, tower, and practice row without retaining identifiers or private

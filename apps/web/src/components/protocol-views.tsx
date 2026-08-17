@@ -30,7 +30,7 @@ export function ProtocolCatalogView(
       <section className="catalog-empty" role="status">
         <p className="eyebrow">Read-only catalog</p>
         <h2>No published protocols yet</h2>
-        <p>The first synthetic building blocks will appear here after review.</p>
+        <p>Reviewed building blocks will appear here when they are ready for publication.</p>
       </section>
     );
   }
