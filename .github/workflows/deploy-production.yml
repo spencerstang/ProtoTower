@@ -241,8 +241,11 @@ jobs:
             (_response, body) => JSON.parse(body).gitSha === process.env.EXPECTED_GIT_SHA,
           );
           await fetchWithRetry("/protocols", undefined, (response, body) =>
-            body.includes("Morning outdoor cue") &&
+            body.includes("No published protocols yet") &&
+            body.includes("Reviewed building blocks will appear here") &&
+            !body.includes("Morning outdoor cue") &&
             !body.includes("Unpublished evening revision") &&
+            !body.includes("Retired synthetic routine") &&
             response.headers.get("content-security-policy")?.includes("'strict-dynamic'") === true,
           );
           await fetchWithRetry("/privacy", undefined, (_response, body) =>
