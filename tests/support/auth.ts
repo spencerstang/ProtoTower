@@ -49,6 +49,8 @@ async function latestMagicLink(request: APIRequestContext, email: string): Promi
   const message = record(await response.json());
   const html = message?.["HTML"];
   if (typeof html !== "string") throw new Error("Captured email has no HTML body.");
+  expect(html).toContain("Welcome to the ProtoTower beta");
+  expect(html).toContain("some features are not functional yet");
   const href = html.match(/href="([^"]+)"/u)?.[1]?.replaceAll("&amp;", "&");
   if (!href) throw new Error("Captured email has no sign-in link.");
   return href;
@@ -61,7 +63,7 @@ export async function requestAndConfirm(
 ): Promise<string> {
   await page.goto("/sign-in");
   await page.getByLabel("Email address").fill(email);
-  await page.getByRole("button", { name: "Email me a sign-in link" }).click();
+  await page.getByRole("button", { name: "Continue with email" }).click();
   await expect(page).toHaveURL(/\/auth\/check-email$/u);
   const link = await latestMagicLink(request, email);
 

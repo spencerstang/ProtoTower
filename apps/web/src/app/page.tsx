@@ -8,7 +8,7 @@ const capabilities = [
   },
   {
     title: "Personal tower builder",
-    status: "Available now · Private invite-only access",
+    status: "Available now · Private account access",
   },
   {
     title: "Private practice check-ins",
@@ -16,18 +16,18 @@ const capabilities = [
   },
   {
     title: "Outcomes and aggregate learning",
-    status: "Planned · Not active in the invite-only beta",
+    status: "Planned · Not active in the beta",
   },
   {
     title: "Model-neutral interoperability",
-    status: "Planned · Not active in the invite-only beta",
+    status: "Planned · Not active in the beta",
   },
 ] as const;
 
 export default function LandingPage() {
   return (
     <main id="main-content">
-      <SiteHeader status="Invite-only beta" />
+      <SiteHeader status="Open beta" />
 
       <section className="hero tower-hero">
         <div>
@@ -66,13 +66,14 @@ export default function LandingPage() {
 
       <section className="foundation" id="foundation" aria-labelledby="foundation-heading">
         <div>
-          <p className="eyebrow">Invite-only beta</p>
+          <p className="eyebrow">Quiet-launch beta</p>
           <h2 id="foundation-heading">The first trustworthy building blocks.</h2>
           <p>
             Published protocol versions stay immutable, towers and practice history are isolated by
             owner, and public catalog browsing continues independently. A check-in means only what
             its owner chose to record; it is never an outcome or proof of adherence.
           </p>
+          <p>We are still testing ProtoTower, and some features are not functional yet.</p>
         </div>
         <ul className="capability-grid">
           {capabilities.map((capability) => (

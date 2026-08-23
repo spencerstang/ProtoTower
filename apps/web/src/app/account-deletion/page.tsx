@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export const metadata = {
   title: "Account deletion",
-  description: "How invited ProtoTower users request deletion of their account and private data.",
+  description: "How ProtoTower beta users request deletion of their account and private data.",
 };
 
 export default function AccountDeletionPage() {
@@ -12,13 +12,13 @@ export default function AccountDeletionPage() {
 
   return (
     <main id="main-content">
-      <SiteHeader status="Invite-only beta" />
+      <SiteHeader status="Open beta" />
       <article className="legal-shell">
         <p className="eyebrow">Your account</p>
         <h1>Request complete account deletion.</h1>
         <p className="legal-lede">
-          The invite-only beta uses a verified, operator-assisted deletion process. You do not need
-          to include tower titles, practice dates, tokens, or other private content in your request.
+          The beta uses a verified, operator-assisted deletion process. You do not need to include
+          tower titles, practice dates, tokens, or other private content in your request.
         </p>
 
         <section>
@@ -28,10 +28,10 @@ export default function AccountDeletionPage() {
               {supportEmail ? (
                 <>
                   Email <a href={`mailto:${supportEmail}`}>{supportEmail}</a> from the address used
-                  for your invitation and ask to delete your ProtoTower account.
+                  for your account and ask to delete your ProtoTower account.
                 </>
               ) : (
-                <>Contact the person who invited you and ask to delete your ProtoTower account.</>
+                <>Use the published ProtoTower support channel to request account deletion.</>
               )}
             </li>
             <li>Complete the private ownership-verification step sent by the operator.</li>

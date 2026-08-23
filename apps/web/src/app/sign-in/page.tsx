@@ -11,15 +11,15 @@ export default async function SignInPage(props: {
 
   return (
     <main id="main-content">
-      <SiteHeader status="Invite-only access" />
+      <SiteHeader status="Open beta" />
       <section className="auth-shell" aria-labelledby="sign-in-heading">
         <p className="eyebrow">Private goal towers</p>
-        <h1 id="sign-in-heading">Sign in with your invitation.</h1>
+        <h1 id="sign-in-heading">Create an account or sign in.</h1>
         {available ? (
           <>
             <p>
-              Enter the email address that was invited. We will send a one-time link if it is
-              eligible; the response here is always the same.
+              Enter your email address. We will send a secure one-time link that creates your
+              account on first use or signs you back in.
             </p>
             <form action={requestMagicLink} className="stacked-form">
               <label htmlFor="email">Email address</label>
@@ -37,7 +37,7 @@ export default async function SignInPage(props: {
                 Your email is handled by the authentication provider and is not copied into a tower.
               </p>
               <button className="primary-action" type="submit">
-                Email me a sign-in link
+                Continue with email
               </button>
             </form>
           </>

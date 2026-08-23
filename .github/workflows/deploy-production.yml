@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       confirmation:
-        description: "Type DEPLOY INVITE-ONLY PRODUCTION"
+        description: "Type DEPLOY QUIET-LAUNCH BETA"
         required: true
         type: string
       deploy_database:
@@ -38,7 +38,7 @@ jobs:
           ACTUAL_REF: "${{ github.ref }}"
         run: |
           test "$ACTUAL_REF" = "refs/heads/main"
-          test "$CONFIRMATION" = "DEPLOY INVITE-ONLY PRODUCTION"
+          test "$CONFIRMATION" = "DEPLOY QUIET-LAUNCH BETA"
           test "$EXPECTED_GIT_SHA" = "$ACTUAL_GIT_SHA"
 
   validate:
@@ -249,13 +249,13 @@ jobs:
             response.headers.get("content-security-policy")?.includes("'strict-dynamic'") === true,
           );
           await fetchWithRetry("/privacy", undefined, (_response, body) =>
-            body.includes("Privacy in the invite-only beta") && body.includes("seven calendar days"),
+            body.includes("Privacy in the open beta") && body.includes("seven calendar days"),
           );
           await fetchWithRetry("/account-deletion", undefined, (_response, body) =>
             body.includes("Request complete account deletion"),
           );
           await fetchWithRetry("/sign-in", undefined, (response, body) =>
-            body.includes("Sign in with your invitation") &&
+            body.includes("Create an account or sign in") &&
             response.headers.get("cache-control")?.includes("no-store") === true,
           );
           console.log("Production Worker, build identity, catalog, privacy, and sign-in verified.");

@@ -7,7 +7,7 @@ The public product name and future production domain are **ProtoTower** and
 **ProtoTower.ai**.
 
 This repository contains the completed **Milestone 4: private practice check-ins**
-implementation and the **Milestone 5: invite-only production beta** launch boundary.
+implementation and the **quiet-launch open beta** boundary.
 Users can record and undo one bounded calendar-date check-in for an exact protocol
 version inside an owner-isolated tower. ProtoTower.ai remains disconnected until the
 Milestone 5 production, policy, backup, accessibility, and final DNS gates pass.
@@ -21,6 +21,7 @@ Milestone 5 production, policy, backup, accessibility, and final DNS gates pass.
 - isolated non-production wellness fixtures and generated database types
 - a fetch-based PostgREST adapter that fails independently from core routes
 - public `/protocols` and `/protocols/[slug]` experiences
+- four source-backed, attributed educational protocols with independent evidence tiers
 - scanner-resistant Supabase Auth email links with server-only `HttpOnly` sessions
 - multiple private goal towers with exact protocol-version pinning and revisions
 - bounded private practice check-ins with exact-version history and idempotent undo
@@ -30,11 +31,10 @@ Milestone 5 production, policy, backup, accessibility, and final DNS gates pass.
 - quality, browser, accessibility, security, performance, dependency, and secret
   gates
 
-Public registration, password authentication, protocol authoring or publishing UI,
+Password authentication, protocol authoring or publishing UI,
 outcomes, scores, streaks, notes, AI, analytics, non-authentication notifications,
-payments, and MCP remain disabled. Milestone 5 authorizes implementation of an
-invite-only production path; it does not authorize DNS cutover or real-user admission
-without the separately recorded final go/no-go.
+payments, and MCP remain disabled. Passwordless public account creation is enabled;
+the beta email and product UI disclose that some features are not functional yet.
 
 ## Prerequisites
 
@@ -71,5 +71,5 @@ pnpm test:browsers
 
 Read `AGENTS.md` before an AI-assisted coding session. Local operations are in
 `docs/operations/local-setup.md`, staging delivery is in
-`docs/operations/staging-deployment.md`, and the protected invite-only production
+`docs/operations/staging-deployment.md`, and the protected quiet-launch production
 path is in `docs/operations/production-deployment.md`.

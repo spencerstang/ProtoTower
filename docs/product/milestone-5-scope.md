@@ -1,12 +1,12 @@
-# Milestone 5: invite-only production beta
+# Milestone 5: production beta
 
-Status: Approved for implementation on 2026-08-07. Production deployment, DNS
-cutover, and real-user admission remain separately gated.
+Status: Updated by ADR 0014 for a quiet-launch open beta. Production deployment and
+DNS cutover remain gated.
 
 ## Outcome
 
 Milestone 5 creates a production environment for the existing ProtoTower experience
-at `https://prototower.ai`. Access remains invitation-only. The product continues to
+at `https://prototower.ai`. Visitors may create passwordless accounts. The product continues to
 offer the public synthetic educational catalog plus private towers and bounded
 practice check-ins; it does not broaden the data model or make efficacy claims.
 
@@ -19,29 +19,28 @@ practice check-ins; it does not broaden the data model or make efficacy claims.
 - A pre-DNS Worker verification phase followed by a separately approved canonical
   domain cutover.
 - Custom SMTP on the ProtoTower domain with link/open tracking disabled.
-- New-user creation disabled; accounts are provisioned only by the operator before an
-  invitation is sent.
+- Passwordless public account creation with required email confirmation and a clear
+  notice that ProtoTower is in beta and some features are not functional yet.
 - Public privacy and account-deletion information, with verified operator-assisted
   deletion completed within seven calendar days.
 - Reviewed provider rate limits plus a Cloudflare edge rate limit for the sign-in
-  endpoint before any real invitation.
+  endpoint before public signup is enabled.
 - Production backup/restore evidence, incident response, rollback, domain redirect,
   security header, accessibility, and two-account isolation gates.
 
 ## Explicitly excluded
 
-- Public or self-service signup
 - Password authentication, social login, or MFA
 - Outcomes, notes, scores, streaks, recommendations, or health claims
 - Analytics, advertising, reminders, AI, payments, MCP, or third-party integrations
   beyond hosting, database/authentication, and authentication email
 - Protocol authoring or publishing UI
 - Automated account export or self-service deletion
-- Any DNS cutover or real-user invitation before the final owner go/no-go
+- Any DNS cutover before the final owner go/no-go
 
 ## Data boundary
 
-Production may store an invited email address in Supabase Auth, an opaque owner ID,
+Production may store an account email address in Supabase Auth, an opaque owner ID,
 private tower titles and memberships, and deliberately recorded practice dates. It
 must not store profiles, notes, symptoms, diagnoses, outcomes, free-form practice
 content, or analytics identifiers. Repository, fixtures, screenshots, and validation
@@ -54,7 +53,7 @@ Milestone 5 is complete only after:
 1. The owner approves the public privacy/deletion text and a working
    `@prototower.ai` support mailbox.
 2. The separate production Supabase project, Cloudflare credentials, GitHub
-   environment, custom SMTP, exact redirect allowlist, signup restriction, abuse
+   environment, custom SMTP, exact redirect allowlist, signup controls, abuse
    controls, and backup policy are configured and observed.
 3. All repository, dependency, secret, migration, unit, build, pgTAP, browser,
    accessibility, security, and performance gates pass from a clean checkout.
@@ -67,8 +66,8 @@ Milestone 5 is complete only after:
 6. The owner gives an explicit DNS go/no-go. The root domain serves the accepted
    build, `www` redirects to the root, HTTPS is enforced, and rollback is rehearsed.
 7. On the canonical domain, a synthetic two-account production acceptance proves
-   invitation, scanner-safe confirmation, owner isolation, private cache controls,
+   open account creation, beta-email delivery, scanner-safe confirmation, owner isolation, private cache controls,
    record/undo, cascade, and cleanup without retaining private values.
 8. A human screen-reader spot-check passes on the canonical domain.
-9. The owner gives a separate real-user admission go/no-go. Only then may the first
-   approved beta account be provisioned and invited.
+9. A synthetic new address proves operator-free account creation and receives the beta
+   limitations notice before quiet-launch signup is enabled.

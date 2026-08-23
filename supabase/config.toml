@@ -34,7 +34,7 @@ enabled = true
 site_url = "http://127.0.0.1:3000"
 additional_redirect_urls = ["http://127.0.0.1:3000/**"]
 jwt_expiry = 3600
-enable_signup = false
+enable_signup = true
 
 [auth.rate_limit]
 email_sent = 30
@@ -45,5 +45,9 @@ double_confirm_changes = true
 enable_confirmations = true
 
 [auth.email.template.magic_link]
-subject = "Your ProtoTower sign-in link"
+subject = "Welcome to the ProtoTower beta"
 content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.confirmation]
+subject = "Welcome to the ProtoTower beta"
+content_path = "./supabase/templates/confirmation.html"
