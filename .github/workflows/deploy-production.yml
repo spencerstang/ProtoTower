@@ -241,8 +241,11 @@ jobs:
             (_response, body) => JSON.parse(body).gitSha === process.env.EXPECTED_GIT_SHA,
           );
           await fetchWithRetry("/protocols", undefined, (response, body) =>
-            body.includes("No published protocols yet") &&
-            body.includes("Reviewed building blocks will appear here") &&
+            body.includes("Andrew Huberman: Daily sleep-wake blueprint") &&
+            body.includes("Bryan Johnson: Pre-sleep resting-heart-rate routine") &&
+            body.includes("Peter Attia: Centenarian Decathlon framework") &&
+            body.includes("Rhonda Patrick: Sauna and heat exposure") &&
+            !body.includes("No published protocols yet") &&
             !body.includes("Morning outdoor cue") &&
             !body.includes("Unpublished evening revision") &&
             !body.includes("Retired synthetic routine") &&
