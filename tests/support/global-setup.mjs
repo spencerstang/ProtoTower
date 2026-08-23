@@ -7,6 +7,7 @@ const syntheticUsers = [
   "practice-security@example.test",
   "practice-performance@example.test",
 ];
+const resetUsers = [...syntheticUsers, "quiet-launch-new-user@example.test"];
 
 export default async function globalSetup() {
   const status = readLocalSupabaseStatus();
@@ -24,7 +25,7 @@ export default async function globalSetup() {
   const existingBody = await existingResponse.json();
   const existingUsers = Array.isArray(existingBody?.users) ? existingBody.users : [];
   for (const user of existingUsers) {
-    if (syntheticUsers.includes(user?.email) && typeof user?.id === "string") {
+    if (resetUsers.includes(user?.email) && typeof user?.id === "string") {
       const deleteResponse = await fetch(`${status.apiUrl}/auth/v1/admin/users/${user.id}`, {
         method: "DELETE",
         headers,

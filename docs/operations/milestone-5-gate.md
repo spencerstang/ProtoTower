@@ -1,10 +1,10 @@
 # Milestone 5 acceptance gate
 
-Do not admit real users or cut DNS until every required item is observed.
+Do not cut DNS or enable public signup until every required item is observed.
 
 ## Owner and policy
 
-- [ ] Invite-only production scope remains unchanged.
+- [ ] Quiet-launch open-beta scope in ADR 0014 remains unchanged.
 - [ ] Owner approves the published privacy notice and seven-day deletion commitment.
 - [ ] A monitored `@prototower.ai` support mailbox receives and sends a test message.
 
@@ -12,7 +12,8 @@ Do not admit real users or cut DNS until every required item is observed.
 
 - [ ] Production Cloudflare, Supabase, GitHub environment, tokens, passwords, Auth
       users, and backups are separate from staging.
-- [ ] Open signup is disabled; only designated accounts exist.
+- [ ] Email signup and confirmation are enabled; anonymous sign-in and manual account
+      linking remain disabled.
 - [ ] Exact Site URL and single confirmation redirect are configured without wildcards.
 - [ ] Resend custom SMTP works with tracking disabled.
 - [ ] Provider and Cloudflare sign-in rate limits are configured and tested.
@@ -27,10 +28,10 @@ Do not admit real users or cut DNS until every required item is observed.
 - [ ] Pre-DNS Worker verification passes public and operational routes without
       attempting canonical-origin authentication.
 - [ ] A production backup is observed and restored to a disposable project.
-- [ ] Incident contacts, invitation/email disable steps, Worker rollback, and
+- [ ] Incident contacts, signup/email disable steps, Worker rollback, and
       forward-only database recovery are rehearsed.
 
-## DNS and admission
+## DNS and launch
 
 - [ ] Owner gives an explicit DNS go/no-go.
 - [ ] `https://prototower.ai` serves the accepted SHA over HTTPS.
@@ -40,5 +41,5 @@ Do not admit real users or cut DNS until every required item is observed.
 - [ ] Synthetic two-user acceptance on the canonical domain proves isolation,
       record/undo, cascade, outage scoping, cleanup, and no private logging.
 - [ ] Human screen-reader acceptance passes on the canonical domain.
-- [ ] Owner gives a separate real-user admission go/no-go.
-- [ ] Only then may an approved real user be provisioned and invited.
+- [ ] A newly entered synthetic address receives the beta notice, creates an account,
+      and completes scanner-safe confirmation without operator provisioning.

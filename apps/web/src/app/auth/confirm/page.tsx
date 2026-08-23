@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
-import { authIntakeCookieName, parseAuthTokenHash } from "@/lib/auth-intake";
+import { authIntakeCookieName, parseAuthIntakeCookie } from "@/lib/auth-intake";
 import { confirmMagicLink } from "./actions";
 
 export default async function ConfirmPage(props: {
@@ -8,7 +8,7 @@ export default async function ConfirmPage(props: {
 }) {
   const searchParams = await props.searchParams;
   const cookieStore = await cookies();
-  const canConfirm = Boolean(parseAuthTokenHash(cookieStore.get(authIntakeCookieName)?.value));
+  const canConfirm = Boolean(parseAuthIntakeCookie(cookieStore.get(authIntakeCookieName)?.value));
   const failed = searchParams["error"] === "invalid" || !canConfirm;
 
   return (

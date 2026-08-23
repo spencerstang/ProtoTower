@@ -1,5 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { authIntakeCookieName, parseAuthTokenHash } from "@/lib/auth-intake";
+import {
+  authIntakeCookieName,
+  createAuthIntakeCookie,
+  parseAuthEmailOtpType,
+  parseAuthTokenHash,
+} from "@/lib/auth-intake";
 import { getServerEnvironment } from "@/lib/runtime";
 
 function privateRedirect(request: NextRequest, path: string): NextResponse {
@@ -18,14 +23,14 @@ function privateRedirect(request: NextRequest, path: string): NextResponse {
 
 export function GET(request: NextRequest): NextResponse {
   const tokenHash = parseAuthTokenHash(request.nextUrl.searchParams.get("token_hash"));
-  const type = request.nextUrl.searchParams.get("type");
+  const type = parseAuthEmailOtpType(request.nextUrl.searchParams.get("type"));
   const response = privateRedirect(
     request,
-    tokenHash && type === "email" ? "/auth/confirm" : "/auth/confirm?error=invalid",
+    tokenHash && type ? "/auth/confirm" : "/auth/confirm?error=invalid",
   );
   response.cookies.delete(authIntakeCookieName);
-  if (tokenHash && type === "email") {
-    response.cookies.set(authIntakeCookieName, tokenHash, {
+  if (tokenHash && type) {
+    response.cookies.set(authIntakeCookieName, createAuthIntakeCookie(type, tokenHash), {
       httpOnly: true,
       secure: process.env["APP_ENV"] !== "local",
       sameSite: "strict",

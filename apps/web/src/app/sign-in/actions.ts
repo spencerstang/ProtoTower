@@ -21,7 +21,7 @@ export async function requestMagicLink(formData: FormData): Promise<never> {
       await client.auth.signInWithOtp({
         email,
         options: {
-          shouldCreateUser: false,
+          shouldCreateUser: true,
           emailRedirectTo: `${siteUrl.replace(/\/$/u, "")}/auth/confirm`,
         },
       });

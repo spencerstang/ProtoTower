@@ -23,12 +23,9 @@ async function removeOwnedTowers(page: Page): Promise<void> {
   await expect(page.getByRole("heading", { name: "Start with one goal." })).toBeVisible();
 }
 
-test("valid and unknown addresses receive the same application response", async ({ page }) => {
-  await page.goto("/sign-in");
-  await page.getByLabel("Email address").fill("unknown-invite@example.test");
-  await page.getByRole("button", { name: "Email me a sign-in link" }).click();
-  await expect(page.getByRole("heading", { name: "Check your email." })).toBeVisible();
-  await expect(page.getByText("same message appears for every address")).toBeVisible();
+test("a new address creates an account without an invitation", async ({ page, request }) => {
+  await requestAndConfirm(page, request, "quiet-launch-new-user@example.test");
+  await expect(page.getByRole("heading", { name: "Personal towers." })).toBeVisible();
 });
 
 test("scanner-safe sign-in persists isolated goal-specific towers", async ({

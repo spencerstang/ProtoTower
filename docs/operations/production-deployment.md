@@ -1,7 +1,7 @@
-# Invite-only production deployment
+# Quiet-launch beta production deployment
 
 Production is a separate protected environment. This runbook does not authorize DNS
-cutover or real-user invitations by itself.
+cutover by itself.
 
 ## Required external configuration
 
@@ -27,7 +27,8 @@ Configure these non-secret environment variables:
 
 In production Supabase:
 
-1. Disable open user creation and create only approved invited accounts.
+1. Enable email signup and require email confirmation; keep anonymous sign-in and
+   manual account linking disabled.
 2. Set the Site URL to `https://prototower.ai` and allow only the exact
    `https://prototower.ai/auth/confirm` redirect.
 3. Install the committed scanner-resistant magic-link template.
@@ -37,19 +38,19 @@ In production Supabase:
    access.
 
 At Cloudflare, add a deny-by-default rate-limiting rule for repeated POST requests to
-`/sign-in`, document the threshold, and verify a normal invited sign-in is unaffected.
+`/sign-in`, document the threshold, and verify normal account creation is unaffected.
 Do not attach the custom domain yet.
 
 ## Pre-DNS deployment
 
 Run **Deploy Production** from the accepted `main` commit. Paste the exact commit SHA,
-type `DEPLOY INVITE-ONLY PRODUCTION`, and enable the database input for the first
+type `DEPLOY QUIET-LAUNCH BETA`, and enable the database input for the first
 deployment. Approve migration and web jobs separately.
 
 The workflow validates the repository, applies forward-only production migrations
 without loading development or test seed fixtures, builds with production settings, uploads only the
 required runtime secrets, deploys the production Worker, and verifies health, exact
-build identity, catalog visibility, CSP, privacy, deletion, and invite-only sign-in.
+build identity, catalog visibility, CSP, privacy, deletion, and open account creation.
 
 Do not attempt authenticated acceptance on the Workers hostname. Production magic
 links and private-route redirects intentionally use the canonical origin, which is
@@ -75,15 +76,11 @@ token.
 Immediately verify health, accepted build SHA, public pages, privacy/deletion pages,
 security headers, exact Auth redirect, and rollback access.
 
-Then complete the full designated-test-account invitation, scanner-safe confirmation,
+Then complete full new-account creation, beta-email, scanner-safe confirmation,
 owner isolation, private caching, record/undo, cascade, and cleanup acceptance on the
 canonical domain. Complete the human screen-reader flow there as well. Remove every
 temporary Auth user, tower, and practice row without retaining identifiers or private
 values in the validation record.
 
-Only after those checks pass should the owner be asked for a separate real-user
-admission go/no-go. Provision and invite no real account before that approval.
-
-If any check fails, remove or disable the custom-domain route, leave invitations
-disabled, and follow the rollback runbook. Never reverse a database migration during
-application rollback.
+If any check fails, disable signup or remove the custom-domain route and follow the
+rollback runbook. Never reverse a database migration during application rollback.

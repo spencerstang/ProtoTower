@@ -8,15 +8,13 @@ test("public landing page renders without external services", async ({ page }) =
   await expect(
     page
       .getByRole("navigation", { name: "Primary navigation" })
-      .getByText("Invite-only beta", { exact: true }),
+      .getByText("Open beta", { exact: true }),
   ).toBeVisible();
 });
 
-test("privacy and deletion routes disclose the invite-only data lifecycle", async ({ page }) => {
+test("privacy and deletion routes disclose the open-beta data lifecycle", async ({ page }) => {
   await page.goto("/privacy");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    "Privacy in the invite-only beta.",
-  );
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Privacy in the open beta.");
   await expect(page.getByText("seven calendar days")).toBeVisible();
   await expect(page.getByText(/does not sell personal data/u)).toBeVisible();
 
