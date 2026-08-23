@@ -21,6 +21,7 @@ Milestone 5 production, policy, backup, accessibility, and final DNS gates pass.
 - isolated non-production wellness fixtures and generated database types
 - a fetch-based PostgREST adapter that fails independently from core routes
 - public `/protocols` and `/protocols/[slug]` experiences
+- four source-backed, attributed educational protocols with independent evidence tiers
 - scanner-resistant Supabase Auth email links with server-only `HttpOnly` sessions
 - multiple private goal towers with exact protocol-version pinning and revisions
 - bounded private practice check-ins with exact-version history and idempotent undo

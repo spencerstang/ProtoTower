@@ -90,8 +90,8 @@ set local role anon;
 
 select results_eq(
   $$ select count(*)::integer from public.published_protocol_catalog $$,
-  array[3],
-  'anonymous visitors see one catalog row for each active published protocol'
+  array[7],
+  'anonymous visitors see synthetic fixtures plus the four curated protocols'
 );
 
 select results_eq(
