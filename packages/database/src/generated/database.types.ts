@@ -34,6 +34,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_profiles: {
+        Row: {
+          created_at: string
+          owner_id: string
+          pseudonym: string
+          revision: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          owner_id: string
+          pseudonym: string
+          revision?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          owner_id?: string
+          pseudonym?: string
+          revision?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       personal_tower_items: {
         Row: {
           created_at: string
@@ -252,6 +276,15 @@ export type Database = {
       delete_personal_tower: {
         Args: { candidate_id: string; expected_revision: number }
         Returns: boolean
+      }
+      save_account_pseudonym: {
+        Args: { candidate_pseudonym: string; expected_revision?: number }
+        Returns: {
+          created_at: string
+          pseudonym: string
+          revision: number
+          updated_at: string
+        }[]
       }
       save_personal_tower: {
         Args: {

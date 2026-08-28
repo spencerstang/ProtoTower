@@ -5,6 +5,7 @@ import {
   denyByDefault,
   parseAuthenticatedPrincipal,
   parseEmailAddress,
+  parsePseudonym,
   principalIdSchema,
 } from "./index";
 
@@ -43,6 +44,19 @@ describe("authorization foundation", () => {
       allowed: false,
       reason: "owner_mismatch",
     });
+  });
+});
+
+describe("private pseudonym input", () => {
+  it("normalizes a human-readable pseudonym", () => {
+    expect(parsePseudonym("  Radiant   Lynx  ")).toBe("Radiant Lynx");
+    expect(parsePseudonym("Élan-7")).toBe("Élan-7");
+  });
+
+  it("rejects reserved, unsafe, or misleading values", () => {
+    expect(() => parsePseudonym("Admin")).toThrow();
+    expect(() => parsePseudonym("A")).toThrow();
+    expect(() => parsePseudonym("Lynx<script>")).toThrow();
   });
 });
 

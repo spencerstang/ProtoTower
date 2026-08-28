@@ -26,6 +26,16 @@ async function removeOwnedTowers(page: Page): Promise<void> {
 test("a new address creates an account without an invitation", async ({ page, request }) => {
   await requestAndConfirm(page, request, "quiet-launch-new-user@example.test");
   await expect(page.getByRole("heading", { name: "Personal towers." })).toBeVisible();
+  await expect(page.getByText("Account", { exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Sign in" })).toHaveCount(0);
+
+  await page.goto("/account");
+  await expect(page.getByLabel("Pseudonym")).toHaveValue("Radiant Lynx");
+  await page.getByRole("button", { name: "Suggest another" }).click();
+  await expect(page.getByLabel("Pseudonym")).toHaveValue("Steady Comet");
+  await page.getByRole("button", { name: "Use this pseudonym" }).click();
+  await expect(page.getByText("Pseudonym saved.")).toBeVisible();
+  await expect(page.getByText("Steady Comet", { exact: true })).toBeVisible();
 });
 
 test("scanner-safe sign-in persists isolated goal-specific towers", async ({

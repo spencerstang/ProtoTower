@@ -61,9 +61,9 @@ values
   );
 
 select results_eq(
-  $$ select (value ->> 'milestone')::integer from app_private.platform_metadata where key = 'schema_stage' $$,
-  array[4],
-  'schema metadata records Milestone 4'
+  $$ select (value ->> 'milestone')::integer >= 4 from app_private.platform_metadata where key = 'schema_stage' $$,
+  array[true],
+  'schema metadata records Milestone 4 or later'
 );
 select has_table(
   'public',

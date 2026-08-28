@@ -1,10 +1,18 @@
 # ProtoTower
 
-ProtoTower is a model-neutral wellness product for assembling understandable
-protocols into a durable tower of great habits. The codebase retains the ProtoStack
-repository and `@protostack/*` package names to avoid an unnecessary internal rename.
-The public product name and future production domain are **ProtoTower** and
-**ProtoTower.ai**.
+ProtoTower is a model-neutral product for stacking understandable protocols into an
+effective personal system represented as a durable tower of intentional practices.
+It favors systems that can be practiced and improved over finish-line goal tracking,
+while still allowing users to define specific goals when useful. Its long-term scope
+spans Health & Fitness, Relationships, Financial Well-Being, and Mental Optimization.
+The current beta begins with wellness-oriented educational content, but shared
+product and domain models must preserve a credible path to every major life domain.
+ProtoTower is also intended for direct, user-authorized operation by personal AI
+agents, so shared workflows must preserve stable command, event, provenance, and
+audit boundaries even while agent access remains disabled in the current beta. The
+codebase retains the ProtoStack repository and `@protostack/*` package names to avoid
+an unnecessary internal rename. The public product name and future production domain
+are **ProtoTower** and **ProtoTower.ai**.
 
 This repository contains the completed **Milestone 4: private practice check-ins**
 implementation and the **quiet-launch open beta** boundary.
@@ -73,3 +81,10 @@ Read `AGENTS.md` before an AI-assisted coding session. Local operations are in
 `docs/operations/local-setup.md`, staging delivery is in
 `docs/operations/staging-deployment.md`, and the protected quiet-launch production
 path is in `docs/operations/production-deployment.md`.
+
+Product feedback that is desired but not yet assigned to an accepted milestone is
+tracked in `docs/product/desired-features.md`.
+
+The proposed Systems Beta Validation scope and gate are in
+`docs/product/milestone-6-systems-beta-validation.md` and
+`docs/operations/milestone-6-gate.md`.

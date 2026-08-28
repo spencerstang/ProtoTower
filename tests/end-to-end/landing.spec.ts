@@ -10,6 +10,8 @@ test("public landing page renders without external services", async ({ page }) =
       .getByRole("navigation", { name: "Primary navigation" })
       .getByText("Open beta", { exact: true }),
   ).toBeVisible();
+  await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible();
+  await expect(page.getByText("Account", { exact: true })).toHaveCount(0);
 });
 
 test("privacy and deletion routes disclose the open-beta data lifecycle", async ({ page }) => {

@@ -24,7 +24,6 @@ import { getVerifiedPrincipal } from "@/lib/auth";
 import { createServerPersonalTowerRepository } from "@/lib/personal-towers";
 import { createServerPracticeCheckInRepository } from "@/lib/practice-checkins";
 import { createServerProtocolCatalogRepository } from "@/lib/protocol-catalog";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 function formString(formData: FormData, name: string): string | null {
   const value = formData.get(name);
@@ -233,10 +232,4 @@ export async function deleteTower(formData: FormData): Promise<never> {
     redirect(`/towers/${identity.id}?error=stale`);
   }
   redirect("/towers?error=not-found");
-}
-
-export async function signOut(): Promise<never> {
-  const client = await createSupabaseServerClient();
-  if (client) await client.auth.signOut({ scope: "local" });
-  redirect("/?status=signed-out");
 }

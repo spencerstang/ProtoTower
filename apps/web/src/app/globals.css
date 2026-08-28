@@ -101,6 +101,83 @@ footer {
   color: var(--accent-dark);
 }
 
+.account-menu {
+  position: relative;
+}
+
+.account-menu summary {
+  font-size: 0.92rem;
+  font-weight: 750;
+  color: var(--muted);
+  cursor: pointer;
+  list-style: none;
+}
+
+.account-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.account-menu summary::after {
+  margin-left: 0.35rem;
+  content: "▾";
+}
+
+.account-menu[open] summary,
+.account-menu summary:hover {
+  color: var(--accent-dark);
+}
+
+.account-menu-panel {
+  position: absolute;
+  right: 0;
+  z-index: 5;
+  display: grid;
+  gap: 0.55rem;
+  min-width: 10rem;
+  padding: 0.8rem;
+  margin-top: 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  box-shadow: 0 0.8rem 2rem rgba(21, 33, 28, 0.12);
+}
+
+.account-menu-label,
+.account-unavailable {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.account-menu-action {
+  padding: 0;
+  color: var(--accent-dark);
+  background: transparent;
+  border: 0;
+}
+
+.account-shell {
+  padding-bottom: 6rem;
+}
+
+.account-shell .stacked-form {
+  max-width: 34rem;
+  margin-top: 2rem;
+}
+
+.text-action {
+  justify-self: start;
+  padding: 0;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 750;
+  color: var(--accent-dark);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.2rem;
+}
+
 .status-pill {
   display: inline-flex;
   gap: 0.5rem;
@@ -245,6 +322,11 @@ h1 {
 .back-link:focus-visible,
 .nav-link:focus-visible,
 .wordmark:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent), white 25%);
+  outline-offset: 3px;
+}
+
+.account-menu summary:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--accent), white 25%);
   outline-offset: 3px;
 }

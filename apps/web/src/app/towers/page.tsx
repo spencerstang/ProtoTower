@@ -1,9 +1,9 @@
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { signOut } from "@/app/account/actions";
 import { getVerifiedPrincipal } from "@/lib/auth";
 import { createServerPersonalTowerRepository } from "@/lib/personal-towers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { signOut } from "./actions";
 
 export default async function TowersPage(props: {
   searchParams: Promise<Readonly<Record<string, string | string[] | undefined>>>;

@@ -10,6 +10,28 @@ export const emailAddressSchema = z
   .brand<"EmailAddress">();
 export type EmailAddress = z.infer<typeof emailAddressSchema>;
 
+const reservedPseudonyms = new Set(["admin", "moderator", "prototower", "support", "system"]);
+
+export const pseudonymSchema = z
+  .string()
+  .transform((value) => value.normalize("NFC").trim().replace(/\s+/gu, " "))
+  .pipe(
+    z
+      .string()
+      .min(3)
+      .max(40)
+      .regex(/^[\p{L}\p{N}][\p{L}\p{N} '-]*[\p{L}\p{N}]$/u)
+      .refine((value) => !reservedPseudonyms.has(value.toLocaleLowerCase("en-US"))),
+  )
+  .brand<"Pseudonym">();
+export type Pseudonym = z.infer<typeof pseudonymSchema>;
+
+export const DEFAULT_PSEUDONYM_SUGGESTIONS = Object.freeze([
+  "Radiant Lynx",
+  "Steady Comet",
+  "Quiet Forge",
+] as const);
+
 export type AnonymousPrincipal = Readonly<{ kind: "anonymous" }>;
 export type AuthenticatedPrincipal = Readonly<{
   kind: "authenticated";
@@ -42,6 +64,10 @@ export function parseAuthenticatedPrincipal(input: unknown): AuthenticatedPrinci
 
 export function parseEmailAddress(input: unknown): EmailAddress {
   return emailAddressSchema.parse(input);
+}
+
+export function parsePseudonym(input: unknown): Pseudonym {
+  return pseudonymSchema.parse(input);
 }
 
 export function authorizeOwner(principal: Principal, ownerId: PrincipalId): AuthorizationDecision {
