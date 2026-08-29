@@ -2,6 +2,12 @@
 
 Status: Accepted by the owner on 2026-08-28; implementation in progress
 
+Staging compatibility note: on 2026-08-29, the owner approved deleting practice
+check-ins tied exclusively to the four retired synthetic catalog identifiers. Migration
+`20260816000000_retire_synthetic_practice_data.sql` records only the aggregate deletion
+count before removing those obsolete references. It does not target production content,
+accounts, towers, pseudonyms, or curated protocols.
+
 ## Scope and evidence
 
 - [x] Owner accepts `docs/product/milestone-6-systems-beta-validation.md`.
