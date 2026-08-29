@@ -466,6 +466,12 @@ button:focus-visible {
   background: #faeae7;
 }
 
+.notice-success {
+  color: #185c37;
+  background: #e8f6ed;
+  border: 1px solid #b8dfc5;
+}
+
 .tower-grid,
 .tower-item-list,
 .add-protocol-list {

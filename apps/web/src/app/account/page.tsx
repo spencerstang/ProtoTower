@@ -29,11 +29,6 @@ export default async function AccountPage(props: {
           Use a pseudonym instead of your legal name. It stays private for now and is not a public
           handle, search key, or proof of identity.
         </p>
-        {searchParams["status"] === "saved" ? (
-          <p className="notice" role="status">
-            Pseudonym saved.
-          </p>
-        ) : null}
         {searchParams["error"] === "invalid" ? (
           <p className="notice notice-error" role="alert">
             Use 3–40 letters or numbers. Spaces, apostrophes, and hyphens are welcome.
@@ -60,6 +55,11 @@ export default async function AccountPage(props: {
             <button className="primary-action" type="submit">
               {result.value ? "Save pseudonym" : "Use this pseudonym"}
             </button>
+            {searchParams["status"] === "saved" ? (
+              <p className="notice notice-success" role="status">
+                ✓ Pseudonym saved. ProtoTower will address you as {result.value?.pseudonym}.
+              </p>
+            ) : null}
           </form>
         )}
       </section>

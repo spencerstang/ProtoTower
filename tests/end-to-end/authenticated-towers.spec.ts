@@ -34,7 +34,9 @@ test("a new address creates an account without an invitation", async ({ page, re
   await page.getByRole("button", { name: "Suggest another" }).click();
   await expect(page.getByLabel("Pseudonym")).toHaveValue("Steady Comet");
   await page.getByRole("button", { name: "Use this pseudonym" }).click();
-  await expect(page.getByText("Pseudonym saved.")).toBeVisible();
+  await expect(
+    page.getByText("✓ Pseudonym saved. ProtoTower will address you as Steady Comet."),
+  ).toBeVisible();
   await expect(page.getByText("Steady Comet", { exact: true })).toBeVisible();
 });
 
