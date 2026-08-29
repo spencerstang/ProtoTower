@@ -50,10 +50,11 @@ The workflow:
    Worker;
 6. deploys through the protected environment;
 7. verifies `/api/health`, authenticated build metadata, `/protocols`, and
-   `/protocols/morning-light-routine`.
+   `/protocols/huberman-daily-sleep-wake-blueprint`.
 
-The catalog checks require the latest published Morning Outdoor Cue, reject stale
-draft and retired seed content, and confirm the educational disclaimer.
+The catalog checks require all four permanent attributed protocols, reject the
+obsolete synthetic catalog and unpublished/retired seed content, and confirm the
+educational disclaimer.
 
 Before authenticated staging acceptance, an operator must enable the email provider,
 keep new-user signup disabled, provision only designated test accounts, install the
