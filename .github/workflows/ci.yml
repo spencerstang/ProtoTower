@@ -41,7 +41,7 @@ jobs:
       - run: pnpm playwright:install
       - run: pnpm test:browsers
       - if: failure()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with: { name: playwright-report, path: playwright-report, retention-days: 14 }
       - if: always()
         run: supabase stop --no-backup
