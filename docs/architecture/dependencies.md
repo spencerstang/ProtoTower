@@ -1,7 +1,8 @@
 # Dependency rationale
 
-Milestone 4 keeps the dependency surface small, pins direct external dependencies to
-exact versions, and checks the frozen lockfile in every acceptance environment.
+The production application keeps the dependency surface small, pins direct external
+dependencies to exact versions, and checks the frozen lockfile in every acceptance
+environment.
 
 ## Runtime dependencies
 
