@@ -1,89 +1,119 @@
 # Milestone 5 validation record
 
-Status: Implementation in progress; production is not deployed and DNS is not cut
-over.
+Status: Quiet-launch production is live. Public email signup is enabled. The current
+account-foundation release and October 2026 security refresh are pending the protected
+production deployment recorded below.
 
 ## Approved boundary
 
-- Invite-only production beta on `https://prototower.ai`.
-- Existing public synthetic catalog, private towers, and bounded practice check-ins.
-- Public signup, outcomes, analytics, AI, notifications, payments, MCP, and broader
-  real-user admission remain disabled.
+- Quiet-launch open beta on `https://prototower.ai`, as accepted by ADR 0014.
+- Self-service email signup and confirmation without operator provisioning.
+- Existing public catalog, private towers, bounded practice check-ins, account
+  pseudonyms, privacy controls, and account deletion.
+- Outcomes, analytics, AI, notifications, payments, MCP, and broader Milestone 6 work
+  remain outside this release.
 
-## Evidence pending
+## Production evidence
 
-- Support mailbox send/receive verification
-- Hosted verification
-- Pre-DNS Worker deployment and synthetic acceptance
-- Backup/restore drill and incident/rollback rehearsal
-- Human screen-reader review
-- DNS go/no-go and cutover acceptance
-- Separate real-user admission go/no-go
+- Production deployment run 6 completed successfully on 2026-08-23 for commit
+  `d31d06f3497e263ea844b550a76f9b0e1210e9ee`:
+  <https://github.com/spencerstang/ProtoTower/actions/runs/32654283504>.
+- `https://prototower.ai` and `/api/health` returned HTTP 200 on 2026-10-03.
+- `https://www.prototower.ai` permanently redirects to the canonical root.
+- The production sign-in page advertises open beta and provides self-service email
+  account creation and sign-in.
+- Production responses were observed with private/no-store caching, nonce-based CSP,
+  frame denial, cross-origin opener policy, and a restrictive permissions policy.
+- An unauthenticated request to `/api/admin/build-info` returned HTTP 404.
+- The most recent staging deployment for the current base commit
+  `2f7969183b87b84eb0acaa8b579d46bafc96fa7e` completed successfully on 2026-08-29:
+  <https://github.com/spencerstang/ProtoTower/actions/runs/33263204988>.
 
-## Local evidence collected
+## Release-candidate evidence collected on 2026-10-03
 
-- Repository formatting, structure, dependency policy, secret scan, migration
-  validation, and whitespace gates passed.
-- Strict TypeScript completed all 21 package and dependency tasks. All 75 unit tests
-  passed.
-- A fresh local Supabase reset applied all four forward-only migrations and the
-  deterministic synthetic catalog seeds. Schema lint reported no errors and all 105
-  pgTAP assertions passed.
+- The production dependency audit initially found critical Next.js advisories and a
+  high-severity `sharp` advisory. The release candidate updates Next.js and
+  `eslint-config-next` from 16.2.12 to 16.3.6 and the `sharp` override from 0.35.2 to
+  0.35.4. `pnpm audit --audit-level=high --prod` then reported no known
+  vulnerabilities.
+- `CI=true pnpm verify` passed repository formatting and structure, dependency policy,
+  secret scanning, all eight migration checks, lint, strict TypeScript, unit tests,
+  and all 14 optimized builds.
+- A fresh local Supabase reset applied all eight forward-only migrations. Database
+  lint reported no schema errors and all 133 pgTAP assertions in six files passed.
 - The complete Playwright gate passed all 25 end-to-end, accessibility, security, and
-  performance tests without a retry. This includes the new privacy/deletion routes.
-- `CI=true pnpm verify` passed lint, strict types, unit tests, and all 14 optimized
-  builds. Existing non-failing framework convention and package ESLint notices remain.
-- A production-configured OpenNext Cloudflare build succeeded with the exact
-  canonical origin and a synthetic domain support address. The generated Worker
-  contained neither the synthetic diagnostics token nor privileged provider key
-  names.
-- The live production dependency advisory query reported no known vulnerabilities.
-- On 2026-08-08, hosted CI detected newly reviewed advisory
-  `GHSA-2v37-7h3g-55p8` in transitive `nanoid@3.3.16`. The approved resolution pins
-  patched `nanoid@3.3.17`; the refreshed production audit reported no known
-  vulnerabilities and the full local verification gate passed.
-
-No production provider resource was created, migrated, deployed, or connected during
-local validation.
+  performance tests in 38.1 seconds.
+- The only non-failing framework notice is Next.js's middleware-to-proxy deprecation.
+  Existing ESLint 10 peer-compatibility notices do not affect the passing lint and
+  build gates.
 
 ## External configuration evidence
 
-- On 2026-08-07, the owner approved the published privacy/deletion wording, the
-  seven-calendar-day verified deletion commitment, and `privacy@prototower.ai` as the
-  public production contact. Mailbox send/receive verification remains pending.
-- GitHub environment `production` was created on 2026-08-07 with protected-branch
-  deployment policy and `@spencerstang` as the required reviewer.
-- Non-secret environment variables were set to the canonical
-  `PUBLIC_APP_URL=https://prototower.ai` and the reviewed pre-DNS production Workers
-  hostname for `DEPLOYMENT_HEALTH_URL`.
-- `PUBLIC_SUPPORT_EMAIL` is approved for configuration. At that point, every GitHub
-  production environment secret remained unset. No Supabase project, production
-  Worker deployment, DNS route, Auth user, or real-user record was created by that
-  configuration step.
-- On 2026-08-14, the separate `ProtoTower Production` Supabase project was created in
-  East US (Ohio) under the renamed `ProtoTower` organization. Its non-secret project
-  reference is `lqdyntgcwxtpprvhfrmk`; the existing staging project retained its
-  stable reference and was renamed `ProtoTower Staging` for display only.
-- The initial production database password was rotated before use and the replacement
-  was stored outside the repository and chat. No application or migration had used
-  the superseded credential.
-- Production Auth now denies public signup, anonymous sign-in, and manual account
-  linking; requires email confirmation; uses `https://prototower.ai` as its Site URL;
-  and allowlists only `https://prototower.ai/auth/confirm` for redirects.
-- Resend custom SMTP is enabled with a production-only credential, the verified
-  `auth.prototower.ai` sending domain, owner-reported disabled link/open tracking,
-  and `sign-in@auth.prototower.ai` as the sender. The committed scanner-resistant
-  magic-link subject and body were installed. The reviewed default limits remain 30
-  Auth emails per hour, 30 sign-in requests per five minutes per IP, and 30 token
-  verifications per five minutes per IP. Send/receive acceptance remains pending.
-- On 2026-08-16, all eight required GitHub `production` environment secrets were
-  observed by name without reading their values: Cloudflare account and Worker token,
-  Supabase access token, project reference, database password, URL and anonymous key,
-  plus the application diagnostics token. The Cloudflare Worker token is limited to
-  Workers Scripts Write with no DNS permission and expires on 2026-09-15. The
-  Supabase deployment token expires on 2026-09-15. Both require rotation before
-  expiry if the production workflow still needs them.
+- The owner approved the published privacy/deletion wording, the seven-calendar-day
+  verified deletion commitment, and `privacy@prototower.ai` as the public production
+  contact on 2026-08-07. Mailbox send/receive verification remains pending.
+- The protected GitHub `production` environment uses protected-branch deployment
+  policy and `@spencerstang` as the required reviewer.
+- Production uses the canonical `PUBLIC_APP_URL=https://prototower.ai`.
+- The separate `ProtoTower Production` Supabase project is ACTIVE_HEALTHY in East US
+  (Ohio). Its non-secret project reference is `lqdyntgcwxtpprvhfrmk`; staging remains
+  a separate project.
+- Production Auth requires email confirmation and disables anonymous sign-in and
+  manual account linking. Self-service email signup is enabled for the open beta.
+- Resend custom SMTP uses the verified `auth.prototower.ai` sending domain with
+  `sign-in@auth.prototower.ai` as the sender. A live send/receive acceptance test with
+  a newly entered address remains pending.
+- Daily physical production backups were observed as completed. Point-in-time
+  recovery is not enabled. A restore to a disposable project remains pending because
+  it creates a billable project and requires an owner-approved maintenance window.
+- GitHub production secrets were observed by name without reading their values. The
+  Cloudflare and Supabase command-line sessions were authenticated on 2026-10-03.
+  The protected workflow remains the authoritative proof that deployment credentials
+  are valid.
 
-Do not change this status to accepted until the exact commands, workflow links,
-accepted SHA, observed results, cleanup, rollback evidence, and remaining limitations
-are recorded without credentials or private values.
+## Remaining acceptance evidence
+
+The following checks do not block deploying the verified security and account
+foundation update. They must remain visible launch-hardening work and must not be
+recorded as complete until observed:
+
+- Receive and send a test message through the monitored support mailbox.
+- Create and confirm one synthetic account using a newly entered external email
+  address, then verify deletion and cleanup.
+- Perform a human screen-reader pass on the canonical production flow.
+- Restore a production backup to a disposable project, verify it, and remove the
+  billable project.
+- Exercise and record the production signup-disable, Worker rollback, and
+  forward-only database recovery procedures.
+
+## Deployment acceptance
+
+Record the protected production workflow link, exact deployed commit, migration and
+Worker results, post-deploy route checks, and rollback reference here before marking
+this release accepted.
+
+## Release refresh verified on October 13, 2026
+
+The October 3 candidate remained open as PR #31 and had not deployed. A fresh
+production audit found three newly reported high advisories: Next.js image
+optimization SSRF, sharp's librsvg dependency, and source-map-js indexed-source-map
+denial of service. The candidate now pins Next.js and eslint-config-next to 16.3.8,
+sharp to 0.35.5, and source-map-js to 1.2.2. No product scope or production
+authorization boundary changed.
+
+- `CI=true pnpm audit --audit-level=high --prod`: no known vulnerabilities.
+- Formatting, repository structure, dependency policy, secret scanning, migration
+  validation, lint, strict type checking, and all unit tests passed.
+- `CI=true NEXT_TELEMETRY_DISABLED=1 pnpm build`: all 14 package builds passed.
+  The first sandboxed build could not bind a local port; rerunning with required
+  local port access passed without changing application code.
+- A clean local database reset applied all eight migrations. Schema lint passed
+  and all 133 pgTAP assertions in six files passed.
+- `CI=true NEXT_TELEMETRY_DISABLED=1 pnpm test:browsers`: all 25 browser,
+  accessibility, security, and performance tests passed in 34.0 seconds.
+- Production `/api/health` returned HTTP 200 before this release; this confirms
+  availability only, not deployment of the refreshed candidate.
+
+The production migration/deployment and live email-account acceptance remain
+pending. Existing support-mailbox, screen-reader, backup-restore, and recovery
+rehearsal limitations above remain explicit.

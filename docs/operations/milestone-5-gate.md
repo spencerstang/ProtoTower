@@ -1,28 +1,31 @@
 # Milestone 5 acceptance gate
 
-Do not cut DNS or enable public signup until every required item is observed.
+This gate records the quiet-launch open beta. DNS and public signup are active. Items
+marked complete were observed; remaining items are launch-hardening work and must not
+be represented as complete.
 
 ## Owner and policy
 
-- [ ] Quiet-launch open-beta scope in ADR 0014 remains unchanged.
-- [ ] Owner approves the published privacy notice and seven-day deletion commitment.
+- [x] Quiet-launch open-beta scope in ADR 0014 remains unchanged.
+- [x] Owner approves the published privacy notice and seven-day deletion commitment.
 - [ ] A monitored `@prototower.ai` support mailbox receives and sends a test message.
 
 ## Provider isolation and security
 
-- [ ] Production Cloudflare, Supabase, GitHub environment, tokens, passwords, Auth
+- [x] Production Cloudflare, Supabase, GitHub environment, tokens, passwords, Auth
       users, and backups are separate from staging.
-- [ ] Email signup and confirmation are enabled; anonymous sign-in and manual account
+- [x] Email signup and confirmation are enabled; anonymous sign-in and manual account
       linking remain disabled.
-- [ ] Exact Site URL and single confirmation redirect are configured without wildcards.
+- [x] Exact Site URL and single confirmation redirect are configured without
+      wildcards.
 - [ ] Resend custom SMTP works with tracking disabled.
 - [ ] Provider and Cloudflare sign-in rate limits are configured and tested.
-- [ ] Unauthorized diagnostics return 404; authenticated and token-bearing responses
+- [x] Unauthorized diagnostics return 404; authenticated and token-bearing responses
       remain private/no-store with production CSP and secure cookies.
 
 ## Verification and operations
 
-- [ ] Full repository, production dependency, database, browser, accessibility,
+- [x] Full repository, production dependency, database, browser, accessibility,
       security, and performance gates pass from a clean checkout.
 - [ ] Protected production migration and Worker deploy accept the exact reviewed SHA.
 - [ ] Pre-DNS Worker verification passes public and operational routes without
@@ -33,9 +36,9 @@ Do not cut DNS or enable public signup until every required item is observed.
 
 ## DNS and launch
 
-- [ ] Owner gives an explicit DNS go/no-go.
-- [ ] `https://prototower.ai` serves the accepted SHA over HTTPS.
-- [ ] `www.prototower.ai` redirects permanently to the canonical root.
+- [x] Owner gives an explicit DNS go/no-go.
+- [x] `https://prototower.ai` serves the previously accepted SHA over HTTPS.
+- [x] `www.prototower.ai` redirects permanently to the canonical root.
 - [ ] Post-cutover health, catalog, privacy, deletion, auth, headers, and rollback
       checks pass.
 - [ ] Synthetic two-user acceptance on the canonical domain proves isolation,
