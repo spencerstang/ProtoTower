@@ -4,6 +4,12 @@ The production application keeps the dependency surface small, pins direct exter
 dependencies to exact versions, and checks the frozen lockfile in every acceptance
 environment.
 
+The October 13, 2026 launch refresh pins Next.js and its ESLint configuration to
+16.3.8 and overrides `sharp` to 0.35.5 and `source-map-js` to 1.2.2. These patch
+updates address the image-optimization SSRF, librsvg, and indexed-source-map
+denial-of-service advisories without adding a new product capability or provider.
+The production dependency audit reports no known vulnerabilities after the refresh.
+
 ## Runtime dependencies
 
 | Dependency                                                                      | Used by                                                          | Reason                                                                                                                                   |

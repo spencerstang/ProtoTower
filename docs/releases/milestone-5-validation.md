@@ -91,3 +91,29 @@ recorded as complete until observed:
 Record the protected production workflow link, exact deployed commit, migration and
 Worker results, post-deploy route checks, and rollback reference here before marking
 this release accepted.
+
+## Release refresh verified on October 13, 2026
+
+The October 3 candidate remained open as PR #31 and had not deployed. A fresh
+production audit found three newly reported high advisories: Next.js image
+optimization SSRF, sharp's librsvg dependency, and source-map-js indexed-source-map
+denial of service. The candidate now pins Next.js and eslint-config-next to 16.3.8,
+sharp to 0.35.5, and source-map-js to 1.2.2. No product scope or production
+authorization boundary changed.
+
+- `CI=true pnpm audit --audit-level=high --prod`: no known vulnerabilities.
+- Formatting, repository structure, dependency policy, secret scanning, migration
+  validation, lint, strict type checking, and all unit tests passed.
+- `CI=true NEXT_TELEMETRY_DISABLED=1 pnpm build`: all 14 package builds passed.
+  The first sandboxed build could not bind a local port; rerunning with required
+  local port access passed without changing application code.
+- A clean local database reset applied all eight migrations. Schema lint passed
+  and all 133 pgTAP assertions in six files passed.
+- `CI=true NEXT_TELEMETRY_DISABLED=1 pnpm test:browsers`: all 25 browser,
+  accessibility, security, and performance tests passed in 34.0 seconds.
+- Production `/api/health` returned HTTP 200 before this release; this confirms
+  availability only, not deployment of the refreshed candidate.
+
+The production migration/deployment and live email-account acceptance remain
+pending. Existing support-mailbox, screen-reader, backup-restore, and recovery
+rehearsal limitations above remain explicit.
