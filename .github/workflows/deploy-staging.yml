@@ -23,7 +23,7 @@ jobs:
     timeout-minutes: 20
     environment: staging
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: supabase/setup-cli@v2
         with:
           version: 2.109.1
@@ -61,7 +61,7 @@ jobs:
     timeout-minutes: 20
     environment: staging
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
         with:
           version: 11.17.0
