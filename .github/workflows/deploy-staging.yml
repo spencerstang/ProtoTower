@@ -24,7 +24,7 @@ jobs:
     environment: staging
     steps:
       - uses: actions/checkout@v6
-      - uses: supabase/setup-cli@v2
+      - uses: supabase/setup-cli@v3
         with:
           version: 2.109.1
       - name: Validate database deployment inputs

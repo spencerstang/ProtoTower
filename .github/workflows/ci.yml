@@ -33,7 +33,7 @@ jobs:
         with: { version: 11.17.0, run_install: false }
       - uses: actions/setup-node@v6
         with: { node-version: 22.16.0 }
-      - uses: supabase/setup-cli@v2
+      - uses: supabase/setup-cli@v3
         with: { version: 2.109.1 }
       - run: pnpm install --frozen-lockfile
       - run: supabase start
