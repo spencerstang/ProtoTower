@@ -157,7 +157,9 @@ async function loadProtocols(
   if (towerIds.length === 0) return [];
   const { data, error } = await client
     .from("tower_protocols")
-    .select("id,tower_id,position,title,how_to,source_protocol_id,source_protocol_version,created_at")
+    .select(
+      "id,tower_id,position,title,how_to,source_protocol_id,source_protocol_version,created_at",
+    )
     .in("tower_id", [...towerIds])
     .order("position", { ascending: true });
   if (error) return null;
@@ -265,7 +267,9 @@ export function createPersonalTowerRepository(
       }
     },
 
-    async createConfigured(input: ConfiguredTowerWrite): Promise<TowerMutationResult<PersonalTower>> {
+    async createConfigured(
+      input: ConfiguredTowerWrite,
+    ): Promise<TowerMutationResult<PersonalTower>> {
       if (!client) return { status: "unavailable" };
       const { data, error } = await client.rpc("create_configured_personal_tower", {
         candidate_title: input.title,
