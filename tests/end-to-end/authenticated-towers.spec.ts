@@ -4,6 +4,14 @@ import { isSessionCookie, requestAndConfirm } from "../support/auth";
 const alphaEmail = "tower-alpha@example.test";
 const betaEmail = "tower-beta@example.test";
 
+async function submitNewTower(page: Page, title: string): Promise<void> {
+  await page.getByLabel("Goal or context").fill(title);
+  await page.getByLabel("Custom protocol name").fill("Custom cue");
+  await page.getByLabel("Custom how-to").fill("Do one small thing.");
+  await page.getByRole("checkbox", { name: "Goal complete" }).check();
+  await page.getByRole("button", { name: "Create tower" }).click();
+}
+
 async function removeOwnedTowers(page: Page): Promise<void> {
   await page.goto("/towers");
   const towerPaths = await page.locator(".tower-grid a").evaluateAll((links) =>
@@ -56,8 +64,7 @@ test("scanner-safe sign-in persists isolated goal-specific towers", async ({
   expect(authCookies.every((cookie) => cookie.httpOnly && cookie.sameSite === "Lax")).toBe(true);
 
   await page.getByRole("link", { name: "Create your first tower" }).click();
-  await page.getByLabel("Goal or context").fill("Sleep better");
-  await page.getByRole("button", { name: "Create tower" }).click();
+  await submitNewTower(page, "Sleep better");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Sleep better");
   const alphaTowerPath = new URL(page.url()).pathname;
 
@@ -128,8 +135,7 @@ test("scanner-safe sign-in persists isolated goal-specific towers", async ({
   await expect(page.locator(".practice-history-list > li")).toHaveCount(1);
 
   await page.goto("/towers/new");
-  await page.getByLabel("Goal or context").fill("Run a marathon");
-  await page.getByRole("button", { name: "Create tower" }).click();
+  await submitNewTower(page, "Run a marathon");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Run a marathon");
   await page.goto("/towers");
   await expect(page.getByRole("link", { name: /Sleep deeply/u })).toBeVisible();
@@ -144,8 +150,7 @@ test("scanner-safe sign-in persists isolated goal-specific towers", async ({
 
   await page.goto("/towers/new");
   const xssTitle = '<img src=x onerror="alert(1)">';
-  await page.getByLabel("Goal or context").fill(xssTitle);
-  await page.getByRole("button", { name: "Create tower" }).click();
+  await submitNewTower(page, xssTitle);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(xssTitle);
   await expect(page.locator('img[src="x"]')).toHaveCount(0);
   await page.getByRole("button", { name: "Delete tower" }).click();

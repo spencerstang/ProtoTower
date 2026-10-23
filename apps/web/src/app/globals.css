@@ -1112,6 +1112,73 @@ button {
   }
 }
 
+.setup-form,
+.product-panel {
+  max-width: 720px;
+}
+
+.setup-form section,
+.product-panel section,
+.metric-fields {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.setup-form section + section,
+.product-panel section + section {
+  margin-top: 2rem;
+}
+
+.setup-choice-list,
+.owned-protocol-list,
+.metric-list {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.setup-form select,
+.product-panel select,
+.setup-form textarea,
+.product-panel textarea {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 0.7rem;
+}
+
+.identity-choice {
+  display: none;
+}
+
+.visibility-fieldset:has(input[value="shared"]:checked) .identity-choice {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.check-in-summary {
+  display: grid;
+  gap: 0.4rem;
+  padding: 1rem 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 0.8rem;
+}
+
+.check-in-summary ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.tower-meta {
+  color: var(--muted);
+  font-weight: 700;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

@@ -99,28 +99,184 @@ export type Database = {
       }
       personal_towers: {
         Row: {
+          audience: string
+          cadence: string
           created_at: string
+          custom_dates: string[]
+          definition: string | null
           id: string
+          identity_mode: string
           owner_id: string
           revision: number
           title: string
           updated_at: string
         }
         Insert: {
+          audience?: string
+          cadence?: string
           created_at?: string
+          custom_dates?: string[]
+          definition?: string | null
           id?: string
+          identity_mode?: string
           owner_id: string
           revision?: number
           title: string
           updated_at?: string
         }
         Update: {
+          audience?: string
+          cadence?: string
           created_at?: string
+          custom_dates?: string[]
+          definition?: string | null
           id?: string
+          identity_mode?: string
           owner_id?: string
           revision?: number
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      tower_checkin_protocol_marks: {
+        Row: {
+          checkin_id: string
+          protocol_id: string
+          ran: boolean
+        }
+        Insert: {
+          checkin_id: string
+          protocol_id: string
+          ran: boolean
+        }
+        Update: {
+          checkin_id?: string
+          protocol_id?: string
+          ran?: boolean
+        }
+        Relationships: []
+      }
+      tower_checkin_responses: {
+        Row: {
+          checkin_id: string
+          completion: string | null
+          metric_id: string
+          numeric_value: string | null
+          secondary_numeric: string | null
+          skipped: boolean
+          text_value: string | null
+        }
+        Insert: {
+          checkin_id: string
+          completion?: string | null
+          metric_id: string
+          numeric_value?: string | null
+          secondary_numeric?: string | null
+          skipped: boolean
+          text_value?: string | null
+        }
+        Update: {
+          checkin_id?: string
+          completion?: string | null
+          metric_id?: string
+          numeric_value?: string | null
+          secondary_numeric?: string | null
+          skipped?: boolean
+          text_value?: string | null
+        }
+        Relationships: []
+      }
+      tower_checkins: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          period_date: string
+          tower_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          period_date: string
+          tower_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          period_date?: string
+          tower_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tower_metrics: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          label: string
+          position: number
+          preset_key: string | null
+          shape: string
+          tower_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          label: string
+          position: number
+          preset_key?: string | null
+          shape: string
+          tower_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          label?: string
+          position?: number
+          preset_key?: string | null
+          shape?: string
+          tower_id?: string
+        }
+        Relationships: []
+      }
+      tower_protocols: {
+        Row: {
+          created_at: string
+          how_to: string
+          id: string
+          position: number
+          source_protocol_id: string | null
+          source_protocol_version: number | null
+          title: string
+          tower_id: string
+        }
+        Insert: {
+          created_at?: string
+          how_to: string
+          id?: string
+          position: number
+          source_protocol_id?: string | null
+          source_protocol_version?: number | null
+          title: string
+          tower_id: string
+        }
+        Update: {
+          created_at?: string
+          how_to?: string
+          id?: string
+          position?: number
+          source_protocol_id?: string | null
+          source_protocol_version?: number | null
+          title?: string
+          tower_id?: string
         }
         Relationships: []
       }
@@ -263,6 +419,30 @@ export type Database = {
       }
     }
     Functions: {
+      create_configured_personal_tower: {
+        Args: {
+          candidate_audience: string
+          candidate_cadence: string
+          candidate_custom_dates: string[]
+          candidate_definition: string | null
+          candidate_identity: string
+          candidate_metrics: Json
+          candidate_protocols: Json
+          candidate_title: string
+        }
+        Returns: {
+          audience: string
+          cadence: string
+          created_at: string
+          custom_dates: string[]
+          definition: string | null
+          id: string
+          identity_mode: string
+          revision: number
+          title: string
+          updated_at: string
+        }[]
+      }
       create_personal_tower: {
         Args: { candidate_title: string }
         Returns: {
@@ -286,6 +466,15 @@ export type Database = {
           updated_at: string
         }[]
       }
+      record_tower_checkin: {
+        Args: {
+          candidate_marks: Json
+          candidate_period_date: string
+          candidate_responses: Json
+          candidate_tower_id: string
+        }
+        Returns: string
+      }
       save_personal_tower: {
         Args: {
           candidate_id: string
@@ -296,6 +485,32 @@ export type Database = {
         Returns: {
           created_at: string
           id: string
+          revision: number
+          title: string
+          updated_at: string
+        }[]
+      }
+      save_tower_setup: {
+        Args: {
+          candidate_audience: string
+          candidate_cadence: string
+          candidate_custom_dates: string[]
+          candidate_definition: string | null
+          candidate_id: string
+          candidate_identity: string
+          candidate_metrics: Json
+          candidate_title: string
+          candidate_protocols: Json
+          expected_revision: number
+        }
+        Returns: {
+          audience: string
+          cadence: string
+          created_at: string
+          custom_dates: string[]
+          definition: string | null
+          id: string
+          identity_mode: string
           revision: number
           title: string
           updated_at: string

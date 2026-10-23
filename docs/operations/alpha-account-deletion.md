@@ -12,7 +12,9 @@ seven calendar days. Never ask the requester to include tower titles, practice d
 tokens, or other private content.
 
 The database foreign key from `personal_towers.owner_id` to `auth.users.id` cascades
-through the user's towers and tower items. After deletion, verify only that the Auth
+through the user's towers, tower items, copied protocols, outcome metrics, check-ins,
+check-in responses, and protocol marks. Practice check-ins cascade with the tower.
+After deletion, verify only that the Auth
 record is absent and that no owned application rows remain; retain no query output
 containing identifiers or private titles. Ask the user to confirm that a new magic
 link is no longer delivered and that `/towers` requires authentication.

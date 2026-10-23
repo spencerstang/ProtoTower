@@ -143,4 +143,13 @@ export function assertPracticeDateWithinWindow(practiceDate: PracticeDate, refer
   }
 }
 
+export {
+  currentTowerPeriod,
+  nextSpecifiedDate,
+  parseTowerCheckInSubmission,
+  summarizeCheckIn,
+  utcCalendarDate,
+} from "./tower-checkin";
+export type { TowerCheckInMetric, TowerCheckInResponse } from "./tower-checkin";
+
 export const trackingEngineStatus = "private-practice-checkins" as const;
