@@ -71,7 +71,8 @@ export default async function TowersPage(props: {
                 <Link href={`/towers/${tower.id}`}>
                   <span>{tower.title}</span>
                   <small>
-                    {tower.items.length} {tower.items.length === 1 ? "protocol" : "protocols"}
+                    {tower.protocols.length + tower.items.length}{" "}
+                    {tower.protocols.length + tower.items.length === 1 ? "protocol" : "protocols"}
                   </small>
                 </Link>
               </li>

@@ -81,7 +81,7 @@ describe("environment validation", () => {
 });
 
 describe("feature flags", () => {
-  it("enables only the reviewed Milestone 4 capabilities", () => {
+  it("enables the reviewed tower, practice, and outcome capabilities", () => {
     const enabledFeatures = Object.entries(featureFlags)
       .filter(([, enabled]) => enabled)
       .map(([name]) => name);
@@ -91,6 +91,7 @@ describe("feature flags", () => {
       "authentication",
       "personalTowers",
       "protocolTracking",
+      "outcomes",
     ]);
     expect(isFeatureEnabled("protocolCatalog")).toBe(true);
     expect(isFeatureEnabled("authentication")).toBe(true);

@@ -27,6 +27,7 @@
     "@protostack/database": "workspace:*",
     "@protostack/protocol-engine": "workspace:*",
     "@protostack/authorization": "workspace:*",
+    "@protostack/outcomes-engine": "workspace:*",
     "@protostack/tracking-engine": "workspace:*",
     "@protostack/tower-engine": "workspace:*",
     "@protostack/ui": "workspace:*",

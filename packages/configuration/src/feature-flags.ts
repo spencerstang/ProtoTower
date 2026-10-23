@@ -4,7 +4,7 @@ const reviewedFeatureFlags = {
   personalTowers: true,
   protocolPublishing: false,
   protocolTracking: true,
-  outcomes: false,
+  outcomes: true,
   payments: false,
   aggregateAnalytics: false,
   notifications: false,

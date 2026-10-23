@@ -74,6 +74,9 @@ importers:
       '@protostack/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@protostack/outcomes-engine':
+        specifier: workspace:*
+        version: link:../../packages/outcomes-engine
       '@protostack/protocol-engine':
         specifier: workspace:*
         version: link:../../packages/protocol-engine
@@ -131,7 +134,11 @@ importers:
 
   packages/notifications: {}
 
-  packages/outcomes-engine: {}
+  packages/outcomes-engine:
+    dependencies:
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
 
   packages/protocol-engine:
     dependencies:
@@ -141,6 +148,9 @@ importers:
 
   packages/tower-engine:
     dependencies:
+      '@protostack/outcomes-engine':
+        specifier: workspace:*
+        version: link:../outcomes-engine
       '@protostack/protocol-engine':
         specifier: workspace:*
         version: link:../protocol-engine
@@ -150,6 +160,9 @@ importers:
 
   packages/tracking-engine:
     dependencies:
+      '@protostack/outcomes-engine':
+        specifier: workspace:*
+        version: link:../outcomes-engine
       '@protostack/protocol-engine':
         specifier: workspace:*
         version: link:../protocol-engine

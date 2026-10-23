@@ -1,12 +1,17 @@
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { TowerProductPanel, type TowerCheckInView } from "@/components/tower-product-panel";
 import { getVerifiedPrincipal } from "@/lib/auth";
 import { createServerPersonalTowerRepository } from "@/lib/personal-towers";
 import { createServerPracticeCheckInRepository } from "@/lib/practice-checkins";
 import { createServerProtocolCatalogRepository } from "@/lib/protocol-catalog";
+import { createServerTowerCheckInRepository } from "@/lib/tower-checkins";
+import { clipPlainLine } from "@/lib/tower-setup-form";
 import { isFeatureEnabled } from "@protostack/configuration";
 import {
+  currentTowerPeriod,
   parsePracticeDate,
   practiceDateWindow,
+  utcCalendarDate,
   type PracticeCheckIn,
   type PracticeQueryResult,
 } from "@protostack/tracking-engine";
@@ -31,12 +36,19 @@ const errorMessages = {
   "practice-unavailable": "Private practice history is temporarily unavailable. Try again shortly.",
   stale: "This tower changed in another request. Review the latest version before trying again.",
   unavailable: "Your change could not be completed right now. Try again shortly.",
+  protocols: "Keep at least one protocol.",
+  final: "Keep at least one final outcome.",
+  dates: "Add at least one specific date, or choose another rhythm.",
+  "checkin-closed": "This check-in period is closed.",
+  "checkin-invalid": "Review the check-in values and try again.",
+  "checkin-unavailable": "Check-in is temporarily unavailable.",
 } as const;
 
 const statusMessages = {
   "practice-recorded": "Practice recorded.",
   "practice-undone": "Practice record removed.",
   saved: "Tower saved.",
+  "checked-in": "Check-in saved.",
 } as const;
 
 function formatPracticeDate(value: string): string {
@@ -100,6 +112,44 @@ export default async function TowerDetailPage(props: {
   const availableProtocols = protocols.filter(
     (protocol) => !tower.items.some((item) => item.protocolId === protocol.id),
   );
+  const setupReady =
+    tower.protocols.length > 0 && tower.metrics.some((metric) => metric.kind === "final");
+  const outcomesEnabled = isFeatureEnabled("outcomes");
+  const usedSources = new Set(
+    tower.protocols.flatMap((protocol) =>
+      protocol.sourceProtocolId ? [protocol.sourceProtocolId] : [],
+    ),
+  );
+  const starters =
+    catalog.status === "available"
+      ? protocols
+          .filter((protocol) => !usedSources.has(protocol.id))
+          .map((protocol) => ({
+            id: protocol.id,
+            version: protocol.version,
+            title: protocol.title,
+            howTo: clipPlainLine(protocol.summary),
+          }))
+      : [];
+  const today = utcCalendarDate(new Date());
+  const period = currentTowerPeriod({
+    cadence: tower.cadence,
+    customDates: tower.customDates,
+    anchorDate: utcCalendarDate(new Date(tower.createdAt)),
+    today,
+  });
+  let checkIn: TowerCheckInView = period
+    ? { status: "open", period, record: null }
+    : { status: "closed" };
+  if (setupReady && outcomesEnabled && practiceEnabled && period) {
+    const stored = await (
+      await createServerTowerCheckInRepository()
+    ).findForPeriod(tower.id, period);
+    checkIn =
+      stored === "unavailable"
+        ? { status: "unavailable" }
+        : { status: "open", period, record: stored };
+  }
 
   return (
     <main id="main-content">
@@ -134,6 +184,23 @@ export default async function TowerDetailPage(props: {
           <p className="notice notice-error" role="alert">
             {errorMessages[error as keyof typeof errorMessages]}
           </p>
+        ) : null}
+
+        {tower.protocols.length === 0 && tower.metrics.length === 0 ? (
+          <div className="state-card">
+            <h2>Finish this tower</h2>
+            <p>Add 1–3 protocols and one final outcome. Weekly and private are already selected.</p>
+            <Link className="primary-action" href={`/towers/${tower.id}/setup`}>
+              Finish tower setup
+            </Link>
+          </div>
+        ) : outcomesEnabled ? (
+          <TowerProductPanel
+            tower={tower}
+            checkIn={setupReady ? checkIn : { status: "incomplete" }}
+            starters={starters}
+            catalogUnavailable={catalog.status === "unavailable"}
+          />
         ) : null}
 
         <form action={renameTower} className="inline-form tower-rename">

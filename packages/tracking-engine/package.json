@@ -23,6 +23,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@protostack/outcomes-engine": "workspace:*",
     "@protostack/protocol-engine": "workspace:*",
     "@protostack/tower-engine": "workspace:*",
     "zod": "4.4.3"

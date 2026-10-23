@@ -1,5 +1,18 @@
 import { protocolIdSchema, type ProtocolId } from "@protostack/protocol-engine";
 import { z } from "zod";
+import { assertPlainLine } from "./plain-line";
+import {
+  assertStoredSetup,
+  calendarDateSchema,
+  maximumTowerProtocols,
+  storedTowerProtocolSchema,
+  towerAudienceSchema,
+  towerCadenceSchema,
+  towerDefinitionSchema,
+  towerIdentitySchema,
+  type TowerSetupDraft,
+} from "./setup";
+import { maximumMetricsPerTower, storedMetricSchema } from "@protostack/outcomes-engine";
 
 export const maximumTowersPerOwner = 12;
 export const maximumItemsPerTower = 20;
@@ -7,7 +20,7 @@ export const maximumItemsPerTower = 20;
 const forbiddenTitleCharacters = /[\p{Cc}\p{Cf}]/u;
 
 function normalizeTitle(value: string): string {
-  return value.normalize("NFC").trim().replace(/\s+/gu, " ");
+  return assertPlainLine(value, 80);
 }
 
 export const towerIdSchema = z.uuid().brand<"TowerId">();
@@ -41,6 +54,13 @@ export const personalTowerSchema = z
   .object({
     id: towerIdSchema,
     title: towerTitleSchema,
+    definition: towerDefinitionSchema.default(null),
+    cadence: towerCadenceSchema.default("weekly"),
+    customDates: z.array(calendarDateSchema).max(24).default([]),
+    audience: towerAudienceSchema.default("private"),
+    identity: towerIdentitySchema.default("named"),
+    protocols: z.array(storedTowerProtocolSchema).max(maximumTowerProtocols).default([]),
+    metrics: z.array(storedMetricSchema).max(maximumMetricsPerTower).default([]),
     revision: towerRevisionSchema,
     items: z.array(towerItemSchema).max(maximumItemsPerTower),
     createdAt: z.iso.datetime({ offset: true }),
@@ -48,6 +68,23 @@ export const personalTowerSchema = z
   })
   .strict()
   .superRefine((tower, context) => {
+    try {
+      assertStoredSetup({
+        definition: tower.definition,
+        cadence: tower.cadence,
+        customDates: tower.customDates,
+        audience: tower.audience,
+        identity: tower.identity,
+        protocols: tower.protocols,
+        metrics: tower.metrics,
+      });
+    } catch {
+      context.addIssue({
+        code: "custom",
+        path: ["protocols"],
+        message: "Tower setup is invalid.",
+      });
+    }
     const protocolIds = new Set<ProtocolId>();
     tower.items.forEach((item, index) => {
       if (item.position !== index + 1) {
@@ -91,11 +128,25 @@ export type DeleteTowerInput = Readonly<{
   expectedRevision: TowerRevision;
 }>;
 
+export type ConfiguredTowerWrite = Readonly<{
+  title: TowerTitle;
+  draft: TowerSetupDraft;
+}>;
+
+export type SaveTowerSetupInput = Readonly<{
+  id: TowerId;
+  expectedRevision: TowerRevision;
+  title: TowerTitle;
+  draft: TowerSetupDraft;
+}>;
+
 export interface PersonalTowerRepository {
   list(): Promise<TowerQueryResult<readonly PersonalTower[]>>;
   findById(id: TowerId): Promise<TowerQueryResult<PersonalTower | null>>;
   create(title: TowerTitle): Promise<TowerMutationResult<PersonalTower>>;
+  createConfigured(input: ConfiguredTowerWrite): Promise<TowerMutationResult<PersonalTower>>;
   save(input: SaveTowerInput): Promise<TowerMutationResult<PersonalTower>>;
+  saveSetup(input: SaveTowerSetupInput): Promise<TowerMutationResult<PersonalTower>>;
   delete(input: DeleteTowerInput): Promise<TowerMutationResult<boolean>>;
 }
 
@@ -160,5 +211,45 @@ export function moveTowerItem(
   reordered[targetIndex] = current;
   return reordered.map((item, itemIndex) => ({ ...item, position: itemIndex + 1 }));
 }
+
+export {
+  addMetricToDraft,
+  addProtocolToDraft,
+  cadenceChoiceLabels,
+  cadencePeriodLabels,
+  calendarDateSchema,
+  commitTowerSetup,
+  draftFromStoredSetup,
+  firstTowerProtocolLimit,
+  identityChoiceVisible,
+  interpretCreateForm,
+  maximumTowerProtocols,
+  presetMetric,
+  removeMetricFromDraft,
+  removeProtocolFromDraft,
+  replaceDefinition,
+  replaceProtocolInDraft,
+  replaceRhythm,
+  replaceVisibility,
+  towerAudienceSchema,
+  towerCadenceSchema,
+  towerDefinitionSchema,
+  towerIdentitySchema,
+  visibilityLabel,
+} from "./setup";
+export type {
+  CalendarDate,
+  CreateFormMetric,
+  CreateFormProtocol,
+  SetupCommitResult,
+  SetupIssueCode,
+  StoredTowerProtocol,
+  TowerAudience,
+  TowerCadence,
+  TowerIdentity,
+  TowerProtocolDraft,
+  TowerProtocolId,
+  TowerSetupDraft,
+} from "./setup";
 
 export const towerEngineStatus = "authenticated-goal-towers" as const;

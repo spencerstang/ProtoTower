@@ -32,6 +32,8 @@ Milestone 5 production, policy, backup, accessibility, and final DNS gates pass.
 - four source-backed, attributed educational protocols with independent evidence tiers
 - scanner-resistant Supabase Auth email links with server-only `HttpOnly` sessions
 - multiple private goal towers with exact protocol-version pinning and revisions
+- tower setup for a name, copied protocols, ongoing/proxy/final measures, a check-in rhythm, and a private or shared preference
+- one check-in form per period for ongoing values and final completion
 - bounded private practice check-ins with exact-version history and idempotent undo
 - forced RLS, direct-write denial, bounded RPCs, and two-user isolation coverage
 - local Supabase migrations, schema lint, and pgTAP security tests
@@ -40,9 +42,11 @@ Milestone 5 production, policy, backup, accessibility, and final DNS gates pass.
   gates
 
 Password authentication, protocol authoring or publishing UI,
-outcomes, scores, streaks, notes, AI, analytics, non-authentication notifications,
-payments, and MCP remain disabled. Passwordless public account creation is enabled;
-the beta email and product UI disclose that some features are not functional yet.
+scores, streaks, reminders, AI, analytics, non-authentication notifications,
+payments, and MCP remain disabled. Passwordless public account creation is enabled.
+Outcome metrics are private to the owner. Saving a tower as shared does not yet
+deliver it to anyone else. The beta email and product UI disclose that some features
+are not functional yet.
 
 ## Prerequisites
 

@@ -1,28 +1,70 @@
 import type { Database, Json } from "@protostack/database";
 import {
   parsePersonalTower,
+  type ConfiguredTowerWrite,
   type DeleteTowerInput,
   type PersonalTower,
   type PersonalTowerRepository,
   type SaveTowerInput,
+  type SaveTowerSetupInput,
   type TowerId,
   type TowerMutationRejection,
   type TowerMutationResult,
+  type TowerProtocolDraft,
   type TowerQueryResult,
+  type TowerSetupDraft,
   type TowerTitle,
 } from "@protostack/tower-engine";
+import type { MetricDraft } from "@protostack/outcomes-engine";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { logger } from "./runtime";
 import { createSupabaseServerClient } from "./supabase/server";
 
 type TowerRow = Database["public"]["Tables"]["personal_towers"]["Row"];
 type TowerItemRow = Database["public"]["Tables"]["personal_tower_items"]["Row"];
+type TowerProtocolRow = Database["public"]["Tables"]["tower_protocols"]["Row"];
+type TowerMetricRow = Database["public"]["Tables"]["tower_metrics"]["Row"];
 type ProviderError = Readonly<{ code?: string; message: string }>;
 
-function parseTower(row: TowerRow, items: readonly TowerItemRow[]): PersonalTower {
+const towerColumns =
+  "id,owner_id,title,definition,cadence,audience,identity_mode,custom_dates,revision,created_at,updated_at";
+
+function parseTower(
+  row: TowerRow,
+  items: readonly TowerItemRow[],
+  protocols: readonly TowerProtocolRow[],
+  metrics: readonly TowerMetricRow[],
+): PersonalTower {
   return parsePersonalTower({
     id: row.id,
     title: row.title,
+    definition: row.definition,
+    cadence: row.cadence,
+    customDates: row.custom_dates,
+    audience: row.audience,
+    identity: row.identity_mode,
+    protocols: protocols
+      .filter((protocol) => protocol.tower_id === row.id)
+      .sort((left, right) => left.position - right.position)
+      .map((protocol) => ({
+        id: protocol.id,
+        title: protocol.title,
+        howTo: protocol.how_to,
+        sourceProtocolId: protocol.source_protocol_id,
+        sourceProtocolVersion: protocol.source_protocol_version,
+        position: protocol.position,
+      })),
+    metrics: metrics
+      .filter((metric) => metric.tower_id === row.id)
+      .sort((left, right) => left.position - right.position)
+      .map((metric) => ({
+        id: metric.id,
+        kind: metric.kind,
+        shape: metric.shape,
+        label: metric.label,
+        presetKey: metric.preset_key,
+        position: metric.position,
+      })),
     revision: row.revision,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -35,6 +77,46 @@ function parseTower(row: TowerRow, items: readonly TowerItemRow[]): PersonalTowe
         position: item.position,
       })),
   });
+}
+
+function protocolPayload(protocol: TowerProtocolDraft): Json {
+  return {
+    ...(protocol.id === undefined ? {} : { id: protocol.id }),
+    title: protocol.title,
+    how_to: protocol.howTo,
+    source_protocol_id: protocol.sourceProtocolId,
+    source_protocol_version: protocol.sourceProtocolVersion,
+  };
+}
+
+function metricPayload(metric: MetricDraft): Json {
+  return {
+    ...(metric.id === undefined ? {} : { id: metric.id }),
+    kind: metric.kind,
+    shape: metric.shape,
+    label: metric.label,
+    preset_key: metric.presetKey,
+  };
+}
+
+function setupPayload(draft: TowerSetupDraft): Readonly<{
+  candidate_definition: string | null;
+  candidate_cadence: TowerSetupDraft["cadence"];
+  candidate_custom_dates: string[];
+  candidate_audience: TowerSetupDraft["audience"];
+  candidate_identity: TowerSetupDraft["identity"];
+  candidate_protocols: Json;
+  candidate_metrics: Json;
+}> {
+  return {
+    candidate_definition: draft.definition,
+    candidate_cadence: draft.cadence,
+    candidate_custom_dates: [...draft.customDates],
+    candidate_audience: draft.audience,
+    candidate_identity: draft.identity,
+    candidate_protocols: draft.protocols.map(protocolPayload),
+    candidate_metrics: draft.metrics.map(metricPayload),
+  };
 }
 
 function rejectedReason(error: ProviderError): TowerMutationRejection | null {
@@ -68,6 +150,59 @@ async function loadItems(
   return data;
 }
 
+async function loadProtocols(
+  client: SupabaseClient<Database>,
+  towerIds: readonly string[],
+): Promise<readonly TowerProtocolRow[] | null> {
+  if (towerIds.length === 0) return [];
+  const { data, error } = await client
+    .from("tower_protocols")
+    .select("id,tower_id,position,title,how_to,source_protocol_id,source_protocol_version,created_at")
+    .in("tower_id", [...towerIds])
+    .order("position", { ascending: true });
+  if (error) return null;
+  return data;
+}
+
+async function loadMetrics(
+  client: SupabaseClient<Database>,
+  towerIds: readonly string[],
+): Promise<readonly TowerMetricRow[] | null> {
+  if (towerIds.length === 0) return [];
+  const { data, error } = await client
+    .from("tower_metrics")
+    .select("id,tower_id,position,kind,shape,label,preset_key,created_at")
+    .in("tower_id", [...towerIds])
+    .order("position", { ascending: true });
+  if (error) return null;
+  return data;
+}
+
+async function loadTower(
+  client: SupabaseClient<Database>,
+  id: string,
+): Promise<TowerQueryResult<PersonalTower | null>> {
+  const { data, error } = await client
+    .from("personal_towers")
+    .select(towerColumns)
+    .eq("id", id)
+    .maybeSingle();
+  if (error) return { status: "unavailable" };
+  if (!data) return { status: "available", value: null };
+  const [items, protocols, metrics] = await Promise.all([
+    loadItems(client, [data.id]),
+    loadProtocols(client, [data.id]),
+    loadMetrics(client, [data.id]),
+  ]);
+  if (!items || !protocols || !metrics) return { status: "unavailable" };
+  try {
+    return { status: "available", value: parseTower(data, items, protocols, metrics) };
+  } catch {
+    logger.error("personal_tower_provider_shape_invalid");
+    return { status: "unavailable" };
+  }
+}
+
 export function createPersonalTowerRepository(
   client: SupabaseClient<Database> | null,
 ): PersonalTowerRepository {
@@ -76,19 +211,24 @@ export function createPersonalTowerRepository(
       if (!client) return { status: "unavailable" };
       const { data, error } = await client
         .from("personal_towers")
-        .select("id,owner_id,title,revision,created_at,updated_at")
+        .select(towerColumns)
         .order("updated_at", { ascending: false });
       if (error) {
         logger.warn("personal_tower_list_unavailable", { code: error.code });
         return { status: "unavailable" };
       }
-      const items = await loadItems(
-        client,
-        data.map((tower) => tower.id),
-      );
-      if (!items) return { status: "unavailable" };
+      const towerIds = data.map((tower) => tower.id);
+      const [items, protocols, metrics] = await Promise.all([
+        loadItems(client, towerIds),
+        loadProtocols(client, towerIds),
+        loadMetrics(client, towerIds),
+      ]);
+      if (!items || !protocols || !metrics) return { status: "unavailable" };
       try {
-        return { status: "available", value: data.map((tower) => parseTower(tower, items)) };
+        return {
+          status: "available",
+          value: data.map((tower) => parseTower(tower, items, protocols, metrics)),
+        };
       } catch {
         logger.error("personal_tower_provider_shape_invalid");
         return { status: "unavailable" };
@@ -97,21 +237,7 @@ export function createPersonalTowerRepository(
 
     async findById(id: TowerId): Promise<TowerQueryResult<PersonalTower | null>> {
       if (!client) return { status: "unavailable" };
-      const { data, error } = await client
-        .from("personal_towers")
-        .select("id,owner_id,title,revision,created_at,updated_at")
-        .eq("id", id)
-        .maybeSingle();
-      if (error) return { status: "unavailable" };
-      if (!data) return { status: "available", value: null };
-      const items = await loadItems(client, [data.id]);
-      if (!items) return { status: "unavailable" };
-      try {
-        return { status: "available", value: parseTower(data, items) };
-      } catch {
-        logger.error("personal_tower_provider_shape_invalid");
-        return { status: "unavailable" };
-      }
+      return loadTower(client, id);
     },
 
     async create(title: TowerTitle): Promise<TowerMutationResult<PersonalTower>> {
@@ -137,6 +263,21 @@ export function createPersonalTowerRepository(
       } catch {
         return { status: "unavailable" };
       }
+    },
+
+    async createConfigured(input: ConfiguredTowerWrite): Promise<TowerMutationResult<PersonalTower>> {
+      if (!client) return { status: "unavailable" };
+      const { data, error } = await client.rpc("create_configured_personal_tower", {
+        candidate_title: input.title,
+        ...setupPayload(input.draft),
+      });
+      if (error) return mutationFailure("create_configured", error);
+      const row = data[0];
+      if (!row) return { status: "unavailable" };
+      const loaded = await loadTower(client, row.id);
+      if (loaded.status === "unavailable") return { status: "unavailable" };
+      if (!loaded.value) return { status: "unavailable" };
+      return { status: "available", value: loaded.value };
     },
 
     async save(input: SaveTowerInput): Promise<TowerMutationResult<PersonalTower>> {
@@ -170,6 +311,23 @@ export function createPersonalTowerRepository(
       } catch {
         return { status: "unavailable" };
       }
+    },
+
+    async saveSetup(input: SaveTowerSetupInput): Promise<TowerMutationResult<PersonalTower>> {
+      if (!client) return { status: "unavailable" };
+      const { data, error } = await client.rpc("save_tower_setup", {
+        candidate_id: input.id,
+        expected_revision: input.expectedRevision,
+        candidate_title: input.title,
+        ...setupPayload(input.draft),
+      });
+      if (error) return mutationFailure("save_setup", error);
+      const row = data[0];
+      if (!row) return { status: "unavailable" };
+      const loaded = await loadTower(client, row.id);
+      if (loaded.status === "unavailable") return { status: "unavailable" };
+      if (!loaded.value) return { status: "rejected", reason: "not_found" };
+      return { status: "available", value: loaded.value };
     },
 
     async delete(input: DeleteTowerInput): Promise<TowerMutationResult<boolean>> {
