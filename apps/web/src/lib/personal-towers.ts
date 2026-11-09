@@ -13,6 +13,7 @@ import {
   type TowerProtocolDraft,
   type TowerQueryResult,
   type TowerSetupDraft,
+  type StarterMatchKey,
   type TowerTitle,
 } from "@protostack/tower-engine";
 import type { MetricDraft } from "@protostack/outcomes-engine";
@@ -27,7 +28,7 @@ type TowerMetricRow = Database["public"]["Tables"]["tower_metrics"]["Row"];
 type ProviderError = Readonly<{ code?: string; message: string }>;
 
 const towerColumns =
-  "id,owner_id,title,definition,cadence,audience,identity_mode,custom_dates,revision,created_at,updated_at";
+  "id,owner_id,title,definition,cadence,audience,identity_mode,custom_dates,intent_text,starter_match_key,revision,created_at,updated_at";
 
 function parseTower(
   row: TowerRow,
@@ -66,6 +67,8 @@ function parseTower(
         position: metric.position,
       })),
     revision: row.revision,
+    intentText: row.intent_text,
+    starterMatchKey: row.starter_match_key,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     items: items
@@ -276,6 +279,24 @@ export function createPersonalTowerRepository(
         ...setupPayload(input.draft),
       });
       if (error) return mutationFailure("create_configured", error);
+      const row = data[0];
+      if (!row) return { status: "unavailable" };
+      const loaded = await loadTower(client, row.id);
+      if (loaded.status === "unavailable") return { status: "unavailable" };
+      if (!loaded.value) return { status: "unavailable" };
+      return { status: "available", value: loaded.value };
+    },
+
+    async createStarter(input: {
+      intent: string;
+      matchKey: StarterMatchKey;
+    }): Promise<TowerMutationResult<PersonalTower>> {
+      if (!client) return { status: "unavailable" };
+      const { data, error } = await client.rpc("create_starter_tower", {
+        candidate_intent: input.intent,
+        candidate_match_key: input.matchKey,
+      });
+      if (error) return mutationFailure("create_starter", error);
       const row = data[0];
       if (!row) return { status: "unavailable" };
       const loaded = await loadTower(client, row.id);

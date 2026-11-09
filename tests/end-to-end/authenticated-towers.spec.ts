@@ -5,6 +5,7 @@ const alphaEmail = "tower-alpha@example.test";
 const betaEmail = "tower-beta@example.test";
 
 async function submitNewTower(page: Page, title: string): Promise<void> {
+  await page.goto("/towers/new/detailed");
   await page.getByLabel("Goal or context").fill(title);
   await page.getByLabel("Custom protocol name").fill("Custom cue");
   await page.getByLabel("Custom how-to").fill("Do one small thing.");
@@ -180,4 +181,64 @@ test("scanner-safe sign-in persists isolated goal-specific towers", async ({
   ).toBeVisible();
   await replayContext.close();
   await renewedContext.close();
+});
+
+test("one question starts a reviewed pair or an empty tower", async ({ page, request }) => {
+  await requestAndConfirm(page, request, "starter-flow@example.invalid");
+  await page.goto("/towers/new");
+  await page.getByLabel("What would you like to accomplish?").fill("Sleep better");
+  await page.getByRole("button", { name: "Start" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Sleep better");
+  await expect(
+    page.getByRole("link", { name: "Andrew Huberman: Daily sleep-wake blueprint" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Bryan Johnson: Pre-sleep resting-heart-rate routine" }),
+  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Get outdoor morning light" })).toBeVisible();
+  await expect(page.getByText("Never stare directly at the sun.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "This week" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Outcome this week" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Record .* as practiced/u })).toHaveCount(0);
+
+  await page
+    .getByRole("group", { name: "Andrew Huberman: Daily sleep-wake blueprint" })
+    .getByLabel("Did this")
+    .check();
+  await page
+    .getByRole("group", { name: "Bryan Johnson: Pre-sleep resting-heart-rate routine" })
+    .getByLabel("Skip")
+    .check();
+  await page.getByRole("button", { name: "Save practice" }).click();
+  await expect(page.getByText("Practice for this week was saved.")).toBeVisible();
+  await page.getByRole("button", { name: "Save outcome" }).click();
+  await expect(page.getByText("Outcome for this week was saved.")).toBeVisible();
+
+  await page.goto("/towers/new");
+  await page.getByLabel("What would you like to accomplish?").fill("Work out 3x/week");
+  await page.getByRole("button", { name: "Start" }).click();
+  await expect(
+    page.getByRole("link", { name: "Peter Attia: Centenarian Decathlon framework" }),
+  ).toBeVisible();
+  await expect(page.getByText("A second reviewed protocol was not added.")).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Rhonda Patrick: Sauna and heat exposure" }),
+  ).toHaveCount(0);
+
+  await page.goto("/towers/new");
+  await page.getByLabel("What would you like to accomplish?").fill("Work out, then sauna");
+  await page.getByRole("button", { name: "Start" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Cautions from the sauna routine" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Rhonda Patrick: Sauna and heat exposure" }),
+  ).toBeVisible();
+
+  await page.goto("/towers/new");
+  await page.getByLabel("What would you like to accomplish?").fill("Save for a kitchen renovation");
+  await page.getByRole("button", { name: "Start" }).click();
+  await expect(page.getByRole("heading", { name: "No reviewed pair yet" })).toBeVisible();
+  await expect(page.getByText("did not add a protocol or a first action")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Get outdoor morning light" })).toHaveCount(0);
 });

@@ -1,5 +1,8 @@
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { StarterTowerPanel } from "@/components/starter-tower-panel";
 import { TowerProductPanel, type TowerCheckInView } from "@/components/tower-product-panel";
+import { loadStarterSurface } from "@/lib/starter-surface";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getVerifiedPrincipal } from "@/lib/auth";
 import { createServerPersonalTowerRepository } from "@/lib/personal-towers";
 import { createServerPracticeCheckInRepository } from "@/lib/practice-checkins";
@@ -42,6 +45,9 @@ const errorMessages = {
   "checkin-closed": "This check-in period is closed.",
   "checkin-invalid": "Review the check-in values and try again.",
   "checkin-unavailable": "Check-in is temporarily unavailable.",
+  "adherence-invalid": "Choose a practice answer for each protocol, then save again.",
+  "outcome-invalid":
+    "The outcome note could not be saved. Use a short plain-text note, or leave it blank to skip.",
 } as const;
 
 const statusMessages = {
@@ -49,6 +55,8 @@ const statusMessages = {
   "practice-undone": "Practice record removed.",
   saved: "Tower saved.",
   "checked-in": "Check-in saved.",
+  "adherence-saved": "Practice for this week was saved.",
+  "outcome-saved": "Outcome for this week was saved.",
 } as const;
 
 function formatPracticeDate(value: string): string {
@@ -107,6 +115,10 @@ export default async function TowerDetailPage(props: {
     : Promise.resolve({ status: "available", value: [] });
   const [catalog, practiceHistory] = await Promise.all([catalogPromise, practicePromise]);
   const protocols = catalog.status === "available" ? catalog.value : [];
+  const starter = tower.starterMatchKey !== null;
+  const starterClient = starter ? await createSupabaseServerClient() : null;
+  const starterSurface =
+    starter && starterClient ? await loadStarterSurface(starterClient, tower, protocols) : null;
   const exactProtocol = (protocolId: string, version: number) =>
     protocols.find((protocol) => protocol.id === protocolId && protocol.version === version);
   const availableProtocols = protocols.filter(
@@ -160,7 +172,7 @@ export default async function TowerDetailPage(props: {
         </Link>
         <div className="tower-builder-heading">
           <div>
-            <p className="eyebrow">Goal-specific tower</p>
+            <p className="eyebrow">{starter ? "Starter tower" : "Goal-specific tower"}</p>
             <h1 id="tower-heading">{tower.title}</h1>
             <p>
               {tower.items.length} of {maximumItemsPerTower} protocol blocks
@@ -186,7 +198,16 @@ export default async function TowerDetailPage(props: {
           </p>
         ) : null}
 
-        {tower.protocols.length === 0 && tower.metrics.length === 0 ? (
+        {starter ? (
+          starterSurface ? (
+            <StarterTowerPanel tower={tower} surface={starterSurface} />
+          ) : (
+            <div className="state-card" role="status">
+              <h2>This starter tower is temporarily unavailable</h2>
+              <p>Your saved tower has not changed. Try again shortly.</p>
+            </div>
+          )
+        ) : tower.protocols.length === 0 && tower.metrics.length === 0 ? (
           <div className="state-card">
             <h2>Finish this tower</h2>
             <p>Add 1–3 protocols and one final outcome. Weekly and private are already selected.</p>
@@ -213,211 +234,220 @@ export default async function TowerDetailPage(props: {
           </button>
         </form>
 
-        <section className="tower-levels" aria-labelledby="tower-levels-heading">
-          <div className="section-heading compact-heading">
-            <div>
-              <p className="eyebrow">Ordered foundation</p>
-              <h2 id="tower-levels-heading">Tower blocks</h2>
-            </div>
-          </div>
-          {tower.items.length === 0 ? (
-            <div className="state-card tower-empty">
-              <h3>This tower has no blocks yet.</h3>
-              <p>
-                Add a published protocol below. Saving a protocol here does not track completion.
-              </p>
-            </div>
-          ) : (
-            <ol className="tower-item-list">
-              {tower.items.map((item, index) => {
-                const protocol = exactProtocol(item.protocolId, item.protocolVersion);
-                return (
-                  <li key={item.protocolId}>
-                    <div>
-                      <span className="tower-position">Level {item.position}</span>
-                      <h3>{protocol?.title ?? "Unavailable protocol version"}</h3>
-                      <p>
-                        {protocol
-                          ? `${protocol.summary} · Pinned version ${item.protocolVersion}`
-                          : `Pinned version ${item.protocolVersion} is retained without exposing retired content.`}
-                      </p>
-                      {practiceEnabled ? (
-                        <form action={setPracticeCheckIn} className="practice-record-form">
-                          <input type="hidden" name="towerId" value={tower.id} />
-                          <input type="hidden" name="protocolId" value={item.protocolId} />
-                          <input
-                            type="hidden"
-                            name="protocolVersion"
-                            value={item.protocolVersion}
-                          />
-                          <input type="hidden" name="recorded" value="true" />
-                          <label htmlFor={`practice-date-${item.protocolId}`}>Practice date</label>
-                          <input
-                            id={`practice-date-${item.protocolId}`}
-                            name="practiceDate"
-                            type="date"
-                            min={practiceRange.from}
-                            max={practiceRange.to}
-                            defaultValue={defaultPracticeDate}
-                            required
-                          />
-                          <button
-                            className="secondary-action"
-                            type="submit"
-                            aria-label={`Record ${protocol?.title ?? "protocol"} as practiced`}
-                          >
-                            Practiced
-                          </button>
-                        </form>
-                      ) : null}
-                    </div>
-                    <div className="item-actions">
-                      <form action={moveTowerItemUp}>
-                        <input type="hidden" name="towerId" value={tower.id} />
-                        <input type="hidden" name="revision" value={tower.revision} />
-                        <input type="hidden" name="protocolId" value={item.protocolId} />
-                        <button
-                          type="submit"
-                          disabled={index === 0}
-                          aria-label={`Move ${protocol?.title ?? "protocol"} up`}
-                        >
-                          ↑
-                        </button>
-                      </form>
-                      <form action={moveTowerItemDown}>
-                        <input type="hidden" name="towerId" value={tower.id} />
-                        <input type="hidden" name="revision" value={tower.revision} />
-                        <input type="hidden" name="protocolId" value={item.protocolId} />
-                        <button
-                          type="submit"
-                          disabled={index === tower.items.length - 1}
-                          aria-label={`Move ${protocol?.title ?? "protocol"} down`}
-                        >
-                          ↓
-                        </button>
-                      </form>
-                      <form action={removeTowerItemAction}>
-                        <input type="hidden" name="towerId" value={tower.id} />
-                        <input type="hidden" name="revision" value={tower.revision} />
-                        <input type="hidden" name="protocolId" value={item.protocolId} />
-                        <button type="submit">Remove</button>
-                      </form>
-                    </div>
-                  </li>
-                );
-              })}
-            </ol>
-          )}
-        </section>
+        {starter ? null : (
+          <>
+            <section className="tower-levels" aria-labelledby="tower-levels-heading">
+              <div className="section-heading compact-heading">
+                <div>
+                  <p className="eyebrow">Ordered foundation</p>
+                  <h2 id="tower-levels-heading">Tower blocks</h2>
+                </div>
+              </div>
+              {tower.items.length === 0 ? (
+                <div className="state-card tower-empty">
+                  <h3>This tower has no blocks yet.</h3>
+                  <p>
+                    Add a published protocol below. Saving a protocol here does not track
+                    completion.
+                  </p>
+                </div>
+              ) : (
+                <ol className="tower-item-list">
+                  {tower.items.map((item, index) => {
+                    const protocol = exactProtocol(item.protocolId, item.protocolVersion);
+                    return (
+                      <li key={item.protocolId}>
+                        <div>
+                          <span className="tower-position">Level {item.position}</span>
+                          <h3>{protocol?.title ?? "Unavailable protocol version"}</h3>
+                          <p>
+                            {protocol
+                              ? `${protocol.summary} · Pinned version ${item.protocolVersion}`
+                              : `Pinned version ${item.protocolVersion} is retained without exposing retired content.`}
+                          </p>
+                          {practiceEnabled ? (
+                            <form action={setPracticeCheckIn} className="practice-record-form">
+                              <input type="hidden" name="towerId" value={tower.id} />
+                              <input type="hidden" name="protocolId" value={item.protocolId} />
+                              <input
+                                type="hidden"
+                                name="protocolVersion"
+                                value={item.protocolVersion}
+                              />
+                              <input type="hidden" name="recorded" value="true" />
+                              <label htmlFor={`practice-date-${item.protocolId}`}>
+                                Practice date
+                              </label>
+                              <input
+                                id={`practice-date-${item.protocolId}`}
+                                name="practiceDate"
+                                type="date"
+                                min={practiceRange.from}
+                                max={practiceRange.to}
+                                defaultValue={defaultPracticeDate}
+                                required
+                              />
+                              <button
+                                className="secondary-action"
+                                type="submit"
+                                aria-label={`Record ${protocol?.title ?? "protocol"} as practiced`}
+                              >
+                                Practiced
+                              </button>
+                            </form>
+                          ) : null}
+                        </div>
+                        <div className="item-actions">
+                          <form action={moveTowerItemUp}>
+                            <input type="hidden" name="towerId" value={tower.id} />
+                            <input type="hidden" name="revision" value={tower.revision} />
+                            <input type="hidden" name="protocolId" value={item.protocolId} />
+                            <button
+                              type="submit"
+                              disabled={index === 0}
+                              aria-label={`Move ${protocol?.title ?? "protocol"} up`}
+                            >
+                              ↑
+                            </button>
+                          </form>
+                          <form action={moveTowerItemDown}>
+                            <input type="hidden" name="towerId" value={tower.id} />
+                            <input type="hidden" name="revision" value={tower.revision} />
+                            <input type="hidden" name="protocolId" value={item.protocolId} />
+                            <button
+                              type="submit"
+                              disabled={index === tower.items.length - 1}
+                              aria-label={`Move ${protocol?.title ?? "protocol"} down`}
+                            >
+                              ↓
+                            </button>
+                          </form>
+                          <form action={removeTowerItemAction}>
+                            <input type="hidden" name="towerId" value={tower.id} />
+                            <input type="hidden" name="revision" value={tower.revision} />
+                            <input type="hidden" name="protocolId" value={item.protocolId} />
+                            <button type="submit">Remove</button>
+                          </form>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+              )}
+            </section>
 
-        {practiceEnabled ? (
-          <section className="practice-history" aria-labelledby="practice-history-heading">
-            <div className="section-heading compact-heading">
-              <div>
-                <p className="eyebrow">Private recent history</p>
-                <h2 id="practice-history-heading">Recorded practice</h2>
-                <p>
-                  A check-in records only what you chose to enter. It is not proof of completion,
-                  benefit, or a health outcome.
-                </p>
-              </div>
-            </div>
-            {practiceHistory.status === "unavailable" ? (
-              <div className="state-card practice-state" role="status">
-                <h3>Private practice history is temporarily unavailable</h3>
-                <p>Your tower and the public catalog remain available.</p>
-              </div>
-            ) : practiceHistory.value.length === 0 ? (
-              <div className="state-card practice-state">
-                <h3>No recent practice recorded</h3>
-                <p>Use a Practiced button above to add a private calendar-date check-in.</p>
-              </div>
-            ) : (
-              <ul className="practice-history-list">
-                {practiceHistory.value.map((checkIn) => {
-                  const protocol = exactProtocol(checkIn.protocolId, checkIn.protocolVersion);
-                  const isCurrentBlock = tower.items.some(
-                    (item) =>
-                      item.protocolId === checkIn.protocolId &&
-                      item.protocolVersion === checkIn.protocolVersion,
-                  );
-                  const formattedDate = formatPracticeDate(checkIn.practiceDate);
-                  return (
-                    <li
-                      key={`${checkIn.protocolId}:${checkIn.protocolVersion}:${checkIn.practiceDate}`}
-                    >
+            {practiceEnabled ? (
+              <section className="practice-history" aria-labelledby="practice-history-heading">
+                <div className="section-heading compact-heading">
+                  <div>
+                    <p className="eyebrow">Private recent history</p>
+                    <h2 id="practice-history-heading">Recorded practice</h2>
+                    <p>
+                      A check-in records only what you chose to enter. It is not proof of
+                      completion, benefit, or a health outcome.
+                    </p>
+                  </div>
+                </div>
+                {practiceHistory.status === "unavailable" ? (
+                  <div className="state-card practice-state" role="status">
+                    <h3>Private practice history is temporarily unavailable</h3>
+                    <p>Your tower and the public catalog remain available.</p>
+                  </div>
+                ) : practiceHistory.value.length === 0 ? (
+                  <div className="state-card practice-state">
+                    <h3>No recent practice recorded</h3>
+                    <p>Use a Practiced button above to add a private calendar-date check-in.</p>
+                  </div>
+                ) : (
+                  <ul className="practice-history-list">
+                    {practiceHistory.value.map((checkIn) => {
+                      const protocol = exactProtocol(checkIn.protocolId, checkIn.protocolVersion);
+                      const isCurrentBlock = tower.items.some(
+                        (item) =>
+                          item.protocolId === checkIn.protocolId &&
+                          item.protocolVersion === checkIn.protocolVersion,
+                      );
+                      const formattedDate = formatPracticeDate(checkIn.practiceDate);
+                      return (
+                        <li
+                          key={`${checkIn.protocolId}:${checkIn.protocolVersion}:${checkIn.practiceDate}`}
+                        >
+                          <div>
+                            <span className="tower-position">
+                              {isCurrentBlock
+                                ? "Current tower block"
+                                : "Removed from current tower"}
+                            </span>
+                            <h3>{protocol?.title ?? "Unavailable protocol version"}</h3>
+                            <p>
+                              Pinned version {checkIn.protocolVersion} ·{" "}
+                              <time dateTime={checkIn.practiceDate}>{formattedDate}</time>
+                            </p>
+                          </div>
+                          <form action={setPracticeCheckIn}>
+                            <input type="hidden" name="towerId" value={tower.id} />
+                            <input type="hidden" name="protocolId" value={checkIn.protocolId} />
+                            <input
+                              type="hidden"
+                              name="protocolVersion"
+                              value={checkIn.protocolVersion}
+                            />
+                            <input type="hidden" name="practiceDate" value={checkIn.practiceDate} />
+                            <input type="hidden" name="recorded" value="false" />
+                            <button
+                              className="secondary-action"
+                              type="submit"
+                              aria-label={`Undo ${protocol?.title ?? "protocol"} practice on ${formattedDate}`}
+                            >
+                              Undo
+                            </button>
+                          </form>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </section>
+            ) : null}
+
+            <section className="tower-catalog" aria-labelledby="tower-catalog-heading">
+              <p className="eyebrow">Published catalog</p>
+              <h2 id="tower-catalog-heading">Add a protocol block</h2>
+              {catalog.status === "unavailable" ? (
+                <div className="state-card" role="status">
+                  <h3>The catalog is temporarily unavailable</h3>
+                  <p>Your saved tower has not changed.</p>
+                </div>
+              ) : availableProtocols.length === 0 ? (
+                <p>Every current protocol is already in this tower.</p>
+              ) : (
+                <ul className="add-protocol-list">
+                  {availableProtocols.map((protocol) => (
+                    <li key={protocol.id}>
                       <div>
-                        <span className="tower-position">
-                          {isCurrentBlock ? "Current tower block" : "Removed from current tower"}
-                        </span>
-                        <h3>{protocol?.title ?? "Unavailable protocol version"}</h3>
-                        <p>
-                          Pinned version {checkIn.protocolVersion} ·{" "}
-                          <time dateTime={checkIn.practiceDate}>{formattedDate}</time>
-                        </p>
+                        <h3>{protocol.title}</h3>
+                        <p>{protocol.summary}</p>
+                        <small>Current published version {protocol.version}</small>
                       </div>
-                      <form action={setPracticeCheckIn}>
+                      <form action={addTowerItemAction}>
                         <input type="hidden" name="towerId" value={tower.id} />
-                        <input type="hidden" name="protocolId" value={checkIn.protocolId} />
-                        <input
-                          type="hidden"
-                          name="protocolVersion"
-                          value={checkIn.protocolVersion}
-                        />
-                        <input type="hidden" name="practiceDate" value={checkIn.practiceDate} />
-                        <input type="hidden" name="recorded" value="false" />
+                        <input type="hidden" name="revision" value={tower.revision} />
+                        <input type="hidden" name="protocolId" value={protocol.id} />
                         <button
                           className="secondary-action"
                           type="submit"
-                          aria-label={`Undo ${protocol?.title ?? "protocol"} practice on ${formattedDate}`}
+                          disabled={tower.items.length >= maximumItemsPerTower}
                         >
-                          Undo
+                          Add to {tower.title}
                         </button>
                       </form>
                     </li>
-                  );
-                })}
-              </ul>
-            )}
-          </section>
-        ) : null}
-
-        <section className="tower-catalog" aria-labelledby="tower-catalog-heading">
-          <p className="eyebrow">Published catalog</p>
-          <h2 id="tower-catalog-heading">Add a protocol block</h2>
-          {catalog.status === "unavailable" ? (
-            <div className="state-card" role="status">
-              <h3>The catalog is temporarily unavailable</h3>
-              <p>Your saved tower has not changed.</p>
-            </div>
-          ) : availableProtocols.length === 0 ? (
-            <p>Every current protocol is already in this tower.</p>
-          ) : (
-            <ul className="add-protocol-list">
-              {availableProtocols.map((protocol) => (
-                <li key={protocol.id}>
-                  <div>
-                    <h3>{protocol.title}</h3>
-                    <p>{protocol.summary}</p>
-                    <small>Current published version {protocol.version}</small>
-                  </div>
-                  <form action={addTowerItemAction}>
-                    <input type="hidden" name="towerId" value={tower.id} />
-                    <input type="hidden" name="revision" value={tower.revision} />
-                    <input type="hidden" name="protocolId" value={protocol.id} />
-                    <button
-                      className="secondary-action"
-                      type="submit"
-                      disabled={tower.items.length >= maximumItemsPerTower}
-                    >
-                      Add to {tower.title}
-                    </button>
-                  </form>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+                  ))}
+                </ul>
+              )}
+            </section>
+          </>
+        )}
       </section>
       <SiteFooter />
     </main>

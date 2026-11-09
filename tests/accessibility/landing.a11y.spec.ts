@@ -58,7 +58,7 @@ test("private practice can be recorded and undone by keyboard without serious vi
   request,
 }) => {
   await requestAndConfirm(page, request, "practice-a11y@example.test");
-  await page.getByRole("link", { name: "Create your first tower" }).click();
+  await page.goto("/towers/new/detailed");
   await page.getByLabel("Goal or context").fill("Synthetic accessible practice");
   await page.getByRole("button", { name: "Create tower" }).click();
   await page.getByRole("button", { name: "Add to Synthetic accessible practice" }).first().click();
