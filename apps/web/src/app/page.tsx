@@ -15,7 +15,11 @@ const capabilities = [
     status: "Available now · Bounded and owner-only",
   },
   {
-    title: "Outcomes and aggregate learning",
+    title: "Private outcome check-ins",
+    status: "Available now · Separate from practice",
+  },
+  {
+    title: "Aggregate learning",
     status: "Planned · Not active in the beta",
   },
   {

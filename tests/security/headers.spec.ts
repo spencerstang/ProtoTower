@@ -88,7 +88,7 @@ test("authenticated practice responses are private and cannot replay into an ano
   request,
 }) => {
   await requestAndConfirm(page, request, "practice-security@example.test");
-  await page.getByRole("link", { name: "Create your first tower" }).click();
+  await page.goto("/towers/new/detailed");
   await page.getByLabel("Goal or context").fill("Synthetic private cache check");
   await page.getByRole("button", { name: "Create tower" }).click();
   await page.getByRole("button", { name: "Add to Synthetic private cache check" }).first().click();

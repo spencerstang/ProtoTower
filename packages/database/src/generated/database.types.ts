@@ -106,8 +106,10 @@ export type Database = {
           definition: string | null
           id: string
           identity_mode: string
+          intent_text: string | null
           owner_id: string
           revision: number
+          starter_match_key: string | null
           title: string
           updated_at: string
         }
@@ -119,8 +121,10 @@ export type Database = {
           definition?: string | null
           id?: string
           identity_mode?: string
+          intent_text?: string | null
           owner_id: string
           revision?: number
+          starter_match_key?: string | null
           title: string
           updated_at?: string
         }
@@ -132,10 +136,162 @@ export type Database = {
           definition?: string | null
           id?: string
           identity_mode?: string
+          intent_text?: string | null
           owner_id?: string
           revision?: number
+          starter_match_key?: string | null
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      starter_rules: {
+        Row: {
+          caution_lines: string[]
+          match_key: string
+          metric_label: string | null
+          overlap_note: string | null
+          primary_protocol_id: string | null
+          primary_slug: string | null
+          primary_step_description: string | null
+          primary_step_title: string | null
+          primary_title: string | null
+          primary_version: number | null
+          secondary_protocol_id: string | null
+          secondary_slug: string | null
+          secondary_title: string | null
+          secondary_version: number | null
+          show_cautions: boolean
+        }
+        Insert: {
+          caution_lines?: string[]
+          match_key: string
+          metric_label?: string | null
+          overlap_note?: string | null
+          primary_protocol_id?: string | null
+          primary_slug?: string | null
+          primary_step_description?: string | null
+          primary_step_title?: string | null
+          primary_title?: string | null
+          primary_version?: number | null
+          secondary_protocol_id?: string | null
+          secondary_slug?: string | null
+          secondary_title?: string | null
+          secondary_version?: number | null
+          show_cautions?: boolean
+        }
+        Update: {
+          caution_lines?: string[]
+          match_key?: string
+          metric_label?: string | null
+          overlap_note?: string | null
+          primary_protocol_id?: string | null
+          primary_slug?: string | null
+          primary_step_description?: string | null
+          primary_step_title?: string | null
+          primary_title?: string | null
+          primary_version?: number | null
+          secondary_protocol_id?: string | null
+          secondary_slug?: string | null
+          secondary_title?: string | null
+          secondary_version?: number | null
+          show_cautions?: boolean
+        }
+        Relationships: []
+      }
+      starter_outcome_metrics: {
+        Row: {
+          id: string
+          label: string
+          tower_id: string
+        }
+        Insert: {
+          id?: string
+          label: string
+          tower_id: string
+        }
+        Update: {
+          id?: string
+          label?: string
+          tower_id?: string
+        }
+        Relationships: []
+      }
+      starter_adherence: {
+        Row: {
+          period_start: string
+          protocol_id: string
+          status: string
+          tower_id: string
+        }
+        Insert: {
+          period_start: string
+          protocol_id: string
+          status: string
+          tower_id: string
+        }
+        Update: {
+          period_start?: string
+          protocol_id?: string
+          status?: string
+          tower_id?: string
+        }
+        Relationships: []
+      }
+      starter_outcome_readings: {
+        Row: {
+          period_start: string
+          skipped: boolean
+          text_value: string | null
+          tower_id: string
+        }
+        Insert: {
+          period_start: string
+          skipped: boolean
+          text_value?: string | null
+          tower_id: string
+        }
+        Update: {
+          period_start?: string
+          skipped?: boolean
+          text_value?: string | null
+          tower_id?: string
+        }
+        Relationships: []
+      }
+      check_in_reminder_preferences: {
+        Row: {
+          opted_out: boolean
+          owner_id: string
+          token: string
+        }
+        Insert: {
+          opted_out?: boolean
+          owner_id: string
+          token?: string
+        }
+        Update: {
+          opted_out?: boolean
+          owner_id?: string
+          token?: string
+        }
+        Relationships: []
+      }
+      check_in_reminder_sends: {
+        Row: {
+          created_at: string
+          owner_id: string
+          period_start: string
+        }
+        Insert: {
+          created_at?: string
+          owner_id: string
+          period_start: string
+        }
+        Update: {
+          created_at?: string
+          owner_id?: string
+          period_start?: string
         }
         Relationships: []
       }
@@ -442,6 +598,38 @@ export type Database = {
           title: string
           updated_at: string
         }[]
+      }
+      create_starter_tower: {
+        Args: {
+          candidate_intent: string
+          candidate_match_key: string
+        }
+        Returns: {
+          created_at: string
+          id: string
+          revision: number
+          title: string
+          updated_at: string
+        }[]
+      }
+      opt_out_check_in_reminder: {
+        Args: { candidate_token: string }
+        Returns: boolean
+      }
+      record_starter_adherence: {
+        Args: {
+          candidate_marks: Json
+          candidate_tower_id: string
+        }
+        Returns: boolean
+      }
+      record_starter_outcome: {
+        Args: {
+          candidate_skipped: boolean
+          candidate_text: string | null
+          candidate_tower_id: string
+        }
+        Returns: boolean
       }
       create_personal_tower: {
         Args: { candidate_title: string }

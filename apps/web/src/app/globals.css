@@ -1113,19 +1113,22 @@ button {
 }
 
 .setup-form,
-.product-panel {
+.product-panel,
+.starter-panel {
   max-width: 720px;
 }
 
 .setup-form section,
 .product-panel section,
+.starter-panel section,
 .metric-fields {
   display: grid;
   gap: 0.75rem;
 }
 
 .setup-form section + section,
-.product-panel section + section {
+.product-panel section + section,
+.starter-panel section + section {
   margin-top: 2rem;
 }
 
@@ -1177,6 +1180,13 @@ button {
 .tower-meta {
   color: var(--muted);
   font-weight: 700;
+}
+
+.first-action {
+  padding: 1rem 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 0.8rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

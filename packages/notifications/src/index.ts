@@ -11,3 +11,10 @@ export interface NotificationProvider {
 export const disabledNotificationProvider: NotificationProvider = {
   send: async () => ({ accepted: false }),
 };
+
+export {
+  buildWeeklyCheckInReminder,
+  deliverWeeklyCheckInReminders,
+  isSyntheticReminderRecipient,
+} from "./reminder";
+export type { ReminderMessage, ReminderTransport } from "./reminder";

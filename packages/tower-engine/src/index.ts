@@ -1,6 +1,7 @@
 import { protocolIdSchema, type ProtocolId } from "@protostack/protocol-engine";
 import { z } from "zod";
 import { assertPlainLine } from "./plain-line";
+import { starterMatchKeys, type StarterMatchKey } from "./starter";
 import {
   assertStoredSetup,
   calendarDateSchema,
@@ -62,6 +63,8 @@ export const personalTowerSchema = z
     protocols: z.array(storedTowerProtocolSchema).max(maximumTowerProtocols).default([]),
     metrics: z.array(storedMetricSchema).max(maximumMetricsPerTower).default([]),
     revision: towerRevisionSchema,
+    intentText: z.string().nullable().default(null),
+    starterMatchKey: z.enum(starterMatchKeys).nullable().default(null),
     items: z.array(towerItemSchema).max(maximumItemsPerTower),
     createdAt: z.iso.datetime({ offset: true }),
     updatedAt: z.iso.datetime({ offset: true }),
@@ -145,6 +148,10 @@ export interface PersonalTowerRepository {
   findById(id: TowerId): Promise<TowerQueryResult<PersonalTower | null>>;
   create(title: TowerTitle): Promise<TowerMutationResult<PersonalTower>>;
   createConfigured(input: ConfiguredTowerWrite): Promise<TowerMutationResult<PersonalTower>>;
+  createStarter(input: {
+    intent: string;
+    matchKey: StarterMatchKey;
+  }): Promise<TowerMutationResult<PersonalTower>>;
   save(input: SaveTowerInput): Promise<TowerMutationResult<PersonalTower>>;
   saveSetup(input: SaveTowerSetupInput): Promise<TowerMutationResult<PersonalTower>>;
   delete(input: DeleteTowerInput): Promise<TowerMutationResult<boolean>>;
@@ -251,5 +258,14 @@ export type {
   TowerProtocolId,
   TowerSetupDraft,
 } from "./setup";
+
+export {
+  adherenceStatuses,
+  matchStarterIntent,
+  parseAdherenceStatus,
+  parseStarterOutcomeNote,
+  starterMatchKeys,
+} from "./starter";
+export type { AdherenceStatus, StarterMatch, StarterMatchKey } from "./starter";
 
 export const towerEngineStatus = "authenticated-goal-towers" as const;

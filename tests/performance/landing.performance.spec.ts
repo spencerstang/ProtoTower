@@ -22,7 +22,7 @@ test("private practice history stays within the route budget and narrow viewport
   request,
 }) => {
   await requestAndConfirm(page, request, "practice-performance@example.test");
-  await page.getByRole("link", { name: "Create your first tower" }).click();
+  await page.goto("/towers/new/detailed");
   await page.getByLabel("Goal or context").fill("Synthetic performance practice");
   await page.getByRole("button", { name: "Create tower" }).click();
   await page.getByRole("button", { name: "Add to Synthetic performance practice" }).first().click();
