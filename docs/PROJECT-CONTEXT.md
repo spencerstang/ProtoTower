@@ -20,7 +20,7 @@ Ordinary development in isolated branches and synthetic local environments shoul
 - Source-backed protocols require provenance, attribution, immutable versions, clear evidence distinctions, and no unsupported efficacy or medical claims.
 - Users should control private systems, pseudonymous account identity, practice records, optional outcomes, revisions, export/deletion, and eventually narrowly scoped agent permissions.
 - Model/vendor-neutral agent interoperability is a strategic objective. A user-authorized agent should eventually read permitted state, propose bounded changes, and receive a replayable audited event feed. **The current beta does not authorize autonomous agents to write private user state**; accepted Milestone 6 limits agents to scoped read/propose with explicit approval.
-- The owner favors a *frictionless first-use experience*: a user answers **“What would you like to accomplish?”** and can immediately create a tower. More detailed setup may follow progressively. This feature is **under review in PR #36**, not assumed shipped.
+- The owner favors a _frictionless first-use experience_: a user answers **“What would you like to accomplish?”** and can immediately create a tower. More detailed setup may follow progressively. This feature is **under review in PR #36**, not assumed shipped.
 - Optimize for genuine activation, repeated practice, retention, trust, and eventual willingness to pay; do not confuse completing feature tickets with product validation.
 - The repository is a real application, not a mockup: Next.js, TypeScript, pnpm/Turborepo, Supabase/PostgreSQL with RLS, Cloudflare Workers via OpenNext. No new architecture, services, SDKs, or scope expansion without accepted approvals.
 
