@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { requestAndConfirm } from "../support/auth";
+import { submitDetailedTower } from "../support/towers";
 
 function seriousViolations(results: Awaited<ReturnType<AxeBuilder["analyze"]>>) {
   return results.violations.filter((violation) =>
@@ -58,9 +59,7 @@ test("private practice can be recorded and undone by keyboard without serious vi
   request,
 }) => {
   await requestAndConfirm(page, request, "practice-a11y@example.test");
-  await page.goto("/towers/new/detailed");
-  await page.getByLabel("Goal or context").fill("Synthetic accessible practice");
-  await page.getByRole("button", { name: "Create tower" }).click();
+  await submitDetailedTower(page, "Synthetic accessible practice");
   await page.getByRole("button", { name: "Add to Synthetic accessible practice" }).first().click();
 
   const date = page.getByLabel("Practice date");

@@ -38,6 +38,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: supabase start
       - run: supabase db reset
+      - run: pnpm db:lint
+      - run: pnpm db:test
       - run: pnpm playwright:install
       - run: pnpm test:browsers
       - if: failure()

@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { requestAndConfirm } from "../support/auth";
+import { submitDetailedTower } from "../support/towers";
 
 test("landing page DOM content is available within the foundation budget", async ({ page }) => {
   const startedAt = Date.now();
@@ -22,9 +23,7 @@ test("private practice history stays within the route budget and narrow viewport
   request,
 }) => {
   await requestAndConfirm(page, request, "practice-performance@example.test");
-  await page.goto("/towers/new/detailed");
-  await page.getByLabel("Goal or context").fill("Synthetic performance practice");
-  await page.getByRole("button", { name: "Create tower" }).click();
+  await submitDetailedTower(page, "Synthetic performance practice");
   await page.getByRole("button", { name: "Add to Synthetic performance practice" }).first().click();
   await page.getByRole("button", { name: /Record .* as practiced/u }).click();
   const towerPath = new URL(page.url()).pathname;
