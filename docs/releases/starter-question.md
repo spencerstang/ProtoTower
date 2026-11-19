@@ -34,7 +34,18 @@ browser acceptance. These changes add no dependency or application behavior.
 Local lint, strict types, 118 unit tests, thirteen package builds, and static checks
 passed with cached dependencies. Cached Next.js 16.3.6 and Zod 4.4.3 differ from the
 target branch's 16.4.2 and 4.6.6; these results are supplementary evidence only.
-The full application build, real browser/database checks, current dependency audit,
-and protected staging acceptance remain unverified. The session blocks local server
-ports, Docker access, registry access, and GitHub writes. No release or deployment
-acceptance is implied.
+
+GitHub Actions run 44440859406 verified commit
+`66d852f853cb44ba76b6a29923a24a2c41c8eb12` with the frozen dependencies. Quality
+(formatting, policy and secret checks, lint, strict types, units, application build,
+and production dependency audit), dependency review, and secret scan passed. A clean
+Supabase reset, database lint, and all eight pgTAP files passed. Browser acceptance
+improved to 25 passed and one failed; the remaining starter scenario stopped because
+its heading locator matched both "This week" and "Outcome this week". The follow-up
+uses an exact heading match without removing an assertion or changing application
+behavior. Fresh full CI on that follow-up remains required.
+
+Protected staging and production acceptance remain unverified. The most recent
+inspected staging migration failed at project linking because Supabase rejected the
+access-token/project authorization. No merge, deployment, or production acceptance
+is implied by these test repairs.

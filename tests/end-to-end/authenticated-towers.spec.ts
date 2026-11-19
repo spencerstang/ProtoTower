@@ -191,7 +191,7 @@ test("one question starts a reviewed pair or an empty tower", async ({ page, req
   ).toBeVisible();
   await expect(page.getByRole("heading", { name: "Get outdoor morning light" })).toBeVisible();
   await expect(page.getByText("Never stare directly at the sun.")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "This week" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "This week", exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Outcome this week" })).toBeVisible();
   await expect(page.getByRole("button", { name: /Record .* as practiced/u })).toHaveCount(0);
 
