@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { requestAndConfirm } from "../support/auth";
+import { submitDetailedTower } from "../support/towers";
 
 test("baseline security headers use per-response script nonces", async ({ request }) => {
   const policies: string[] = [];
@@ -88,9 +89,7 @@ test("authenticated practice responses are private and cannot replay into an ano
   request,
 }) => {
   await requestAndConfirm(page, request, "practice-security@example.test");
-  await page.goto("/towers/new/detailed");
-  await page.getByLabel("Goal or context").fill("Synthetic private cache check");
-  await page.getByRole("button", { name: "Create tower" }).click();
+  await submitDetailedTower(page, "Synthetic private cache check");
   await page.getByRole("button", { name: "Add to Synthetic private cache check" }).first().click();
   await page.getByRole("button", { name: /Record .* as practiced/u }).click();
   const towerPath = new URL(page.url()).pathname;

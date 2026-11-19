@@ -1,17 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 import { isSessionCookie, requestAndConfirm } from "../support/auth";
+import { submitDetailedTower } from "../support/towers";
 
 const alphaEmail = "tower-alpha@example.test";
 const betaEmail = "tower-beta@example.test";
-
-async function submitNewTower(page: Page, title: string): Promise<void> {
-  await page.goto("/towers/new/detailed");
-  await page.getByLabel("Goal or context").fill(title);
-  await page.getByLabel("Custom protocol name").fill("Custom cue");
-  await page.getByLabel("Custom how-to").fill("Do one small thing.");
-  await page.getByRole("checkbox", { name: "Goal complete" }).check();
-  await page.getByRole("button", { name: "Create tower" }).click();
-}
 
 async function removeOwnedTowers(page: Page): Promise<void> {
   await page.goto("/towers");
@@ -65,7 +57,7 @@ test("scanner-safe sign-in persists isolated goal-specific towers", async ({
   expect(authCookies.every((cookie) => cookie.httpOnly && cookie.sameSite === "Lax")).toBe(true);
 
   await page.getByRole("link", { name: "Create your first tower" }).click();
-  await submitNewTower(page, "Sleep better");
+  await submitDetailedTower(page, "Sleep better");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Sleep better");
   const alphaTowerPath = new URL(page.url()).pathname;
 
@@ -136,7 +128,7 @@ test("scanner-safe sign-in persists isolated goal-specific towers", async ({
   await expect(page.locator(".practice-history-list > li")).toHaveCount(1);
 
   await page.goto("/towers/new");
-  await submitNewTower(page, "Run a marathon");
+  await submitDetailedTower(page, "Run a marathon");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Run a marathon");
   await page.goto("/towers");
   await expect(page.getByRole("link", { name: /Sleep deeply/u })).toBeVisible();
@@ -151,7 +143,7 @@ test("scanner-safe sign-in persists isolated goal-specific towers", async ({
 
   await page.goto("/towers/new");
   const xssTitle = '<img src=x onerror="alert(1)">';
-  await submitNewTower(page, xssTitle);
+  await submitDetailedTower(page, xssTitle);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(xssTitle);
   await expect(page.locator('img[src="x"]')).toHaveCount(0);
   await page.getByRole("button", { name: "Delete tower" }).click();
@@ -186,7 +178,9 @@ test("scanner-safe sign-in persists isolated goal-specific towers", async ({
 test("one question starts a reviewed pair or an empty tower", async ({ page, request }) => {
   await requestAndConfirm(page, request, "starter-flow@example.invalid");
   await page.goto("/towers/new");
-  await page.getByLabel("What would you like to accomplish?").fill("Sleep better");
+  await page
+    .getByRole("textbox", { name: "What would you like to accomplish?", exact: true })
+    .fill("Sleep better");
   await page.getByRole("button", { name: "Start" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Sleep better");
   await expect(
@@ -197,7 +191,7 @@ test("one question starts a reviewed pair or an empty tower", async ({ page, req
   ).toBeVisible();
   await expect(page.getByRole("heading", { name: "Get outdoor morning light" })).toBeVisible();
   await expect(page.getByText("Never stare directly at the sun.")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "This week" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "This week", exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Outcome this week" })).toBeVisible();
   await expect(page.getByRole("button", { name: /Record .* as practiced/u })).toHaveCount(0);
 
@@ -215,7 +209,9 @@ test("one question starts a reviewed pair or an empty tower", async ({ page, req
   await expect(page.getByText("Outcome for this week was saved.")).toBeVisible();
 
   await page.goto("/towers/new");
-  await page.getByLabel("What would you like to accomplish?").fill("Work out 3x/week");
+  await page
+    .getByRole("textbox", { name: "What would you like to accomplish?", exact: true })
+    .fill("Work out 3x/week");
   await page.getByRole("button", { name: "Start" }).click();
   await expect(
     page.getByRole("link", { name: "Peter Attia: Centenarian Decathlon framework" }),
@@ -226,7 +222,9 @@ test("one question starts a reviewed pair or an empty tower", async ({ page, req
   ).toHaveCount(0);
 
   await page.goto("/towers/new");
-  await page.getByLabel("What would you like to accomplish?").fill("Work out, then sauna");
+  await page
+    .getByRole("textbox", { name: "What would you like to accomplish?", exact: true })
+    .fill("Work out, then sauna");
   await page.getByRole("button", { name: "Start" }).click();
   await expect(
     page.getByRole("heading", { name: "Cautions from the sauna routine" }),
@@ -236,7 +234,9 @@ test("one question starts a reviewed pair or an empty tower", async ({ page, req
   ).toBeVisible();
 
   await page.goto("/towers/new");
-  await page.getByLabel("What would you like to accomplish?").fill("Save for a kitchen renovation");
+  await page
+    .getByRole("textbox", { name: "What would you like to accomplish?", exact: true })
+    .fill("Save for a kitchen renovation");
   await page.getByRole("button", { name: "Start" }).click();
   await expect(page.getByRole("heading", { name: "No reviewed pair yet" })).toBeVisible();
   await expect(page.getByText("did not add a protocol or a first action")).toBeVisible();

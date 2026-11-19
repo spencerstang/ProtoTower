@@ -7,7 +7,11 @@ const syntheticUsers = [
   "practice-security@example.test",
   "practice-performance@example.test",
 ];
-const resetUsers = [...syntheticUsers, "quiet-launch-new-user@example.test"];
+const resetUsers = [
+  ...syntheticUsers,
+  "quiet-launch-new-user@example.test",
+  "starter-flow@example.invalid",
+];
 
 export default async function globalSetup() {
   const status = readLocalSupabaseStatus();
