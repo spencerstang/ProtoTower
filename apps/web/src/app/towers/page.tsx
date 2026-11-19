@@ -57,8 +57,8 @@ export default async function TowersPage(props: {
           <div className="state-card tower-empty">
             <h2>Start with one goal.</h2>
             <p>
-              A sleep routine and marathon preparation belong in different towers. Create the goal
-              context first, then choose its protocol blocks.
+              Answer one question. A reviewed protocol pair is added when one exists, and the tower
+              is still created when none does.
             </p>
             <Link className="primary-action" href="/towers/new">
               Create your first tower

@@ -96,6 +96,7 @@ describe("feature flags", () => {
     expect(isFeatureEnabled("protocolCatalog")).toBe(true);
     expect(isFeatureEnabled("authentication")).toBe(true);
     expect(isFeatureEnabled("protocolTracking")).toBe(true);
+    expect(isFeatureEnabled("weeklyCheckInReminders")).toBe(false);
     expect(Object.isFrozen(featureFlags)).toBe(true);
   });
 });

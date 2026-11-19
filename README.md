@@ -32,6 +32,8 @@ Milestone 5 production, policy, backup, accessibility, and final DNS gates pass.
 - four source-backed, attributed educational protocols with independent evidence tiers
 - scanner-resistant Supabase Auth email links with server-only `HttpOnly` sessions
 - multiple private goal towers with exact protocol-version pinning and revisions
+- a one-question start that creates a tower immediately and pins a reviewed protocol pair only when one exists
+- separate weekly practice and outcome check-ins on those starter towers
 - tower setup for a name, copied protocols, ongoing/proxy/final measures, a check-in rhythm, and a private or shared preference
 - one check-in form per period for ongoing values and final completion
 - bounded private practice check-ins with exact-version history and idempotent undo
@@ -45,8 +47,10 @@ Password authentication, protocol authoring or publishing UI,
 scores, streaks, reminders, AI, analytics, non-authentication notifications,
 payments, and MCP remain disabled. Passwordless public account creation is enabled.
 Outcome metrics are private to the owner. Saving a tower as shared does not yet
-deliver it to anyone else. The beta email and product UI disclose that some features
-are not functional yet.
+deliver it to anyone else. Weekly check-in email is behind `weeklyCheckInReminders`,
+which defaults off, and the sender refuses any address that does not end in
+`.invalid`. The beta email and product UI disclose that some features are not
+functional yet.
 
 ## Prerequisites
 

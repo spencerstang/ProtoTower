@@ -38,9 +38,10 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   requestHeaders.set("Content-Security-Policy", policy);
 
   let response = NextResponse.next({ request: { headers: requestHeaders } });
-  const privateResponse = /^(?:\/auth(?:\/|$)|\/sign-in(?:\/|$)|\/towers(?:\/|$))/.test(
-    request.nextUrl.pathname,
-  );
+  const privateResponse =
+    /^(?:\/auth(?:\/|$)|\/sign-in(?:\/|$)|\/towers(?:\/|$)|\/reminders(?:\/|$))/.test(
+      request.nextUrl.pathname,
+    );
   const hasAuthCookie = request.cookies
     .getAll()
     .some(({ name }) => name.startsWith("sb-") && name.includes("-auth-token"));

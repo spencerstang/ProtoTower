@@ -8,6 +8,7 @@ const reviewedFeatureFlags = {
   payments: false,
   aggregateAnalytics: false,
   notifications: false,
+  weeklyCheckInReminders: false,
   aiInteroperability: false,
   readOnlyMcp: false,
 } as const;
