@@ -146,7 +146,7 @@ jobs:
           apiToken: "${{ secrets.CLOUDFLARE_API_TOKEN }}"
           accountId: "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
           workingDirectory: apps/web
-          wranglerVersion: "4.114.0"
+          wranglerVersion: "4.148.0"
           command: deploy --env staging
       - name: Verify staging endpoints
         shell: bash
