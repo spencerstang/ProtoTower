@@ -20,13 +20,23 @@ jobs:
       - uses: actions/setup-node@v6
         with: { node-version: 22.16.0 }
       - name: Read official Vite patch metadata
-        run: npm view vite@8.1.6 dist.integrity engines dependencies peerDependencies peerDependenciesMeta --json
+        run: |
+          npm view vite@8.1.6 dist.integrity engines dependencies optionalDependencies peerDependencies peerDependenciesMeta deprecated --json
+          npm view brace-expansion@1.1.21 dist.integrity engines dependencies deprecated --json
+          npm view brace-expansion@5.0.12 dist.integrity engines dependencies deprecated --json
       - name: Resolve metadata without executing dependency scripts
         run: pnpm install --lockfile-only --ignore-scripts --no-frozen-lockfile
-      - name: Verify the exact reviewed candidate
-        run: echo '94b782b700fd1b11455aeea7f9fd4b42db3fdb1f502a94d564f8991f5df92cbd  pnpm-lock.yaml' | sha256sum --check
+      - name: Report selected resolved package versions
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const packages = readFileSync('pnpm-lock.yaml', 'utf8').split(String.fromCharCode(10) + 'packages:' + String.fromCharCode(10))[1].split(String.fromCharCode(10) + 'snapshots:' + String.fromCharCode(10))[0];
+          console.log(packages.split(String.fromCharCode(10)).filter((line) => /^  (vite|brace-expansion|balanced-match|lightningcss|rolldown|tinyglobby|picomatch|postcss)@/.test(line)).join(String.fromCharCode(10)));
+          NODE
       - name: Audit all production and build dependencies
         run: pnpm audit --audit-level=high
+      - name: Verify the exact reviewed candidate
+        run: echo '94b782b700fd1b11455aeea7f9fd4b42db3fdb1f502a94d564f8991f5df92cbd  pnpm-lock.yaml' | sha256sum --check
   quality:
     runs-on: ubuntu-latest
     steps:
