@@ -13,14 +13,15 @@
     "test": "vitest run",
     "test:unit": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy:preview": "opennextjs-cloudflare build && opennextjs-cloudflare deploy --env preview",
-    "deploy:staging": "opennextjs-cloudflare build && opennextjs-cloudflare deploy --env staging",
+    "preview": "pnpm build:worker && opennextjs-cloudflare preview",
+    "deploy:preview": "pnpm build:worker && opennextjs-cloudflare deploy --env preview",
+    "deploy:staging": "pnpm build:worker && opennextjs-cloudflare deploy --env staging",
     "deploy:production": "opennextjs-cloudflare build && opennextjs-cloudflare deploy --env production",
-    "upload:preview": "opennextjs-cloudflare build && opennextjs-cloudflare upload --env preview",
-    "upload:staging": "opennextjs-cloudflare build && opennextjs-cloudflare upload --env staging",
+    "upload:preview": "pnpm build:worker && opennextjs-cloudflare upload --env preview",
+    "upload:staging": "pnpm build:worker && opennextjs-cloudflare upload --env staging",
     "upload:production": "opennextjs-cloudflare build && opennextjs-cloudflare upload --env production",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "build:worker": "node ../../scripts/patch-opennext-preview-props.mjs && opennextjs-cloudflare build"
   },
   "dependencies": {
     "@protostack/configuration": "workspace:*",

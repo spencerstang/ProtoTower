@@ -112,7 +112,7 @@ jobs:
           fs.writeFileSync(path, `${JSON.stringify(config, null, 2)}\n`);
           NODE
       - name: Build OpenNext Worker
-        run: pnpm --filter @protostack/web exec opennextjs-cloudflare build
+        run: pnpm --filter @protostack/web build:worker
         env:
           APP_ENV: staging
           APP_VERSION: "0.1.0"

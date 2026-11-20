@@ -23,6 +23,18 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test:unit
       - run: pnpm build
+      - name: Build Cloudflare Worker
+        run: pnpm --filter @protostack/web build:worker
+      - name: Smoke test Worker startup
+        shell: bash
+        run: |
+          pnpm --filter @protostack/web exec wrangler dev --env staging --ip 127.0.0.1 --port 8787 > "$RUNNER_TEMP/worker-smoke.log" 2>&1 &
+          worker_pid=$!
+          trap 'kill "$worker_pid" 2>/dev/null || true' EXIT
+          if ! node scripts/check-worker-startup.mjs; then
+            cat "$RUNNER_TEMP/worker-smoke.log"
+            exit 1
+          fi
       - run: pnpm audit --audit-level=high --prod
   browser:
     runs-on: ubuntu-latest
