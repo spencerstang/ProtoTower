@@ -19,6 +19,8 @@ jobs:
         with: { version: 11.17.0, run_install: false }
       - uses: actions/setup-node@v6
         with: { node-version: 22.16.0 }
+      - name: Read official Vite patch metadata
+        run: npm view vite@8.1.6 dist.integrity engines dependencies peerDependencies peerDependenciesMeta --json
       - name: Resolve metadata without executing dependency scripts
         run: pnpm install --lockfile-only --ignore-scripts --no-frozen-lockfile
       - name: Verify the exact reviewed candidate
