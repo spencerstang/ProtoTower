@@ -21,7 +21,7 @@
     "upload:staging": "pnpm build:worker && opennextjs-cloudflare upload --env staging",
     "upload:production": "opennextjs-cloudflare build && opennextjs-cloudflare upload --env production",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
-    "build:worker": "node ../../scripts/patch-opennext-preview-props.mjs && opennextjs-cloudflare build"
+    "build:worker": "opennextjs-cloudflare build"
   },
   "dependencies": {
     "@protostack/configuration": "workspace:*",
@@ -39,7 +39,7 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
-    "@opennextjs/cloudflare": "1.19.11",
-    "wrangler": "4.114.0"
+    "@opennextjs/cloudflare": "1.20.12",
+    "wrangler": "4.148.0"
   }
 }
