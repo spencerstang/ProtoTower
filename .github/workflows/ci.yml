@@ -9,54 +9,6 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  verify-dependency-candidate:
-    if: github.event_name == 'pull_request' && github.head_ref == 'fix/cloudflare-worker-preview-manifest'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@v6
-        with: { version: 11.17.0, run_install: false }
-      - uses: actions/setup-node@v6
-        with: { node-version: 22.16.0 }
-      - name: Read official Vite patch metadata
-        run: |
-          npm view vite@8.1.6 dist.integrity engines dependencies optionalDependencies peerDependencies peerDependenciesMeta deprecated --json
-          npm view brace-expansion@1.1.21 dist.integrity engines dependencies deprecated --json
-          npm view brace-expansion@5.0.12 dist.integrity engines dependencies deprecated --json
-      - name: Resolve metadata without executing dependency scripts
-        run: pnpm install --lockfile-only --ignore-scripts --no-frozen-lockfile
-      - name: Report selected resolved package versions
-        run: |
-          node --input-type=module <<'NODE'
-          import { readFileSync } from 'node:fs';
-          const packages = readFileSync('pnpm-lock.yaml', 'utf8').split(String.fromCharCode(10) + 'packages:' + String.fromCharCode(10))[1].split(String.fromCharCode(10) + 'snapshots:' + String.fromCharCode(10))[0];
-          console.log(packages.split(String.fromCharCode(10)).filter((line) => /^  (vite|brace-expansion|balanced-match|lightningcss|rolldown|tinyglobby|picomatch|postcss)@/.test(line)).join(String.fromCharCode(10)));
-          NODE
-      - name: Audit all production and build dependencies
-        run: pnpm audit --audit-level=high
-      - name: Verify the exact reviewed dependency graph
-        run: |
-          ruby <<'RUBY'
-          require 'yaml'
-          require 'json'
-          require 'digest'
-          def canonical(value)
-            case value
-            when Hash
-              value.sort_by { |key, _| key }.to_h.transform_values { |item| canonical(item) }
-            when Array
-              value.map { |item| canonical(item) }
-            else
-              value
-            end
-          end
-          data = YAML.load_file('pnpm-lock.yaml')
-          digest = Digest::SHA256.hexdigest(JSON.generate(canonical(data)))
-          puts "Dependency graph SHA256: #{digest}"
-          data.each { |key, value| puts "#{key}:#{Digest::SHA256.hexdigest(JSON.generate(canonical(value)))}" }
-          abort 'Dependency graph differs from reviewed candidate' unless digest == '2f95405b9c7fa98e5601efcb41163732574d5e023eba60926d48b946217b2562'
-          RUBY
   quality:
     runs-on: ubuntu-latest
     steps:
