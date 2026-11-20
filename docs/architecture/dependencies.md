@@ -7,13 +7,20 @@ environment.
 The October 23, 2026 security refresh pins Next.js and its ESLint configuration to
 16.4.2, the newest patched 16.4 release that already satisfies the 24-hour minimum
 release age. `@opennextjs/cloudflare` 1.19.11 accepts `next` `>=16.2.6`, so this
-stays on the current OpenNext adapter. The same refresh keeps the `sharp` 0.35.5 and
+used that OpenNext adapter at the time. The same refresh keeps the `sharp` 0.35.5 and
 `source-map-js` 1.2.2 overrides. These patch updates address GHSA-2464-fhr4-w9xw and
 the related Next.js remote-code-execution and denial-of-service advisories in
 `>=16.0.0 <=16.4.0`, plus the earlier image-optimization SSRF, librsvg, and
 indexed-source-map advisories, without adding a new product capability or provider.
 The production dependency audit reports no known high or critical vulnerabilities
 after the refresh.
+
+The November 20 launch compatibility update uses OpenNext 1.20.12 and Wrangler
+4.148.0 to resolve observed Next.js 16.4 Worker startup failures. Narrow patch
+overrides for glob, undici, brace-expansion, and Vite address audited build-tool
+advisories without adding a provider or a domain dependency. The permanent audit
+now includes development and build dependencies. Version choices and observed
+validation are recorded in `docs/releases/worker-preview-manifest.md`.
 
 ## Runtime dependencies
 
