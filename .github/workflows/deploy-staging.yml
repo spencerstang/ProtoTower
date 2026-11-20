@@ -27,29 +27,14 @@ jobs:
       - uses: supabase/setup-cli@v2
         with:
           version: 2.109.1
-      - name: Validate database deployment inputs
-        shell: bash
-        env:
-          SUPABASE_ACCESS_TOKEN: "${{ secrets.SUPABASE_ACCESS_TOKEN }}"
-          SUPABASE_PROJECT_ID: "${{ secrets.SUPABASE_PROJECT_ID }}"
-          SUPABASE_DB_PASSWORD: "${{ secrets.SUPABASE_DB_PASSWORD }}"
-        run: |
-          test -n "$SUPABASE_ACCESS_TOKEN"
-          test -n "$SUPABASE_PROJECT_ID"
-          test -n "$SUPABASE_DB_PASSWORD"
-      - name: Link staging database
-        run: >-
-          supabase link
-          --project-ref "$SUPABASE_PROJECT_ID"
-          --password "$SUPABASE_DB_PASSWORD"
-        env:
-          SUPABASE_ACCESS_TOKEN: "${{ secrets.SUPABASE_ACCESS_TOKEN }}"
-          SUPABASE_PROJECT_ID: "${{ secrets.SUPABASE_PROJECT_ID }}"
-          SUPABASE_DB_PASSWORD: "${{ secrets.SUPABASE_DB_PASSWORD }}"
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.16.0
       - name: Apply committed migrations and synthetic catalog seed
-        run: supabase db push --include-all --include-seed
+        run: node scripts/deploy-staging-database.mjs
         env:
-          SUPABASE_ACCESS_TOKEN: "${{ secrets.SUPABASE_ACCESS_TOKEN }}"
+          SUPABASE_PROJECT_ID: "${{ secrets.SUPABASE_PROJECT_ID }}"
+          SUPABASE_DB_PASSWORD: "${{ secrets.SUPABASE_DB_PASSWORD }}"
 
   deploy-web:
     needs: [validate, migrate]
