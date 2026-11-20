@@ -35,8 +35,28 @@ jobs:
           NODE
       - name: Audit all production and build dependencies
         run: pnpm audit --audit-level=high
-      - name: Verify the exact reviewed candidate
-        run: echo '94b782b700fd1b11455aeea7f9fd4b42db3fdb1f502a94d564f8991f5df92cbd  pnpm-lock.yaml' | sha256sum --check
+      - name: Verify the exact reviewed dependency graph
+        run: |
+          ruby <<'RUBY'
+          require 'yaml'
+          require 'json'
+          require 'digest'
+          def canonical(value)
+            case value
+            when Hash
+              value.sort_by { |key, _| key }.to_h.transform_values { |item| canonical(item) }
+            when Array
+              value.map { |item| canonical(item) }
+            else
+              value
+            end
+          end
+          data = YAML.load_file('pnpm-lock.yaml')
+          digest = Digest::SHA256.hexdigest(JSON.generate(canonical(data)))
+          puts "Dependency graph SHA256: #{digest}"
+          data.each { |key, value| puts "#{key}:#{Digest::SHA256.hexdigest(JSON.generate(canonical(value)))}" }
+          abort 'Dependency graph differs from reviewed candidate' unless digest == '2f95405b9c7fa98e5601efcb41163732574d5e023eba60926d48b946217b2562'
+          RUBY
   quality:
     runs-on: ubuntu-latest
     steps:
