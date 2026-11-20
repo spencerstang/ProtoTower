@@ -9,6 +9,22 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  verify-dependency-candidate:
+    if: github.event_name == 'pull_request' && github.head_ref == 'fix/cloudflare-worker-preview-manifest'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+        with: { version: 11.17.0, run_install: false }
+      - uses: actions/setup-node@v6
+        with: { node-version: 22.16.0 }
+      - name: Resolve metadata without executing dependency scripts
+        run: pnpm install --lockfile-only --ignore-scripts --no-frozen-lockfile
+      - name: Verify the exact reviewed candidate
+        run: echo '5fda5e9953ef31a7e2e0f08598e6fb7fa9331fbed11b5bae07c76def4a3f7e08  pnpm-lock.yaml' | sha256sum --check
+      - name: Audit all production and build dependencies
+        run: pnpm audit --audit-level=high
   quality:
     runs-on: ubuntu-latest
     steps:
@@ -35,7 +51,7 @@ jobs:
             cat "$RUNNER_TEMP/worker-smoke.log"
             exit 1
           fi
-      - run: pnpm audit --audit-level=high --prod
+      - run: pnpm audit --audit-level=high
   browser:
     runs-on: ubuntu-latest
     needs: quality
