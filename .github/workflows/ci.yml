@@ -24,7 +24,7 @@ jobs:
       - name: Resolve metadata without executing dependency scripts
         run: pnpm install --lockfile-only --ignore-scripts --no-frozen-lockfile
       - name: Verify the exact reviewed candidate
-        run: echo '5fda5e9953ef31a7e2e0f08598e6fb7fa9331fbed11b5bae07c76def4a3f7e08  pnpm-lock.yaml' | sha256sum --check
+        run: echo '94b782b700fd1b11455aeea7f9fd4b42db3fdb1f502a94d564f8991f5df92cbd  pnpm-lock.yaml' | sha256sum --check
       - name: Audit all production and build dependencies
         run: pnpm audit --audit-level=high
   quality:
