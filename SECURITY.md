@@ -9,6 +9,8 @@ Do not open a public issue for a suspected vulnerability. Report it privately to
 - Keep administrative diagnostics protected outside local and preview environments.
 - Treat logs as potentially durable; record operational facts, not sensitive payloads.
 - Run both the local secret scanner and the GitHub secret-scanning workflow.
+- Audit production, development, and build dependencies for high-severity findings;
+  acceptance and deployment installs must use the reviewed frozen lockfile.
 - Database changes require version-controlled migrations and review.
 - Authorization is deny-by-default; authenticated tower access is owner-only and
   enforced again by PostgreSQL RLS and bounded RPCs.
