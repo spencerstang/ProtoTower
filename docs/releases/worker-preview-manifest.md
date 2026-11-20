@@ -1,17 +1,25 @@
 # Cloudflare Worker startup compatibility
 
-Staging deployment exposed a runtime failure that the Node-based browser tests did
-not catch: Next.js 16.4 loads `.next/server/preview-props.json` during server
-construction, but the pinned OpenNext 1.19.11 adapter omitted it from its inlined
-manifest loader. Every Worker request failed with Cloudflare error 1101.
+Next.js 16.4 exposed two startup incompatibilities in OpenNext 1.19.11.
+The preview-manifest backport was insufficient and is replaced by the released
+OpenNext 1.20.12 adapter with Wrangler 4.148.0. These are existing provider-boundary
+build dependencies; no domain package imports a provider SDK.
 
-The Worker build now backports the one-line manifest glob change from
-https://github.com/opennextjs/opennextjs-cloudflare/pull/1356. It embeds the real
-manifest; it does not substitute empty draft-mode keys. The patch is idempotent and
-fails if the adapter version or expected loader pattern changes. Remove it when
-upgrading to an adapter release containing the upstream fix.
+CI builds the real Worker and requires its health route to return status ok.
+On 2026-11-20, commit ceae596 passed formatting, repository and dependency policy,
+secret and migration checks, lint, strict types, unit tests, Node builds, Worker
+build, Worker startup and production dependency audit in run 44804541985. The same
+run passed all 26 browser tests and all 211 database assertions. Release-level
+dependency review must also pass before merge.
 
-CI now builds the OpenNext artifact and starts it under local Wrangler, requiring
-the health route to return HTTP 200 and `status: ok`. This catches Worker startup
-failures before deployment. Public/authenticated staging acceptance and production
-rollout remain separate gates.
+Dependency review found GHSA-5j98-mcp5-4vw2 in transitive glob 10.3.3. The narrow
+override to patched 10.5.0 addresses the advisory without suppressing the gate.
+The changed lockfile requires review and a complete fresh CI run. The temporary
+lockfile-preparation job must be removed before merge.
+
+Staging and production deployment must use the same reviewed Wrangler version.
+Verify health, exact build SHA, catalog and authenticated behavior through the
+protected release process. A successful upload does not prove runtime health.
+Roll back to the previous accepted Worker version using the rollback runbook;
+database migrations remain forward-only. No new deployment token privileges
+are required by this dependency change.
