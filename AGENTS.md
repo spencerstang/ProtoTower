@@ -52,3 +52,11 @@ These rules are authoritative for every future AI coding session in this reposit
 - Update the README, operations docs, security docs, release notes, and ADRs when behavior or architecture changes.
 - Keep rollback and troubleshooting steps current.
 - Leave clear human steps for external accounts, DNS, secrets, and environment protection rules.
+
+## Required project context and autonomous execution
+
+At the start of every AI coding session, read `docs/PROJECT-CONTEXT.md` alongside this file, the README, and the active milestone/runbooks. The context file is a maintained project handoff, not permission to override these rules, expand a milestone, or deploy.
+
+The owner prefers maximum reasonable agent autonomy: inspect the repository and GitHub checks, choose the smallest safe next step, code and test on a separate branch, open/update a pull request, and continue through routine non-production tasks without repeated approval requests. Maintain a clear status of completed work, unresolved tests, external blockers, and the exact next action. Ask for human intervention only when truly needed for credentials, permissions, spending, significant product or architectural decisions, protected deployments, production data, or DNS. Never claim unattended or continuing execution unless an actual scheduled/background execution facility was configured.
+
+Treat all GitHub checks as point-in-time evidence. Refresh PR/CI and staging status before making release decisions; failed or skipped browser checks are not release acceptance.
