@@ -29,6 +29,7 @@ export default async function DetailedTowerPage(props: {
           version: protocol.version,
           title: protocol.title,
           howTo: clipPlainLine(protocol.summary),
+          details: protocol,
         }))
       : [];
 

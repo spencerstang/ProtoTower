@@ -370,12 +370,19 @@ export type Database = {
         }
         Relationships: []
       }
+      tower_measurement_observations: {
+        Row: { id: string; owner_id: string; tower_id: string; metric_id: string; label: string; unit: string | null; measured_on: string; numeric_value: string | null; text_value: string | null; created_at: string }
+        Insert: { id?: string; owner_id: string; tower_id: string; metric_id: string; label: string; unit?: string | null; measured_on: string; numeric_value?: string | null; text_value?: string | null; created_at?: string }
+        Update: { id?: string; owner_id?: string; tower_id?: string; metric_id?: string; label?: string; unit?: string | null; measured_on?: string; numeric_value?: string | null; text_value?: string | null; created_at?: string }
+        Relationships: []
+      }
       tower_metrics: {
         Row: {
           created_at: string
           id: string
           kind: string
           label: string
+          unit: string | null
           position: number
           preset_key: string | null
           shape: string
@@ -386,6 +393,7 @@ export type Database = {
           id?: string
           kind: string
           label: string
+          unit?: string | null
           position: number
           preset_key?: string | null
           shape: string
@@ -396,6 +404,7 @@ export type Database = {
           id?: string
           kind?: string
           label?: string
+          unit?: string | null
           position?: number
           preset_key?: string | null
           shape?: string

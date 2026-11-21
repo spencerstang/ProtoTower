@@ -4,8 +4,6 @@ import { isFeatureEnabled } from "@protostack/configuration";
 import type { PublishedProtocol } from "@protostack/protocol-engine";
 import {
   draftFromStoredSetup,
-  interpretCreateForm,
-  parseTowerTitle,
   presetMetric,
   addMetricToDraft,
   addProtocolToDraft,
@@ -15,6 +13,7 @@ import {
   replaceProtocolInDraft,
   replaceRhythm,
   replaceVisibility,
+  calendarDateSchema,
   towerIdSchema,
   towerRevisionSchema,
   type PersonalTower,
@@ -32,7 +31,8 @@ import { getVerifiedPrincipal } from "@/lib/auth";
 import { createServerPersonalTowerRepository } from "@/lib/personal-towers";
 import { createServerProtocolCatalogRepository } from "@/lib/protocol-catalog";
 import { createServerTowerCheckInRepository } from "@/lib/tower-checkins";
-import { clipPlainLine, configuredTowerInputFromForm } from "@/lib/tower-setup-form";
+import { clipPlainLine } from "@/lib/tower-setup-form";
+import { validateSetupForm, setupFailure, type SetupActionState } from "@/lib/setup-form-state";
 
 function formString(formData: FormData, name: string): string | null {
   const value = formData.get(name);
@@ -103,59 +103,63 @@ async function persist(tower: PersonalTower, result: SetupCommitResult): Promise
   redirect(`/towers/${tower.id}?error=unavailable`);
 }
 
-export async function createConfiguredTower(formData: FormData): Promise<never> {
-  await requirePrincipal();
-  if (!isFeatureEnabled("outcomes")) redirect("/towers/new?error=unavailable");
-  let title;
-  try {
-    title = parseTowerTitle(formString(formData, "title"));
-  } catch {
-    redirect("/towers/new?error=invalid");
-  }
-  const interpreted = interpretCreateForm(configuredTowerInputFromForm(formData));
-  if (!interpreted.ok) redirect(`/towers/new?error=${interpreted.code}`);
+export async function createConfiguredTower(formData: FormData): Promise<SetupActionState> {
+  const principal = await getVerifiedPrincipal();
+  if (principal.status === "unavailable" || !isFeatureEnabled("outcomes"))
+    return setupFailure(
+      "Tower creation is temporarily unavailable. Your responses have been kept; try again.",
+    );
+  if (principal.principal.kind !== "authenticated") redirect("/sign-in");
+  const input = validateSetupForm(formData);
+  if (!input.ok) return { errors: input.errors };
   const result = await (
     await createServerPersonalTowerRepository()
-  ).createConfigured({
-    title,
-    draft: interpreted.draft,
-  });
+  ).createConfigured({ title: input.title, draft: input.draft });
   if (result.status === "available") redirect(`/towers/${result.value.id}`);
-  if (result.status === "rejected" && result.reason === "limit_reached") {
-    redirect("/towers/new?error=limit");
-  }
-  if (result.status === "rejected") redirect("/towers/new?error=invalid");
-  redirect("/towers/new?error=unavailable");
+  if (result.status === "rejected" && result.reason === "limit_reached")
+    return setupFailure("The twelve-tower limit has been reached.");
+  return setupFailure("The setup could not be saved. Your responses have been kept; try again.");
 }
 
-export async function saveFinishedSetup(formData: FormData): Promise<never> {
-  const tower = await ownedTower(formString(formData, "towerId"));
-  if (!isFeatureEnabled("outcomes")) redirect(`/towers/${tower.id}?error=unavailable`);
-  sameRevision(tower, formData);
-  if (tower.protocols.length > 0 || tower.metrics.length > 0) {
-    redirect(`/towers/${tower.id}?error=invalid`);
-  }
-  let title;
-  try {
-    title = parseTowerTitle(formString(formData, "title"));
-  } catch {
-    redirect(`/towers/${tower.id}/setup?error=invalid`);
-  }
-  const interpreted = interpretCreateForm(configuredTowerInputFromForm(formData));
-  if (!interpreted.ok) redirect(`/towers/${tower.id}/setup?error=${interpreted.code}`);
-  const saved = await (
-    await createServerPersonalTowerRepository()
-  ).saveSetup({
+export async function saveFinishedSetup(formData: FormData): Promise<SetupActionState> {
+  const principal = await getVerifiedPrincipal();
+  if (principal.status === "unavailable" || !isFeatureEnabled("outcomes"))
+    return setupFailure(
+      "Tower setup is temporarily unavailable. Your responses have been kept; try again.",
+    );
+  if (principal.principal.kind !== "authenticated") redirect("/sign-in");
+  const parsedId = towerIdSchema.safeParse(formString(formData, "towerId"));
+  const revision = towerRevisionSchema.safeParse(Number(formString(formData, "revision")));
+  if (!parsedId.success || !revision.success)
+    return setupFailure("This setup request is invalid. Open the tower again before saving.");
+  const repository = await createServerPersonalTowerRepository();
+  const loaded = await repository.findById(parsedId.data);
+  if (loaded.status === "unavailable")
+    return setupFailure(
+      "Tower setup is temporarily unavailable. Your responses have been kept; try again.",
+    );
+  const tower = loaded.value;
+  if (!tower) return setupFailure("This tower is no longer available.");
+  if (tower.revision !== revision.data)
+    return setupFailure(
+      "This tower changed in another request. Your responses have been kept; review the latest tower before saving.",
+    );
+  if (tower.protocols.length > 0 || tower.metrics.length > 0)
+    return setupFailure("This tower already has a setup. Open the tower to review it.");
+  const input = validateSetupForm(formData);
+  if (!input.ok) return { errors: input.errors };
+  const saved = await repository.saveSetup({
     id: tower.id,
     expectedRevision: tower.revision,
-    title,
-    draft: interpreted.draft,
+    title: input.title,
+    draft: input.draft,
   });
   if (saved.status === "available") redirect(`/towers/${tower.id}?status=saved`);
-  if (saved.status === "rejected" && saved.reason === "conflict") {
-    redirect(`/towers/${tower.id}/setup?error=stale`);
-  }
-  redirect(`/towers/${tower.id}/setup?error=unavailable`);
+  if (saved.status === "rejected" && saved.reason === "conflict")
+    return setupFailure(
+      "This tower changed in another request. Your responses have been kept; review the latest tower before saving.",
+    );
+  return setupFailure("The setup could not be saved. Your responses have been kept; try again.");
 }
 
 export async function saveTowerProtocol(formData: FormData): Promise<never> {
@@ -244,6 +248,7 @@ export async function addCustomMetric(formData: FormData): Promise<never> {
       shape: separator > 0 ? encoded.slice(separator + 1) : "",
       label: formString(formData, "customMetricLabel") ?? "",
       presetKey: null,
+      unit: formString(formData, "customMetricUnit") || null,
     }),
   );
 }
@@ -310,6 +315,14 @@ export async function recordTowerCheckIn(formData: FormData): Promise<never> {
     today,
   });
   if (!period) redirect(`/towers/${tower.id}?error=checkin-closed`);
+  const rawMeasurementDate = formString(formData, "measuredOn") || today;
+  const measurementDate = calendarDateSchema.safeParse(rawMeasurementDate);
+  if (
+    !measurementDate.success ||
+    measurementDate.data < "1970-01-01" ||
+    measurementDate.data > today
+  )
+    redirect(`/towers/${tower.id}?error=checkin-invalid`);
   const metrics: TowerCheckInMetric[] = tower.metrics.map((metric) => ({
     id: metric.id,
     kind: metric.kind,
@@ -334,6 +347,7 @@ export async function recordTowerCheckIn(formData: FormData): Promise<never> {
     periodDate: period,
     responses: parsed.responses,
     markedProtocolIds: parsed.markedProtocolIds,
+    measuredOn: measurementDate.data,
   });
   if (result.status === "available") redirect(`/towers/${tower.id}?status=checked-in`);
   if (result.status === "rejected" && result.reason === "period_closed") {

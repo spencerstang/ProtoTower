@@ -57,6 +57,7 @@ export default async function FinishTowerSetupPage(props: {
           version: protocol.version,
           title: protocol.title,
           howTo: clipPlainLine(protocol.summary),
+          details: protocol,
         }))
       : [];
 
@@ -68,7 +69,7 @@ export default async function FinishTowerSetupPage(props: {
           ← {tower.title}
         </Link>
         <p className="eyebrow">Finish this tower</p>
-        <h1 id="finish-setup-heading">Add protocols and one final.</h1>
+        <h1 id="finish-setup-heading">Add protocols and outcome measures.</h1>
         <TowerSetupForm
           action={saveFinishedSetup}
           starters={starters}

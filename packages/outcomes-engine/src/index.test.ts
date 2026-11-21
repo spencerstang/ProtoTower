@@ -7,6 +7,8 @@ import {
   outcomesEngineStatus,
   parseMetricSubmission,
   readingFromPayload,
+  readingPayload,
+  metricDraftSchema,
   shapesForKind,
 } from "./index";
 
@@ -18,7 +20,13 @@ describe("tower outcome metrics", () => {
     expect(metricPresets.filter((preset) => preset.kind === "final").length).toBeGreaterThan(0);
     expect(metricPresets.filter((preset) => preset.kind === "ongoing").length).toBeGreaterThan(0);
     expect(metricPresets.filter((preset) => preset.kind === "proxy").length).toBeGreaterThan(0);
-    expect(shapesForKind("final")).toEqual(["scale_1_5", "complete_incomplete", "percent"]);
+    expect(shapesForKind("final")).toEqual([
+      "number",
+      "text",
+      "scale_1_5",
+      "complete_incomplete",
+      "percent",
+    ]);
     expect(metricPresetMatches("goal-complete", "final", "complete_incomplete")).toBe(true);
     expect(metricPresetMatches("goal-complete", "ongoing", "weight")).toBe(false);
   });
@@ -81,5 +89,56 @@ describe("tower outcome metrics", () => {
       completion: null,
     });
     expect(reading).toEqual({ skipped: false, shape: "hours", numeric: 7.5 });
+  });
+});
+
+describe("generic measurements", () => {
+  it("preserves decimal precision, zero, and signed values through storage", () => {
+    for (const numeric of ["3.250000", "0", "-0.125", "9999999999999999.123456789012"]) {
+      const reading = parseMetricSubmission(
+        { kind: "final", shape: "number" },
+        { ...empty, skipped: false, numeric },
+      );
+      expect(formatMetricReading(reading)).toBe(numeric);
+      expect(readingFromPayload("number", readingPayload(reading))).toEqual(reading);
+    }
+  });
+  it("rejects ambiguous or unbounded numeric input", () => {
+    for (const numeric of ["NaN", "Infinity", "1e3", "01", "1,234", "1.1234567890123"]) {
+      expect(() =>
+        parseMetricSubmission(
+          { kind: "final", shape: "number" },
+          { ...empty, skipped: false, numeric },
+        ),
+      ).toThrow();
+    }
+  });
+  it("supports text in every role, while only numeric measures accept units", () => {
+    for (const kind of ["final", "ongoing", "proxy"] as const) {
+      expect(
+        parseMetricSubmission(
+          { kind, shape: "text" },
+          { ...empty, skipped: false, text: "Synthetic observation" },
+        ),
+      ).toEqual({ skipped: false, shape: "text", text: "Synthetic observation" });
+      expect(
+        metricDraftSchema.safeParse({
+          kind,
+          shape: "number",
+          label: "Concentration",
+          presetKey: null,
+          unit: "units/mL",
+        }).success,
+      ).toBe(true);
+      expect(
+        metricDraftSchema.safeParse({
+          kind,
+          shape: "text",
+          label: "Note",
+          presetKey: null,
+          unit: "units/mL",
+        }).success,
+      ).toBe(false);
+    }
   });
 });

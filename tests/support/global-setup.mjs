@@ -11,6 +11,7 @@ const resetUsers = [
   ...syntheticUsers,
   "quiet-launch-new-user@example.test",
   "starter-flow@example.invalid",
+  "setup-retest@example.test",
 ];
 
 export default async function globalSetup() {

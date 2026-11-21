@@ -71,6 +71,7 @@ export function createTowerCheckInRepository(client: SupabaseClient<Database> | 
     periodDate: string;
     responses: readonly TowerCheckInResponse[];
     markedProtocolIds: readonly string[];
+    measuredOn?: string;
   }): Promise<TowerCheckInMutationResult>;
 } {
   return {
@@ -123,7 +124,10 @@ export function createTowerCheckInRepository(client: SupabaseClient<Database> | 
       const { data, error } = await client.rpc("record_tower_checkin", {
         candidate_tower_id: input.towerId,
         candidate_period_date: input.periodDate,
-        candidate_responses: input.responses.map(responsePayload),
+        candidate_responses: input.responses.map((response) => ({
+          ...(responsePayload(response) as Record<string, Json>),
+          ...(input.measuredOn ? { measured_on: input.measuredOn } : {}),
+        })),
         candidate_marks: input.markedProtocolIds.map((protocolId) => ({
           protocol_id: protocolId,
           ran: true,
@@ -146,4 +150,40 @@ export async function createServerTowerCheckInRepository(): Promise<
   ReturnType<typeof createTowerCheckInRepository>
 > {
   return createTowerCheckInRepository(await createSupabaseServerClient());
+}
+
+export type MeasurementObservation = Readonly<{
+  id: string;
+  metricId: string;
+  label: string;
+  unit: string | null;
+  measuredOn: string;
+  numericValue: string | null;
+  textValue: string | null;
+}>;
+
+export async function listMeasurementHistory(
+  towerId: TowerId,
+): Promise<readonly MeasurementObservation[] | "unavailable"> {
+  const client = await createSupabaseServerClient();
+  if (!client) return "unavailable";
+  const { data, error } = await client
+    .from("tower_measurement_observations")
+    .select("id,metric_id,label,unit,measured_on,numeric_value,text_value")
+    .eq("tower_id", towerId)
+    .order("measured_on", { ascending: false })
+    .limit(50);
+  if (error) {
+    logger.warn("measurement_history_unavailable", { code: error.code });
+    return "unavailable";
+  }
+  return data.map((row) => ({
+    id: row.id,
+    metricId: row.metric_id,
+    label: row.label,
+    unit: row.unit,
+    measuredOn: row.measured_on,
+    numericValue: row.numeric_value,
+    textValue: row.text_value,
+  }));
 }

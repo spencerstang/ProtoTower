@@ -8,6 +8,7 @@ const syntheticUsers = [
   "practice-performance@example.test",
   "quiet-launch-new-user@example.test",
   "starter-flow@example.invalid",
+  "setup-retest@example.test",
 ];
 
 export default async function globalTeardown() {

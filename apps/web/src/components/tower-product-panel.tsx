@@ -14,7 +14,7 @@ import {
   type PersonalTower,
   type TowerCadence,
 } from "@protostack/tower-engine";
-import type { StoredTowerCheckIn } from "@/lib/tower-checkins";
+import type { MeasurementObservation, StoredTowerCheckIn } from "@/lib/tower-checkins";
 import {
   addCustomMetric,
   addCustomTowerProtocol,
@@ -31,6 +31,12 @@ import {
 import type { SetupStarter } from "./tower-setup-form";
 
 const customShapes = [
+  ["final:number", "Outcome · number"],
+  ["final:text", "Outcome · text"],
+  ["ongoing:number", "Ongoing · number"],
+  ["ongoing:text", "Ongoing · text"],
+  ["proxy:number", "Practice · number"],
+  ["proxy:text", "Practice · text"],
   ["ongoing:weight", "Ongoing · weight"],
   ["ongoing:rating", "Ongoing · rating from 1 to 5"],
   ["ongoing:blood_pressure", "Ongoing · blood pressure"],
@@ -56,6 +62,7 @@ export function TowerProductPanel(props: {
   checkIn: TowerCheckInView;
   starters: readonly SetupStarter[];
   catalogUnavailable: boolean;
+  measurements?: readonly MeasurementObservation[] | "unavailable";
 }) {
   const { tower } = props;
   const summary = props.checkIn.status === "open" ? summaryFor(tower, props.checkIn.record) : null;
@@ -101,6 +108,26 @@ export function TowerProductPanel(props: {
         {props.checkIn.status === "open" ? (
           <form action={recordTowerCheckIn} className="stacked-form check-in-form">
             <input type="hidden" name="towerId" value={tower.id} />
+            {tower.metrics.some(
+              (metric) => metric.shape === "number" || metric.shape === "text",
+            ) ? (
+              <>
+                <label htmlFor="measured-on">Measurement date</label>
+                <input
+                  id="measured-on"
+                  name="measuredOn"
+                  type="date"
+                  min="1970-01-01"
+                  max={new Date().toISOString().slice(0, 10)}
+                  defaultValue={new Date().toISOString().slice(0, 10)}
+                  required
+                />
+                <p className="form-help">
+                  Use the date the measurement was taken. A correction for the same measure and date
+                  replaces that reading; other dates remain in history.
+                </p>
+              </>
+            ) : null}
             <fieldset>
               <legend>Ongoing</legend>
               {tower.metrics
@@ -160,6 +187,42 @@ export function TowerProductPanel(props: {
           </form>
         ) : null}
       </section>
+
+      {tower.metrics.some((metric) => metric.shape === "number" || metric.shape === "text") ? (
+        <section className="measurement-history" aria-labelledby="measurement-history-heading">
+          <h2 id="measurement-history-heading">Measurement history</h2>
+          {props.measurements === "unavailable" ? (
+            <p role="status">Measurement history is temporarily unavailable.</p>
+          ) : props.measurements?.length ? (
+            <table>
+              <caption>Private measurements · most recent 50</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Measured on</th>
+                  <th scope="col">Measure</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {props.measurements.map((reading) => (
+                  <tr key={reading.id}>
+                    <td>
+                      <time dateTime={reading.measuredOn}>{reading.measuredOn}</time>
+                    </td>
+                    <td>{reading.label}</td>
+                    <td>
+                      {reading.numericValue ?? reading.textValue}
+                      {reading.unit ? ` ${reading.unit}` : ""}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p>No measurements recorded yet.</p>
+          )}
+        </section>
+      ) : null}
 
       <section aria-labelledby="owned-protocols-heading">
         <h2 id="owned-protocols-heading">Protocols</h2>
@@ -305,6 +368,8 @@ export function TowerProductPanel(props: {
               </option>
             ))}
           </select>
+          <label htmlFor="custom-measure-unit">Unit for Number, optional</label>
+          <input id="custom-measure-unit" name="customMetricUnit" maxLength={24} />
           <button
             className="secondary-action"
             type="submit"
@@ -457,8 +522,12 @@ function MetricFields(props: {
   const skipped = saved?.skipped === true;
   return (
     <div className="metric-fields">
-      <p>{metric.label}</p>
-      {metric.shape === "weight" ||
+      <p>
+        {metric.label}
+        {metric.unit ? ` (${metric.unit})` : ""}
+      </p>
+      {metric.shape === "number" ||
+      metric.shape === "weight" ||
       metric.shape === "rating" ||
       metric.shape === "scale_1_5" ||
       metric.shape === "count" ||
@@ -466,12 +535,12 @@ function MetricFields(props: {
       metric.shape === "percent" ? (
         <input
           name={`numeric.${metric.id}`}
-          type="number"
+          type={metric.shape === "number" ? "text" : "number"}
           inputMode="decimal"
           aria-label={metric.label}
           defaultValue={skipped ? "" : (saved?.numericValue ?? "")}
           required={metric.kind === "final"}
-          {...numberBounds(metric.shape)}
+          {...(metric.shape === "number" ? { maxLength: 30 } : numberBounds(metric.shape))}
         />
       ) : null}
       {metric.shape === "blood_pressure" ? (
@@ -498,9 +567,10 @@ function MetricFields(props: {
           />
         </>
       ) : null}
-      {metric.shape === "qualitative" ? (
+      {metric.shape === "qualitative" || metric.shape === "text" ? (
         <input
           name={`text.${metric.id}`}
+          required={metric.kind === "final"}
           aria-label={metric.label}
           maxLength={280}
           defaultValue={skipped ? "" : (saved?.textValue ?? "")}
@@ -580,7 +650,10 @@ function summaryFor(
         completion: response.completion,
       });
       if (metricReadingLine(metric.label, reading)) {
-        readings.push({ label: metric.label, reading });
+        readings.push({
+          label: metric.unit ? `${metric.label} (${metric.unit})` : metric.label,
+          reading,
+        });
       }
     } catch {
       return null;
