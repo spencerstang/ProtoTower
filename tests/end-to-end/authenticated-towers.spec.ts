@@ -289,6 +289,7 @@ test("setup errors retain every answer and dated measurements survive reload", a
   await page.getByText("Add another custom protocol", { exact: true }).click();
   await page.getByLabel("Second custom protocol name", { exact: true }).fill("Second practice");
   await page.getByLabel("Second custom how-to", { exact: true }).fill("Do the second practice.");
+  await page.getByText("Add a custom measure", { exact: true }).click();
   await page.locator("#custom-metric-name-1").fill("Concentration");
   await page.getByRole("button", { name: "Create tower", exact: true }).click();
   await expect(page.getByRole("alert")).toContainText("Choose what to record");
