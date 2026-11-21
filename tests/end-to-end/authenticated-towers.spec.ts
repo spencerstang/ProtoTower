@@ -250,7 +250,7 @@ test("one question starts a reviewed pair or a tower with a manual next step", a
   await expect(page.getByRole("heading", { name: "Get outdoor morning light" })).toHaveCount(0);
   const unmatchedPath = new URL(page.url()).pathname;
   await page.getByRole("link", { name: "Set up this tower yourself", exact: true }).click();
-  expect(new URL(page.url()).pathname).toBe(`${unmatchedPath}/setup`);
+  await expect(page).toHaveURL((url) => url.pathname === `${unmatchedPath}/setup`);
   await expect(page.getByRole("textbox", { name: "Goal or context", exact: true })).toHaveValue(
     "Save for a kitchen renovation",
   );
@@ -263,7 +263,7 @@ test("one question starts a reviewed pair or a tower with a manual next step", a
   await page.getByRole("checkbox", { name: "Goal complete", exact: true }).check();
   await page.getByRole("button", { name: "Save tower setup", exact: true }).click();
   await expect(page.getByText("Tower saved.", { exact: true })).toBeVisible();
-  expect(new URL(page.url()).pathname).toBe(unmatchedPath);
+  await expect(page).toHaveURL((url) => url.pathname === unmatchedPath);
   await expect(
     page.locator(".owned-protocol-list").getByRole("textbox", { name: "Name", exact: true }),
   ).toHaveValue("Weekly review");
