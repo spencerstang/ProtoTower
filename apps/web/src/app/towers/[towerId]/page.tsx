@@ -115,7 +115,11 @@ export default async function TowerDetailPage(props: {
     : Promise.resolve({ status: "available", value: [] });
   const [catalog, practiceHistory] = await Promise.all([catalogPromise, practicePromise]);
   const protocols = catalog.status === "available" ? catalog.value : [];
-  const starter = tower.starterMatchKey !== null;
+  const manuallyConfiguredUnmatched =
+    tower.starterMatchKey === "unmatched" &&
+    tower.protocols.length > 0 &&
+    tower.metrics.some((metric) => metric.kind === "final");
+  const starter = tower.starterMatchKey !== null && !manuallyConfiguredUnmatched;
   const starterClient = starter ? await createSupabaseServerClient() : null;
   const starterSurface =
     starter && starterClient ? await loadStarterSurface(starterClient, tower, protocols) : null;

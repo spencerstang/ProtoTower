@@ -34,8 +34,9 @@ export default async function NewTowerPage(props: {
         <p className="eyebrow">One question</p>
         <h1 id="new-tower-heading">What would you like to accomplish?</h1>
         <p>
-          ProtoTower creates the tower immediately. A reviewed pair of protocols is added when one
-          exists. Further questions stay optional.
+          ProtoTower saves your goal as a private tower. Automatic starter matches currently cover
+          sleep, training, and training with heat exposure. Other goals need you to add a plan
+          yourself; ProtoTower does not generate a treatment plan.
         </p>
         {principal.status === "unavailable" ? (
           <div className="state-card" role="status">
@@ -47,8 +48,8 @@ export default async function NewTowerPage(props: {
             <label htmlFor="intent">What would you like to accomplish?</label>
             <input id="intent" name="intent" maxLength={160} required autoFocus />
             <p className="form-help">
-              Examples: Sleep better, Work out 3x/week. A goal with no reviewed pair still creates a
-              tower.
+              Examples: Sleep better, Work out 3x/week. If there is no match, you can set up the
+              saved tower yourself.
             </p>
             {error ? (
               <p className="form-error" role="alert">

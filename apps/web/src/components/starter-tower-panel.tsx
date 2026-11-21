@@ -20,10 +20,21 @@ export function StarterTowerPanel(props: { tower: PersonalTower; surface: Starte
     <div className="starter-panel">
       {unmatched ? (
         <section aria-labelledby="starter-unmatched">
-          <h2 id="starter-unmatched">No reviewed pair yet</h2>
+          <h2 id="starter-unmatched">Your tower is saved. Choose your next step.</h2>
           <p>
-            No reviewed protocol pair exists for this yet. ProtoTower did not add a protocol or a
-            first action.
+            ProtoTower does not have a reviewed protocol match for this goal. It has not generated a
+            plan or recommended a treatment.
+          </p>
+          <p>
+            You can add steps from a plan you already have and choose what to track. For a medical
+            goal, use a plan agreed with your treating clinician. The wellness catalog is not a
+            treatment plan.
+          </p>
+          <Link className="primary-action" href={`/towers/${props.tower.id}/setup`}>
+            Set up this tower yourself
+          </Link>
+          <p>
+            <Link href="/protocols">Browse the reviewed wellness catalog</Link>
           </p>
         </section>
       ) : (

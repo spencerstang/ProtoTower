@@ -175,7 +175,10 @@ test("scanner-safe sign-in persists isolated goal-specific towers", async ({
   await renewedContext.close();
 });
 
-test("one question starts a reviewed pair or an empty tower", async ({ page, request }) => {
+test("one question starts a reviewed pair or a tower with a manual next step", async ({
+  page,
+  request,
+}) => {
   await requestAndConfirm(page, request, "starter-flow@example.invalid");
   await page.goto("/towers/new");
   await page
@@ -238,7 +241,37 @@ test("one question starts a reviewed pair or an empty tower", async ({ page, req
     .getByRole("textbox", { name: "What would you like to accomplish?", exact: true })
     .fill("Save for a kitchen renovation");
   await page.getByRole("button", { name: "Start" }).click();
-  await expect(page.getByRole("heading", { name: "No reviewed pair yet" })).toBeVisible();
-  await expect(page.getByText("did not add a protocol or a first action")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Your tower is saved. Choose your next step." }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("It has not generated a plan or recommended a treatment."),
+  ).toBeVisible();
   await expect(page.getByRole("heading", { name: "Get outdoor morning light" })).toHaveCount(0);
+  const unmatchedPath = new URL(page.url()).pathname;
+  await page.getByRole("link", { name: "Set up this tower yourself", exact: true }).click();
+  await expect(page).toHaveURL((url) => url.pathname === `${unmatchedPath}/setup`);
+  await expect(page.getByRole("textbox", { name: "Goal or context", exact: true })).toHaveValue(
+    "Save for a kitchen renovation",
+  );
+  await page
+    .getByRole("textbox", { name: "Custom protocol name", exact: true })
+    .fill("Weekly review");
+  await page
+    .getByRole("textbox", { name: "Custom how-to", exact: true })
+    .fill("Review the project budget.");
+  await page.getByRole("checkbox", { name: "Goal complete", exact: true }).check();
+  await page.getByRole("button", { name: "Save tower setup", exact: true }).click();
+  await expect(page.getByText("Tower saved.", { exact: true })).toBeVisible();
+  await expect(page).toHaveURL((url) => url.pathname === unmatchedPath);
+  await expect(
+    page.locator(".owned-protocol-list").getByRole("textbox", { name: "Name", exact: true }),
+  ).toHaveValue("Weekly review");
+  await expect(
+    page.getByRole("link", { name: "Set up this tower yourself", exact: true }),
+  ).toHaveCount(0);
+  await page.reload();
+  await expect(
+    page.locator(".owned-protocol-list").getByRole("textbox", { name: "Name", exact: true }),
+  ).toHaveValue("Weekly review");
 });
