@@ -287,6 +287,9 @@ test("setup errors retain every answer and dated measurements survive reload", a
     .getByRole("textbox", { name: "What would you like to accomplish?", exact: true })
     .fill("Synthetic measurement goal");
   await page.getByRole("button", { name: "Start", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Your tower is saved. Choose your next step.", exact: true }),
+  ).toBeVisible();
   const towerPath = new URL(page.url()).pathname;
   await page.getByRole("link", { name: "Set up this tower yourself", exact: true }).click();
   await page.getByLabel("Goal or context", { exact: true }).fill("Synthetic measurement goal");
