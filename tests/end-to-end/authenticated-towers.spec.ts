@@ -264,10 +264,14 @@ test("one question starts a reviewed pair or a tower with a manual next step", a
   await page.getByRole("button", { name: "Save tower setup", exact: true }).click();
   await expect(page.getByText("Tower saved.", { exact: true })).toBeVisible();
   expect(new URL(page.url()).pathname).toBe(unmatchedPath);
-  await expect(page.getByText("Weekly review", { exact: true }).first()).toBeVisible();
+  await expect(
+    page.locator(".owned-protocol-list").getByRole("textbox", { name: "Name", exact: true }),
+  ).toHaveValue("Weekly review");
   await expect(
     page.getByRole("link", { name: "Set up this tower yourself", exact: true }),
   ).toHaveCount(0);
   await page.reload();
-  await expect(page.getByText("Weekly review", { exact: true }).first()).toBeVisible();
+  await expect(
+    page.locator(".owned-protocol-list").getByRole("textbox", { name: "Name", exact: true }),
+  ).toHaveValue("Weekly review");
 });
