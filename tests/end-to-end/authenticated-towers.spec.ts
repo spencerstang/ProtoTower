@@ -344,6 +344,7 @@ test("setup errors retain every answer and dated measurements survive reload", a
     .getByRole("textbox", { name: "Observation", exact: true })
     .fill("Synthetic observation");
   await page.getByRole("button", { name: "Save check-in", exact: true }).click();
+  await expect(page.locator(".measurement-history")).toContainText("2020-02-04");
   await page.reload();
   await expect(page.locator(".measurement-history tbody tr")).toHaveCount(4);
   await expect(page.locator(".measurement-history")).toContainText("2020-02-03");
