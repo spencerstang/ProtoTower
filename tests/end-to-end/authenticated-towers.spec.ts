@@ -275,3 +275,79 @@ test("one question starts a reviewed pair or a tower with a manual next step", a
     page.locator(".owned-protocol-list").getByRole("textbox", { name: "Name", exact: true }),
   ).toHaveValue("Weekly review");
 });
+
+test("setup errors retain every answer and dated measurements survive reload", async ({
+  page,
+  request,
+}) => {
+  test.setTimeout(90_000);
+  await requestAndConfirm(page, request, "setup-retest@example.test");
+  await page.goto("/towers/new");
+  await page
+    .getByRole("textbox", { name: "What would you like to accomplish?", exact: true })
+    .fill("Synthetic measurement goal");
+  await page.getByRole("button", { name: "Start", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Your tower is saved. Choose your next step.", exact: true }),
+  ).toBeVisible();
+  const towerPath = new URL(page.url()).pathname;
+  await page.getByRole("link", { name: "Set up this tower yourself", exact: true }).click();
+  await page.getByLabel("Goal or context", { exact: true }).fill("Synthetic measurement goal");
+  await page.getByLabel("Custom protocol name", { exact: true }).fill("First practice");
+  await page.getByLabel("Custom how-to", { exact: true }).fill("Do the first practice.");
+  await page.getByText("Add another custom protocol", { exact: true }).click();
+  await page.getByLabel("Second custom protocol name", { exact: true }).fill("Second practice");
+  await page.getByLabel("Second custom how-to", { exact: true }).fill("Do the second practice.");
+  await page.getByText("Add a custom measure", { exact: true }).click();
+  await page.locator("#custom-metric-name-1").fill("Concentration");
+  await page.getByRole("button", { name: "Save tower setup", exact: true }).click();
+  await expect(page.locator(".setup-error-summary")).toContainText("Choose what to record");
+  await expect(page.getByLabel("Goal or context", { exact: true })).toHaveValue(
+    "Synthetic measurement goal",
+  );
+  await expect(page.getByLabel("Custom protocol name", { exact: true })).toHaveValue(
+    "First practice",
+  );
+  await expect(page.getByLabel("Second custom how-to", { exact: true })).toHaveValue(
+    "Do the second practice.",
+  );
+  await expect(page.locator("#custom-metric-name-1")).toHaveValue("Concentration");
+  const preview = page.locator(".protocol-preview summary").first();
+  await expect(preview).toBeVisible();
+  {
+    await preview.click();
+    await expect(page.locator(".protocol-preview[open]")).toHaveCount(1);
+    await preview.click();
+    await expect(page.getByLabel("Custom protocol name", { exact: true })).toHaveValue(
+      "First practice",
+    );
+  }
+  await page.locator("#custom-metric-shape-1").selectOption("number");
+  await page.locator("#custom-metric-unit-1").fill("units/mL");
+  await page.locator("#custom-metric-name-2").fill("Observation");
+  await page.locator("#custom-metric-kind-2").selectOption("ongoing");
+  await page.locator("#custom-metric-shape-2").selectOption("text");
+  await page.getByRole("button", { name: "Save tower setup", exact: true }).click();
+  await expect(page).toHaveURL((url) => url.pathname === towerPath);
+  await page.reload();
+  await expect(page.locator(".owned-protocol-list > li")).toHaveCount(2);
+  await page.getByLabel("Measurement date", { exact: true }).fill("2020-02-03");
+  await page.getByRole("textbox", { name: "Concentration", exact: true }).fill("3.250000");
+  await page
+    .getByRole("textbox", { name: "Observation", exact: true })
+    .fill("Synthetic observation");
+  await page.getByRole("button", { name: "Save check-in", exact: true }).click();
+  await expect(page.locator(".measurement-history")).toContainText("3.250000");
+  await page.getByLabel("Measurement date", { exact: true }).fill("2020-02-04");
+  await page.getByRole("textbox", { name: "Concentration", exact: true }).fill("0");
+  await page
+    .getByRole("textbox", { name: "Observation", exact: true })
+    .fill("Synthetic observation");
+  await page.getByRole("button", { name: "Save check-in", exact: true }).click();
+  await expect(page.locator(".measurement-history")).toContainText("2020-02-04");
+  await page.reload();
+  await expect(page.locator(".measurement-history tbody tr")).toHaveCount(4);
+  await expect(page.locator(".measurement-history")).toContainText("2020-02-03");
+  await expect(page.locator(".measurement-history")).toContainText("3.250000");
+  await expect(page.locator(".measurement-history")).toContainText("units/mL");
+});

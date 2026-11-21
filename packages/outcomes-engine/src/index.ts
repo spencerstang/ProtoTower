@@ -8,6 +8,8 @@ export const metricKindSchema = z.enum(["ongoing", "proxy", "final"]);
 export type MetricKind = z.infer<typeof metricKindSchema>;
 
 export const metricShapeSchema = z.enum([
+  "number",
+  "text",
   "weight",
   "rating",
   "blood_pressure",
@@ -50,9 +52,9 @@ export const metricPresetKeySchema = z.enum([
 ]);
 
 const shapesByKind: Record<MetricKind, readonly MetricShape[]> = {
-  ongoing: ["weight", "rating", "blood_pressure", "qualitative"],
-  proxy: ["count", "hours", "rating"],
-  final: ["scale_1_5", "complete_incomplete", "percent"],
+  ongoing: ["number", "text", "weight", "rating", "blood_pressure", "qualitative"],
+  proxy: ["number", "text", "count", "hours", "rating"],
+  final: ["number", "text", "scale_1_5", "complete_incomplete", "percent"],
 };
 
 export function shapesForKind(kind: MetricKind): readonly MetricShape[] {
@@ -98,9 +100,21 @@ export const metricDraftSchema = z
     shape: metricShapeSchema,
     label: metricLabelSchema,
     presetKey: metricPresetKeySchema.nullable(),
+    unit: z
+      .string()
+      .transform((value) => parseOptionalPlainLine(value, 24))
+      .nullable()
+      .optional(),
   })
   .strict()
   .superRefine((metric, context) => {
+    if (metric.unit && metric.shape !== "number") {
+      context.addIssue({
+        code: "custom",
+        path: ["unit"],
+        message: "Units belong to number measures.",
+      });
+    }
     if (!shapesForKind(metric.kind).includes(metric.shape)) {
       context.addIssue({
         code: "custom",
@@ -131,6 +145,8 @@ export type StoredMetric = Readonly<z.infer<typeof storedMetricSchema>>;
 
 export type MetricReading =
   | Readonly<{ skipped: true }>
+  | Readonly<{ skipped: false; shape: "number"; numeric: string }>
+  | Readonly<{ skipped: false; shape: "text"; text: string }>
   | Readonly<{ skipped: false; shape: "weight"; numeric: number }>
   | Readonly<{ skipped: false; shape: "rating"; numeric: number }>
   | Readonly<{ skipped: false; shape: "scale_1_5"; numeric: number }>
@@ -201,6 +217,16 @@ export function parseMetricSubmission(
   }
 
   switch (metric.shape) {
+    case "number": {
+      assertBlank(submission.secondary);
+      assertBlank(submission.text);
+      assertBlank(submission.completion);
+      const value = submission.numeric?.trim();
+      if (!value || !/^-?(0|[1-9][0-9]{0,15})(\.[0-9]{1,12})?$/u.test(value)) {
+        throw new Error("Use a decimal number with up to 16 whole-number and 12 decimal digits.");
+      }
+      return { skipped: false, shape: "number", numeric: value };
+    }
     case "weight":
       assertBlank(submission.secondary);
       assertBlank(submission.text);
@@ -263,12 +289,13 @@ export function parseMetricSubmission(
       if (systolic <= diastolic) throw new Error("Blood pressure is invalid.");
       return { skipped: false, shape: "blood_pressure", systolic, diastolic };
     }
+    case "text":
     case "qualitative": {
       assertBlank(submission.numeric);
       assertBlank(submission.secondary);
       assertBlank(submission.completion);
       if (submission.text === null) throw new Error("Note is invalid.");
-      return { skipped: false, shape: "qualitative", text: assertPlainLine(submission.text, 280) };
+      return { skipped: false, shape: metric.shape, text: assertPlainLine(submission.text, 280) };
     }
     case "complete_incomplete": {
       assertBlank(submission.numeric);
@@ -289,6 +316,7 @@ export function parseMetricSubmission(
 export function formatMetricReading(reading: MetricReading): string | null {
   if (reading.skipped) return null;
   switch (reading.shape) {
+    case "number":
     case "weight":
     case "count":
       return String(reading.numeric);
@@ -301,6 +329,7 @@ export function formatMetricReading(reading: MetricReading): string | null {
       return `${reading.numeric}%`;
     case "blood_pressure":
       return `${reading.systolic}/${reading.diastolic}`;
+    case "text":
     case "qualitative":
       return reading.text;
     case "complete_incomplete":
@@ -335,7 +364,7 @@ export function calmCheckInSummary(
 
 export function readingPayload(reading: MetricReading): Readonly<{
   skipped: boolean;
-  numericValue: number | null;
+  numericValue: number | string | null;
   secondaryNumeric: number | null;
   textValue: string | null;
   completion: "complete" | "incomplete" | null;
@@ -350,6 +379,7 @@ export function readingPayload(reading: MetricReading): Readonly<{
     };
   }
   switch (reading.shape) {
+    case "number":
     case "weight":
     case "rating":
     case "scale_1_5":
@@ -371,6 +401,7 @@ export function readingPayload(reading: MetricReading): Readonly<{
         textValue: null,
         completion: null,
       };
+    case "text":
     case "qualitative":
       return {
         skipped: false,
@@ -398,7 +429,7 @@ export function readingFromPayload(
   shape: MetricShape,
   payload: Readonly<{
     skipped: boolean;
-    numericValue: number | null;
+    numericValue: number | string | null;
     secondaryNumeric: number | null;
     textValue: string | null;
     completion: "complete" | "incomplete" | null;

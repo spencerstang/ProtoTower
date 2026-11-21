@@ -8,7 +8,7 @@ describe("tower setup form markup", () => {
   it("renders the happy path and keeps anonymity inside the shared choice", () => {
     const html = renderToStaticMarkup(
       createElement(TowerSetupForm, {
-        action: () => undefined,
+        action: async () => ({ errors: [] }),
         starters: [
           {
             id: "20000000-0000-4000-8000-000000000001",

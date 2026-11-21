@@ -1194,3 +1194,97 @@ button {
     scroll-behavior: auto;
   }
 }
+
+/* Choice controls keep their native compact size, independent of text fields. */
+.stacked-form input:is([type="checkbox"], [type="radio"]),
+.inline-form input:is([type="checkbox"], [type="radio"]) {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex: 0 0 1.1rem;
+  margin: 0.12rem 0 0;
+  padding: 0;
+  accent-color: var(--accent);
+}
+.stacked-form label:has(> input:is([type="checkbox"], [type="radio"])),
+.inline-form label:has(> input:is([type="checkbox"], [type="radio"])) {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  line-height: 1.5;
+  padding: 0.6rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+.stacked-form label:has(> input:checked) {
+  background: color-mix(in srgb, var(--accent), transparent 92%);
+  box-shadow: inset 3px 0 var(--accent);
+}
+.setup-form {
+  max-width: 720px;
+}
+.setup-form fieldset,
+.setup-choice-list > li {
+  display: grid;
+  gap: 0.7rem;
+  min-width: 0;
+  padding: 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+  background: var(--surface);
+}
+.setup-form legend {
+  font-weight: 800;
+  padding: 0 0.4rem;
+}
+.setup-form textarea {
+  font: inherit;
+  resize: vertical;
+  line-height: 1.5;
+}
+.setup-form summary {
+  cursor: pointer;
+  padding: 0.7rem 0;
+  font-weight: 700;
+}
+.protocol-preview {
+  border-block: 1px solid var(--line);
+  padding-block: 0.4rem;
+}
+.protocol-preview p,
+.protocol-preview li {
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+}
+.protocol-preview h3 {
+  font-size: 1rem;
+}
+.setup-error-summary {
+  padding: 1rem;
+  border: 2px solid #a52c24;
+  border-radius: 0.75rem;
+  background: var(--surface);
+}
+.setup-error-summary h2 {
+  font-size: 1.1rem;
+}
+.setup-error-summary a,
+.field-error {
+  color: #a52c24;
+}
+.setup-form [aria-invalid="true"] {
+  border-color: #a52c24;
+}
+.measurement-history {
+  overflow-x: auto;
+}
+.measurement-history table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.measurement-history th,
+.measurement-history td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}

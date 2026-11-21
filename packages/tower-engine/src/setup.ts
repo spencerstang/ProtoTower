@@ -203,9 +203,13 @@ function reviewParsedSetup(
 }
 
 export function commitTowerSetup(input: unknown, maximumProtocols: number): SetupCommitResult {
-  const parsed = setupFieldsSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, code: "invalid" };
-  return reviewParsedSetup(parsed.data, maximumProtocols);
+  try {
+    const parsed = setupFieldsSchema.safeParse(input);
+    if (!parsed.success) return { ok: false, code: "invalid" };
+    return reviewParsedSetup(parsed.data, maximumProtocols);
+  } catch {
+    return { ok: false, code: "invalid" };
+  }
 }
 
 export type CreateFormProtocol = Readonly<{
@@ -216,6 +220,7 @@ export type CreateFormProtocol = Readonly<{
 }>;
 
 export type CreateFormMetric = Readonly<{
+  unit?: string | null;
   kind: string;
   shape: string;
   label: string;
@@ -272,6 +277,7 @@ export function draftFromStoredSetup(input: {
         shape: metric.shape,
         label: metric.label,
         presetKey: metric.presetKey,
+        unit: metric.unit ?? null,
       })),
     },
     maximumTowerProtocols,
@@ -430,6 +436,7 @@ export function assertStoredSetup(input: {
         shape: metric.shape,
         label: metric.label,
         presetKey: metric.presetKey,
+        unit: metric.unit ?? null,
       })),
     },
     maximumTowerProtocols,

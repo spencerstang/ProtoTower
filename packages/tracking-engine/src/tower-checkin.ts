@@ -108,7 +108,7 @@ export type TowerCheckInMetric = Readonly<{
 export type TowerCheckInResponse = Readonly<{
   metricId: string;
   skipped: boolean;
-  numericValue: number | null;
+  numericValue: number | string | null;
   secondaryNumeric: number | null;
   textValue: string | null;
   completion: "complete" | "incomplete" | null;

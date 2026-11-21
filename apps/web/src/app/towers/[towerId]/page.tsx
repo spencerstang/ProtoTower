@@ -7,7 +7,7 @@ import { getVerifiedPrincipal } from "@/lib/auth";
 import { createServerPersonalTowerRepository } from "@/lib/personal-towers";
 import { createServerPracticeCheckInRepository } from "@/lib/practice-checkins";
 import { createServerProtocolCatalogRepository } from "@/lib/protocol-catalog";
-import { createServerTowerCheckInRepository } from "@/lib/tower-checkins";
+import { listMeasurementHistory, createServerTowerCheckInRepository } from "@/lib/tower-checkins";
 import { clipPlainLine } from "@/lib/tower-setup-form";
 import { isFeatureEnabled } from "@protostack/configuration";
 import {
@@ -167,6 +167,12 @@ export default async function TowerDetailPage(props: {
         : { status: "open", period, record: stored };
   }
 
+  const measurements = tower.metrics.some(
+    (metric) => metric.shape === "number" || metric.shape === "text",
+  )
+    ? await listMeasurementHistory(tower.id)
+    : [];
+
   return (
     <main id="main-content">
       <SiteHeader status="Private tower" />
@@ -225,6 +231,7 @@ export default async function TowerDetailPage(props: {
             checkIn={setupReady ? checkIn : { status: "incomplete" }}
             starters={starters}
             catalogUnavailable={catalog.status === "unavailable"}
+            measurements={measurements}
           />
         ) : null}
 

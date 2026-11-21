@@ -64,6 +64,7 @@ function parseTower(
         shape: metric.shape,
         label: metric.label,
         presetKey: metric.preset_key,
+        unit: metric.unit,
         position: metric.position,
       })),
     revision: row.revision,
@@ -99,6 +100,7 @@ function metricPayload(metric: MetricDraft): Json {
     shape: metric.shape,
     label: metric.label,
     preset_key: metric.presetKey,
+    unit: metric.unit ?? null,
   };
 }
 
@@ -176,7 +178,7 @@ async function loadMetrics(
   if (towerIds.length === 0) return [];
   const { data, error } = await client
     .from("tower_metrics")
-    .select("id,tower_id,position,kind,shape,label,preset_key,created_at")
+    .select("id,tower_id,position,kind,shape,label,preset_key,unit,created_at")
     .in("tower_id", [...towerIds])
     .order("position", { ascending: true });
   if (error) return null;

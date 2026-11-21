@@ -65,6 +65,7 @@ export function configuredTowerInputFromForm(formData: FormData): unknown {
     shape: string;
     label: string;
     presetKey: string | null;
+    unit?: string | null;
   }[] = [];
 
   for (const key of formStrings(formData, "preset")) {
@@ -88,8 +89,12 @@ export function configuredTowerInputFromForm(formData: FormData): unknown {
     if (encoded.trim() === "" && label.trim() === "") continue;
     const separator = encoded.indexOf(":");
     metrics.push({
-      kind: separator > 0 ? encoded.slice(0, separator) : encoded,
-      shape: separator > 0 ? encoded.slice(separator + 1) : "",
+      kind:
+        separator > 0
+          ? encoded.slice(0, separator)
+          : formValue(formData, `customMetricKind${slot}`) || "final",
+      shape: separator > 0 ? encoded.slice(separator + 1) : encoded,
+      unit: formValue(formData, `customMetricUnit${slot}`) || null,
       label,
       presetKey: null,
     });
