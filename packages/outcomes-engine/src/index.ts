@@ -26,10 +26,10 @@ export const metricPresets = [
   { key: "weight", kind: "ongoing", shape: "weight", label: "Weight" },
   { key: "feeling", kind: "ongoing", shape: "rating", label: "How it feels" },
   { key: "blood-pressure", kind: "ongoing", shape: "blood_pressure", label: "Blood pressure" },
-  { key: "note", kind: "ongoing", shape: "qualitative", label: "How it's going" },
+  { key: "note", kind: "ongoing", shape: "qualitative", label: "Progress note" },
   { key: "workouts", kind: "proxy", shape: "count", label: "Workouts logged" },
   { key: "sleep-hours", kind: "proxy", shape: "hours", label: "Sleep hours" },
-  { key: "outreach", kind: "proxy", shape: "count", label: "Outreach count" },
+  { key: "outreach", kind: "proxy", shape: "count", label: "People contacted" },
   { key: "goal-complete", kind: "final", shape: "complete_incomplete", label: "Goal complete" },
   { key: "success-rating", kind: "final", shape: "scale_1_5", label: "Success rating" },
   { key: "percent-successful", kind: "final", shape: "percent", label: "Percent successful" },
@@ -50,6 +50,31 @@ export const metricPresetKeySchema = z.enum([
   "success-rating",
   "percent-successful",
 ]);
+
+export function metricScale(shape: MetricShape, unit?: string | null): string | null {
+  switch (shape) {
+    case "rating":
+    case "scale_1_5":
+      return "1–5";
+    case "percent":
+      return "0–100%";
+    case "hours":
+      return "0–24 hours";
+    case "weight":
+      return "decimal weight";
+    case "blood_pressure":
+      return "mmHg";
+    case "count":
+      return "whole number";
+    case "complete_incomplete":
+      return "complete or incomplete";
+    case "number":
+      return unit || "number";
+    case "text":
+    case "qualitative":
+      return "text";
+  }
+}
 
 const shapesByKind: Record<MetricKind, readonly MetricShape[]> = {
   ongoing: ["number", "text", "weight", "rating", "blood_pressure", "qualitative"],

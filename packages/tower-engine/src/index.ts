@@ -46,6 +46,7 @@ export const towerItemSchema = z
   .object({
     protocolId: protocolIdSchema,
     protocolVersion: z.int().positive(),
+    personalNote: z.string().nullable().optional(),
     position: z.int().min(1).max(maximumItemsPerTower),
   })
   .strict();
@@ -233,6 +234,7 @@ export {
   maximumTowerProtocols,
   presetMetric,
   removeMetricFromDraft,
+  renameMetricInDraft,
   removeProtocolFromDraft,
   replaceDefinition,
   replaceProtocolInDraft,

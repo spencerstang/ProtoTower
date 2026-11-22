@@ -39,3 +39,29 @@ describe("auth intake cookie", () => {
     },
   );
 });
+
+describe("post-authentication destination", () => {
+  it("round-trips validated tower setup paths in the intake cookie", () => {
+    const tokenHash = "a".repeat(64);
+    const next = "/towers/20000000-0000-4000-8000-000000000001/setup";
+    expect(parseAuthIntakeCookie(createAuthIntakeCookie("email", tokenHash, next))).toEqual({
+      type: "email",
+      tokenHash,
+      next,
+    });
+  });
+
+  it.each([
+    "//elsewhere.test",
+    "/towers/%2f%2felsewhere.test",
+    "/towers/../auth",
+    "/towers/other",
+    "/account?next=elsewhere",
+  ])("rejects the destination %s", (next) => {
+    const tokenHash = "a".repeat(64);
+    expect(parseAuthIntakeCookie(createAuthIntakeCookie("email", tokenHash, next))).toEqual({
+      type: "email",
+      tokenHash,
+    });
+  });
+});

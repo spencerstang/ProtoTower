@@ -60,22 +60,25 @@ export async function requestAndConfirm(
   page: Page,
   request: APIRequestContext,
   email: string,
+  options: { destination?: string; confirmationPage?: Page } = {},
 ): Promise<string> {
-  await page.goto("/sign-in");
+  await page.goto(options.destination ?? "/sign-in");
+  if (options.destination) await expect(page).toHaveURL(/\/sign-in\?next=/u);
   await page.getByLabel("Email address").fill(email);
   await page.getByRole("button", { name: "Continue with email" }).click();
   await expect(page).toHaveURL(/\/auth\/check-email$/u);
   const link = await latestMagicLink(request, email);
 
+  page = options.confirmationPage ?? page;
   await page.goto(link);
   await expect(page).toHaveURL(/\/auth\/confirm$/u);
-  await expect(page.getByRole("button", { name: "Confirm and open my towers" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Confirm sign-in" })).toBeVisible();
   expect((await page.context().cookies()).some((cookie) => isSessionCookie(cookie.name))).toBe(
     false,
   );
   expect(await page.content()).not.toContain(new URL(link).searchParams.get("token_hash"));
 
-  await page.getByRole("button", { name: "Confirm and open my towers" }).click();
-  await expect(page).toHaveURL(/\/towers$/u);
+  await page.getByRole("button", { name: "Confirm sign-in" }).click();
+  await expect(page).toHaveURL((url) => url.pathname === (options.destination ?? "/towers"));
   return link;
 }

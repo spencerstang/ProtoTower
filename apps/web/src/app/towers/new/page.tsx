@@ -1,5 +1,6 @@
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { createStarterTower } from "@/app/towers/starter-actions";
+import { signInPath } from "@/lib/auth-return";
 import { getVerifiedPrincipal } from "@/lib/auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -15,7 +16,7 @@ export default async function NewTowerPage(props: {
 }) {
   const principal = await getVerifiedPrincipal();
   if (principal.status === "available" && principal.principal.kind === "anonymous") {
-    redirect("/sign-in");
+    redirect(signInPath("/towers/new"));
   }
   const searchParams = await props.searchParams;
   const errorCode = typeof searchParams["error"] === "string" ? searchParams["error"] : null;

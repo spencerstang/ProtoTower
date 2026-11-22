@@ -31,7 +31,10 @@ In production Supabase:
    manual account linking disabled.
 2. Set the Site URL to `https://prototower.ai` and allow only the exact
    `https://prototower.ai/auth/confirm` redirect.
-3. Install the committed scanner-resistant magic-link template.
+3. Install the committed scanner-resistant magic-link and signup confirmation
+   templates. For the return-to-page flow, sync both templates and verify that a
+   link requested from a protected route returns there when opened in another
+   browser. Older templates can return to the saved page in the requesting browser.
 4. Configure Resend custom SMTP on the ProtoTower domain with link/open tracking
    disabled and review Auth email rate limits.
 5. Enable the provider backup policy, record its retention, and restrict dashboard

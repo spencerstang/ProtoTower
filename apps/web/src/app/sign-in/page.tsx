@@ -1,4 +1,5 @@
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { parseAuthReturnPath } from "@/lib/auth-return";
 import { getSupabaseConnection } from "@/lib/supabase/server";
 import { requestMagicLink } from "./actions";
 
@@ -6,6 +7,7 @@ export default async function SignInPage(props: {
   searchParams: Promise<Readonly<Record<string, string | string[] | undefined>>>;
 }) {
   const searchParams = await props.searchParams;
+  const next = parseAuthReturnPath(searchParams["next"]);
   const invalid = searchParams["error"] === "invalid";
   const available = Boolean(getSupabaseConnection());
 
@@ -22,6 +24,7 @@ export default async function SignInPage(props: {
               account on first use or signs you back in.
             </p>
             <form action={requestMagicLink} className="stacked-form">
+              {next ? <input type="hidden" name="next" value={next} /> : null}
               <label htmlFor="email">Email address</label>
               <input
                 id="email"

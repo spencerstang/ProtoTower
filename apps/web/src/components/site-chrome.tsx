@@ -27,9 +27,6 @@ async function AccountNavigation(): Promise<ReactNode> {
       </details>
     );
   }
-  if (result.status === "unavailable") {
-    return <span className="account-unavailable">Account unavailable</span>;
-  }
   return (
     <Link className="nav-link" href="/sign-in">
       Sign in

@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { authIntakeCookieName, parseAuthIntakeCookie } from "@/lib/auth-intake";
+import { authReturnCookieName } from "@/lib/auth-return";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function confirmMagicLink(): Promise<never> {
@@ -23,5 +24,6 @@ export async function confirmMagicLink(): Promise<never> {
   } catch {
     redirect("/auth/confirm?error=invalid");
   }
-  redirect("/towers");
+  cookieStore.delete({ name: authReturnCookieName, path: "/auth" });
+  redirect(intake.next ?? "/towers");
 }

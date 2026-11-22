@@ -142,12 +142,6 @@ footer {
   box-shadow: 0 0.8rem 2rem rgba(21, 33, 28, 0.12);
 }
 
-.account-menu-label,
-.account-unavailable {
-  font-size: 0.82rem;
-  color: var(--muted);
-}
-
 .account-menu-action {
   padding: 0;
   color: var(--accent-dark);
@@ -1231,6 +1225,9 @@ button {
   border: 1px solid var(--line);
   border-radius: 0.85rem;
   background: var(--surface);
+}
+.setup-form [hidden] {
+  display: none;
 }
 .setup-form legend {
   font-weight: 800;

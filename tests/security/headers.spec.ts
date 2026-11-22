@@ -57,6 +57,10 @@ test("protected routes are private and fail closed for anonymous requests", asyn
   expect(response.status()).toBeGreaterThanOrEqual(300);
   expect(response.status()).toBeLessThan(400);
   expect(response.headers()["location"]).toContain("/sign-in");
+  const deepLink = await request.get("/towers/new/detailed", { maxRedirects: 0 });
+  const destination = new URL(deepLink.headers()["location"] ?? "", "http://127.0.0.1:3000");
+  expect(destination.pathname).toBe("/sign-in");
+  expect(destination.searchParams.get("next")).toBe("/towers/new/detailed");
   expect(response.headers()["cache-control"]).toContain("private");
   expect(response.headers()["cache-control"]).toContain("no-store");
 });

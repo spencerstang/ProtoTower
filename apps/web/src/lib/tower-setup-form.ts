@@ -1,4 +1,4 @@
-import { metricPresetByKey } from "@protostack/outcomes-engine";
+import { maximumMetricsPerTower, metricPresetByKey } from "@protostack/outcomes-engine";
 
 export function clipPlainLine(value: string, maximum = 280): string {
   const normalized = value.normalize("NFC").trim().replace(/\s+/gu, " ");
@@ -19,36 +19,43 @@ function formValue(formData: FormData, name: string): string {
   return typeof value === "string" ? value : "";
 }
 
-export function configuredTowerInputFromForm(formData: FormData): unknown {
+export const customMeasureSlots = Array.from(
+  { length: maximumMetricsPerTower },
+  (_, index) => index + 1,
+);
+export const customProtocolSlots = [1, 2, 3] as const;
+
+export type SetupProtocolChoice = Readonly<{
+  id: string;
+  version: number;
+  title: string;
+  howTo: string;
+}>;
+
+export function configuredTowerInputFromForm(
+  formData: FormData,
+  starters: readonly SetupProtocolChoice[],
+): unknown {
   const protocols: {
     title: string;
     howTo: string;
+    personalNote?: string | null;
     sourceProtocolId: string | null;
     sourceProtocolVersion: number | null;
   }[] = [];
 
   for (const starter of formStrings(formData, "starter")) {
-    const separator = starter.lastIndexOf("@");
-    if (separator <= 0) {
-      protocols.push({
-        title: "",
-        howTo: "",
-        sourceProtocolId: null,
-        sourceProtocolVersion: null,
-      });
-      continue;
-    }
-    const sourceProtocolId = starter.slice(0, separator);
-    const sourceProtocolVersion = Number(starter.slice(separator + 1));
+    const protocol = starters.find((choice) => `${choice.id}@${choice.version}` === starter);
     protocols.push({
-      title: formValue(formData, `starterTitle.${sourceProtocolId}`),
-      howTo: formValue(formData, `starterHowTo.${sourceProtocolId}`),
-      sourceProtocolId,
-      sourceProtocolVersion,
+      title: protocol?.title ?? "",
+      howTo: protocol?.howTo ?? "",
+      sourceProtocolId: protocol?.id ?? null,
+      sourceProtocolVersion: protocol?.version ?? null,
+      personalNote: protocol ? formValue(formData, `starterNote.${protocol.id}`) : null,
     });
   }
 
-  for (const slot of [1, 2, 3]) {
+  for (const slot of customProtocolSlots) {
     const title = formValue(formData, `customTitle${slot}`);
     const howTo = formValue(formData, `customHowTo${slot}`);
     if (title.trim() === "" && howTo.trim() === "") continue;
@@ -83,10 +90,11 @@ export function configuredTowerInputFromForm(formData: FormData): unknown {
     );
   }
 
-  for (const slot of [1, 2]) {
+  for (const slot of customMeasureSlots) {
     const encoded = formValue(formData, `customMetricShape${slot}`);
     const label = formValue(formData, `customMetricLabel${slot}`);
-    if (encoded.trim() === "" && label.trim() === "") continue;
+    const unit = formValue(formData, `customMetricUnit${slot}`);
+    if (!encoded.trim() && !label.trim() && !unit.trim()) continue;
     const separator = encoded.indexOf(":");
     metrics.push({
       kind:
@@ -94,7 +102,7 @@ export function configuredTowerInputFromForm(formData: FormData): unknown {
           ? encoded.slice(0, separator)
           : formValue(formData, `customMetricKind${slot}`) || "final",
       shape: separator > 0 ? encoded.slice(separator + 1) : encoded,
-      unit: formValue(formData, `customMetricUnit${slot}`) || null,
+      unit: unit || null,
       label,
       presetKey: null,
     });

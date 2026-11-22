@@ -57,6 +57,11 @@ export const towerProtocolDraftSchema = z
     id: z.uuid().optional(),
     title: protocolTitleSchema,
     howTo: protocolHowToSchema,
+    personalNote: z
+      .string()
+      .nullable()
+      .optional()
+      .transform((value) => parseOptionalPlainLine(value ?? null, 280)),
     sourceProtocolId: z.union([protocolIdSchema, z.null()]),
     sourceProtocolVersion: z.union([z.int().positive(), z.null()]),
   })
@@ -64,7 +69,7 @@ export const towerProtocolDraftSchema = z
   .superRefine((protocol, context) => {
     const hasSource = protocol.sourceProtocolId !== null;
     const hasVersion = protocol.sourceProtocolVersion !== null;
-    if (hasSource !== hasVersion) {
+    if (hasSource !== hasVersion || (!hasSource && protocol.personalNote !== null)) {
       context.addIssue({
         code: "custom",
         path: ["sourceProtocolId"],
@@ -215,6 +220,7 @@ export function commitTowerSetup(input: unknown, maximumProtocols: number): Setu
 export type CreateFormProtocol = Readonly<{
   title: string;
   howTo: string;
+  personalNote?: string | null;
   sourceProtocolId: string | null;
   sourceProtocolVersion: number | null;
 }>;
@@ -268,6 +274,7 @@ export function draftFromStoredSetup(input: {
         id: protocol.id,
         title: protocol.title,
         howTo: protocol.howTo,
+        personalNote: protocol.personalNote,
         sourceProtocolId: protocol.sourceProtocolId,
         sourceProtocolVersion: protocol.sourceProtocolVersion,
       })),
@@ -333,6 +340,24 @@ export function addMetricToDraft(
   metric: CreateFormMetric,
 ): SetupCommitResult {
   return commitTowerSetup({ ...draft, metrics: [...draft.metrics, metric] }, maximumTowerProtocols);
+}
+
+export function renameMetricInDraft(
+  draft: TowerSetupDraft,
+  metricId: string,
+  label: string,
+): SetupCommitResult {
+  if (!draft.metrics.some((metric) => metric.id === metricId))
+    return { ok: false, code: "invalid" };
+  return commitTowerSetup(
+    {
+      ...draft,
+      metrics: draft.metrics.map((metric) =>
+        metric.id === metricId ? { ...metric, label } : metric,
+      ),
+    },
+    maximumTowerProtocols,
+  );
 }
 
 export function removeMetricFromDraft(draft: TowerSetupDraft, metricId: string): SetupCommitResult {
@@ -427,6 +452,7 @@ export function assertStoredSetup(input: {
         id: protocol.id,
         title: protocol.title,
         howTo: protocol.howTo,
+        personalNote: protocol.personalNote,
         sourceProtocolId: protocol.sourceProtocolId,
         sourceProtocolVersion: protocol.sourceProtocolVersion,
       })),

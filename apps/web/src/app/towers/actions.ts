@@ -12,6 +12,9 @@ import {
   type TowerId,
   type TowerRevision,
 } from "@protostack/tower-engine";
+import { parseOptionalPlainLine } from "@protostack/outcomes-engine";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { signInPath } from "@/lib/auth-return";
 import { protocolIdSchema } from "@protostack/protocol-engine";
 import { isFeatureEnabled } from "@protostack/configuration";
 import {
@@ -85,6 +88,41 @@ export async function createTower(formData: FormData): Promise<never> {
   }
   if (result.status === "rejected") redirect("/towers/new?error=invalid");
   redirect("/towers/new?error=unavailable");
+}
+
+export async function saveLibraryBlockNote(formData: FormData): Promise<never> {
+  const towerId = towerIdSchema.safeParse(formString(formData, "towerId"));
+  const protocolId = protocolIdSchema.safeParse(formString(formData, "protocolId"));
+  const revision = towerRevisionSchema.safeParse(Number(formString(formData, "revision")));
+  const version = Number(formString(formData, "protocolVersion"));
+  if (!towerId.success) redirect("/towers?error=invalid");
+  const path = `/towers/${towerId.data}`;
+  const principal = await getVerifiedPrincipal();
+  if (principal.status === "unavailable") redirect(`${path}?error=unavailable`);
+  if (principal.principal.kind !== "authenticated") redirect(signInPath(path));
+  if (!protocolId.success || !revision.success || !Number.isSafeInteger(version) || version < 1) {
+    redirect(`${path}?error=protocol-note-invalid`);
+  }
+  let note: string | null;
+  try {
+    note = parseOptionalPlainLine(formString(formData, "personalNote"), 280);
+  } catch {
+    redirect(`${path}?error=protocol-note-invalid`);
+  }
+  const client = await createSupabaseServerClient();
+  if (!client) redirect(`${path}?error=unavailable`);
+  const { error } = await client.rpc("save_tower_item_note", {
+    candidate_id: towerId.data,
+    candidate_protocol_id: protocolId.data,
+    candidate_protocol_version: version,
+    candidate_note: note,
+    expected_revision: revision.data,
+  });
+  if (error) {
+    const reason = error.code === "40001" ? "stale" : "protocol-note-invalid";
+    redirect(`${path}?error=${reason}`);
+  }
+  redirect(`${path}?status=protocol-note-saved`);
 }
 
 export async function renameTower(formData: FormData): Promise<never> {

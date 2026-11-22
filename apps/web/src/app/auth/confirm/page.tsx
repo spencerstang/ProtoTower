@@ -32,7 +32,7 @@ export default async function ConfirmPage(props: {
             </p>
             <form action={confirmMagicLink}>
               <button className="primary-action" type="submit">
-                Confirm and open my towers
+                Confirm sign-in
               </button>
             </form>
           </>

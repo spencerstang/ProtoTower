@@ -22,7 +22,7 @@ function setup(): FormData {
 }
 describe("setup validation", () => {
   it("accepts one goal, two protocols and a numeric outcome without a completion preset", () => {
-    const result = validateSetupForm(setup());
+    const result = validateSetupForm(setup(), []);
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.draft.protocols).toHaveLength(2);
@@ -37,7 +37,7 @@ describe("setup validation", () => {
     data.set("customMetricShape1", "");
     data.delete("customMetricUnit1");
     const before = [...data.entries()];
-    expect(validateSetupForm(data)).toEqual({
+    expect(validateSetupForm(data, [])).toEqual({
       ok: false,
       errors: [
         { field: "custom-metric-shape-1", message: "Choose what to record for this measure." },
@@ -48,7 +48,7 @@ describe("setup validation", () => {
   it("points duplicate protocol names at the second name field", () => {
     const data = setup();
     data.set("customTitle2", "first practice");
-    expect(validateSetupForm(data)).toMatchObject({
+    expect(validateSetupForm(data, [])).toMatchObject({
       ok: false,
       errors: [
         { field: "custom-protocol-name-2", message: "Give each protocol a different name." },

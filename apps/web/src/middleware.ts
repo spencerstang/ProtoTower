@@ -1,6 +1,7 @@
 import type { Database } from "@protostack/database";
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { signInPath } from "./lib/auth-return";
 import { serverOnlyCookieOptions } from "./lib/supabase/cookies";
 import { buildContentSecurityPolicy } from "./lib/security-headers";
 
@@ -83,7 +84,10 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   if (request.nextUrl.pathname.startsWith("/towers") && !verifiedPrincipal && !hasSessionCookie) {
     const publicOrigin = process.env["PUBLIC_APP_URL"] ?? request.nextUrl.origin;
-    response = NextResponse.redirect(new URL("/sign-in", publicOrigin), 307);
+    response = NextResponse.redirect(
+      new URL(signInPath(request.nextUrl.pathname), publicOrigin),
+      307,
+    );
   }
 
   applyResponseHeaders(

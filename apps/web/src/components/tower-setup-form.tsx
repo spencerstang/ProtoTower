@@ -3,11 +3,30 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import type { PublishedProtocol } from "@protostack/protocol-engine";
 import type { SetupAction, SetupFieldError } from "@/lib/setup-form-state";
-import { metricPresets } from "@protostack/outcomes-engine";
-import { cadenceChoiceLabels, type TowerCadence } from "@protostack/tower-engine";
+import {
+  maximumMetricsPerTower,
+  metricPresets,
+  metricScale,
+  shapesForKind,
+  metricKindSchema,
+  type MetricKind,
+  type MetricPreset,
+  type MetricShape,
+} from "@protostack/outcomes-engine";
+import {
+  cadenceChoiceLabels,
+  firstTowerProtocolLimit,
+  type TowerCadence,
+} from "@protostack/tower-engine";
+
+import {
+  customMeasureSlots,
+  customProtocolSlots,
+  type SetupProtocolChoice,
+} from "../lib/tower-setup-form";
 
 const setupErrors = {
-  protocols: "Choose 1–3 protocols. Edit a starter or add your own.",
+  protocols: "Choose 1–3 library or custom protocols.",
   final: "Add at least one final outcome. Ongoing and proxy measures are optional.",
   dates: "Add at least one specific date, or choose another rhythm.",
   invalid: "Check the setup and try again. Names stay on one line.",
@@ -16,30 +35,25 @@ const setupErrors = {
   unavailable: "Tower setup is temporarily unavailable.",
 } as const;
 
-const customShapes = [
-  ["number", "Number · actual decimal value"],
-  ["text", "Text · written response"],
-  ["ongoing:weight", "Ongoing · weight"],
-  ["ongoing:rating", "Ongoing · rating from 1 to 5"],
-  ["ongoing:blood_pressure", "Ongoing · blood pressure"],
-  ["ongoing:qualitative", "Ongoing · short note"],
-  ["proxy:count", "Proxy · count"],
-  ["proxy:hours", "Proxy · hours"],
-  ["proxy:rating", "Proxy · rating from 1 to 5"],
-  ["final:complete_incomplete", "Final · complete or incomplete"],
-  ["final:scale_1_5", "Final · rating from 1 to 5"],
-  ["final:percent", "Final · percent successful"],
-] as const;
+const customShapeLabels: Record<MetricShape, string> = {
+  number: "Number · actual decimal value",
+  text: "Text · written response",
+  weight: "Weight",
+  rating: "Rating from 1 to 5",
+  blood_pressure: "Blood pressure",
+  qualitative: "Short note",
+  count: "Count · whole number",
+  hours: "Hours",
+  complete_incomplete: "Complete or incomplete",
+  scale_1_5: "Rating from 1 to 5",
+  percent: "Percentage · 0–100%",
+};
 
 const cadences = Object.keys(cadenceChoiceLabels) as TowerCadence[];
 
-export type SetupStarter = Readonly<{
-  id: string;
-  version: number;
-  title: string;
-  howTo: string;
-  details?: PublishedProtocol;
-}>;
+export type SetupStarter = SetupProtocolChoice & Readonly<{ details?: PublishedProtocol }>;
+
+const customProtocolNames = ["Custom protocol", "Second custom protocol", "Third custom protocol"];
 
 export function TowerSetupForm(props: {
   action: SetupAction;
@@ -52,6 +66,15 @@ export function TowerSetupForm(props: {
   revision?: number;
 }) {
   const [errors, setErrors] = useState<readonly SetupFieldError[]>([]);
+  const [selectedStarters, setSelectedStarters] = useState<readonly string[]>([]);
+  const [activeCustomProtocols, setActiveCustomProtocols] = useState<readonly number[]>([]);
+  const [visibleCustomProtocols, setVisibleCustomProtocols] = useState(1);
+  const [selectedPresets, setSelectedPresets] = useState<readonly string[]>([]);
+  const [measureSlots, setMeasureSlots] = useState<readonly number[]>([]);
+  const [cadence, setCadence] = useState<TowerCadence>("weekly");
+  const protocolCount = selectedStarters.length + activeCustomProtocols.length;
+  const atProtocolLimit = protocolCount >= firstTowerProtocolLimit;
+  const atMeasureLimit = selectedPresets.length + measureSlots.length >= maximumMetricsPerTower;
   const [pending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
@@ -94,9 +117,34 @@ export function TowerSetupForm(props: {
       ref={formRef}
       className="stacked-form setup-form"
       aria-busy={pending}
+      onChange={(event) => {
+        const data = new FormData(event.currentTarget);
+        setSelectedStarters(
+          data.getAll("starter").filter((value): value is string => typeof value === "string"),
+        );
+        setActiveCustomProtocols(
+          customProtocolSlots.filter((slot) =>
+            [data.get(`customTitle${slot}`), data.get(`customHowTo${slot}`)].some(
+              (value) => typeof value === "string" && value.trim() !== "",
+            ),
+          ),
+        );
+        setSelectedPresets(
+          data.getAll("preset").filter((value): value is string => typeof value === "string"),
+        );
+      }}
       onSubmit={(event) => {
         event.preventDefault();
         if (pending) return;
+        if (protocolCount === 0 || protocolCount > firstTowerProtocolLimit) {
+          setErrors([
+            {
+              field: "setup-protocols",
+              message: "Choose between one and three protocols to start.",
+            },
+          ]);
+          return;
+        }
         const data = new FormData(event.currentTarget);
         startTransition(async () => {
           try {
@@ -132,12 +180,11 @@ export function TowerSetupForm(props: {
         <input type="hidden" name="revision" value={props.revision} />
       ) : null}
 
-      <section aria-labelledby="setup-name">
+      <section>
         <h2 id="setup-name" tabIndex={-1}>
-          Goal
+          <label htmlFor="title">Goal (required)</label>
         </h2>
         {fieldError("setup-name")}
-        <label htmlFor="title">Goal or context</label>
         <input
           id="title"
           name="title"
@@ -150,7 +197,6 @@ export function TowerSetupForm(props: {
         <label htmlFor="definition">One-line definition, optional</label>
         <input id="definition" name="definition" maxLength={160} autoComplete="off" />
         {fieldError("definition")}
-        <p className="form-help">You can leave the definition blank. It never blocks the tower.</p>
       </section>
 
       <section aria-labelledby="setup-protocols">
@@ -158,63 +204,90 @@ export function TowerSetupForm(props: {
           Protocols
         </h2>
         {fieldError("setup-protocols")}
-        <p className="form-help">
-          Start with two relevant protocols. You can choose 1–3 and expand your tower later.
+        <p className="form-help" role="status">
+          Choose 1–3 protocols (required). {protocolCount} of {firstTowerProtocolLimit} selected.
         </p>
         {props.catalogUnavailable ? (
           <p className="form-help">
-            The starter list is temporarily unavailable. A custom protocol still works.
+            The library is temporarily unavailable. You can add a custom protocol.
           </p>
         ) : null}
         <ul className="setup-choice-list">
-          {props.starters.map((starter) => (
-            <li key={starter.id}>
-              <label>
-                <input type="checkbox" name="starter" value={`${starter.id}@${starter.version}`} />
-                {starter.title}
-              </label>
-              {starter.details ? <ProtocolPreview protocol={starter.details} /> : null}
-              <label htmlFor={`starter-title-${starter.id}`}>Name</label>
-              <input
-                id={`starter-title-${starter.id}`}
-                name={`starterTitle.${starter.id}`}
-                defaultValue={starter.title}
-                maxLength={80}
-              />
-              {fieldError(`starter-title-${starter.id}`)}
-              <label htmlFor={`starter-how-${starter.id}`}>How to</label>
-              <textarea
-                rows={3}
-                id={`starter-how-${starter.id}`}
-                name={`starterHowTo.${starter.id}`}
-                defaultValue={starter.howTo}
-                maxLength={280}
-              />
-              {fieldError(`starter-how-${starter.id}`)}
-            </li>
-          ))}
+          {props.starters.map((starter) => {
+            const choice = `${starter.id}@${starter.version}`;
+            const selected = selectedStarters.includes(choice);
+            return (
+              <li key={choice}>
+                <label>
+                  <input
+                    type="checkbox"
+                    name="starter"
+                    value={choice}
+                    disabled={!selected && atProtocolLimit}
+                  />
+                  {starter.title}
+                </label>
+                {starter.details ? (
+                  <ProtocolPreview protocol={starter.details} />
+                ) : (
+                  <p>{starter.howTo}</p>
+                )}
+                <div hidden={!selected}>
+                  <label htmlFor={`starter-note-${starter.id}`}>
+                    My version of {starter.title} (optional)
+                  </label>
+                  <textarea
+                    id={`starter-note-${starter.id}`}
+                    name={`starterNote.${starter.id}`}
+                    maxLength={280}
+                    rows={2}
+                  />
+                  {fieldError(`starter-note-${starter.id}`)}
+                </div>
+              </li>
+            );
+          })}
         </ul>
-        <label htmlFor="custom-protocol-name">Custom protocol name</label>
-        <input id="custom-protocol-name" name="customTitle1" maxLength={80} />
-        {fieldError("custom-protocol-name")}
-        <label htmlFor="custom-how-to">Custom how-to</label>
-        <textarea id="custom-how-to" name="customHowTo1" maxLength={280} rows={3} />
-        {fieldError("custom-how-to")}
-        <details>
-          <summary>Add another custom protocol</summary>
-          <label htmlFor="custom-protocol-name-2">Second custom protocol name</label>
-          <input id="custom-protocol-name-2" name="customTitle2" maxLength={80} />
-          {fieldError("custom-protocol-name-2")}
-          <label htmlFor="custom-how-to-2">Second custom how-to</label>
-          <textarea id="custom-how-to-2" name="customHowTo2" maxLength={280} rows={3} />
-          {fieldError("custom-how-to-2")}
-          <label htmlFor="custom-protocol-name-3">Third custom protocol name</label>
-          <input id="custom-protocol-name-3" name="customTitle3" maxLength={80} />
-          {fieldError("custom-protocol-name-3")}
-          <label htmlFor="custom-how-to-3">Third custom how-to</label>
-          <textarea id="custom-how-to-3" name="customHowTo3" maxLength={280} rows={3} />
-          {fieldError("custom-how-to-3")}
-        </details>
+        {customProtocolSlots.slice(0, visibleCustomProtocols).map((slot) => {
+          const suffix = slot === 1 ? "" : `-${slot}`;
+          const active = activeCustomProtocols.includes(slot);
+          const label = customProtocolNames[slot - 1];
+          return (
+            <fieldset key={slot} disabled={!active && atProtocolLimit}>
+              <legend>
+                {label}
+                {active ? " (name and instructions required)" : " (optional)"}
+              </legend>
+              <label htmlFor={`custom-protocol-name${suffix}`}>{label} name</label>
+              <input
+                id={`custom-protocol-name${suffix}`}
+                name={`customTitle${slot}`}
+                maxLength={80}
+                aria-required={active}
+              />
+              {fieldError(`custom-protocol-name${suffix}`)}
+              <label htmlFor={`custom-how-to${suffix}`}>{label} instructions</label>
+              <textarea
+                id={`custom-how-to${suffix}`}
+                name={`customHowTo${slot}`}
+                maxLength={280}
+                rows={3}
+                aria-required={active}
+              />
+              {fieldError(`custom-how-to${suffix}`)}
+            </fieldset>
+          );
+        })}
+        {visibleCustomProtocols < firstTowerProtocolLimit ? (
+          <button
+            type="button"
+            className="secondary-action"
+            disabled={atProtocolLimit}
+            onClick={() => setVisibleCustomProtocols(visibleCustomProtocols + 1)}
+          >
+            Add another custom protocol
+          </button>
+        ) : null}
       </section>
 
       <section aria-labelledby="setup-outcomes">
@@ -223,37 +296,56 @@ export function TowerSetupForm(props: {
         </h2>
         {fieldError("setup-outcomes")}
         <p className="form-help">
-          Choose at least one outcome to follow. Ongoing and practice measures are optional.
+          At least one outcome measure is required. Ongoing and practice measures are optional.
         </p>
-        <fieldset>
-          <legend>Outcome</legend>
-          {finals.map((preset) => (
-            <PresetChoice key={preset.key} presetKey={preset.key} label={preset.label} />
+        {(
+          [
+            ["Outcome presets", finals],
+            ["Ongoing presets", ongoing],
+            ["Practice presets", proxies],
+          ] as const
+        ).map(([heading, presets]) => (
+          <fieldset key={heading}>
+            <legend>{heading}</legend>
+            {presets.map((preset) => (
+              <PresetChoice
+                key={preset.key}
+                preset={preset}
+                selected={selectedPresets.includes(preset.key)}
+                atLimit={atMeasureLimit}
+                error={fieldError(`preset-label-${preset.key}`)}
+              />
+            ))}
+          </fieldset>
+        ))}
+        <section aria-labelledby="setup-custom-measures">
+          <h3 id="setup-custom-measures">Custom measures</h3>
+          {measureSlots.map((slot, index) => (
+            <CustomMetricSlot
+              key={slot}
+              index={slot}
+              position={index + 1}
+              errors={errors}
+              onRemove={() => setMeasureSlots(measureSlots.filter((item) => item !== slot))}
+            />
           ))}
-        </fieldset>
-        <details>
-          <summary>Add ongoing measures</summary>
-          <fieldset>
-            <legend>Ongoing</legend>
-            {ongoing.map((preset) => (
-              <PresetChoice key={preset.key} presetKey={preset.key} label={preset.label} />
-            ))}
-          </fieldset>
-        </details>
-        <details>
-          <summary>Add proxy measures</summary>
-          <fieldset>
-            <legend>Proxy</legend>
-            {proxies.map((preset) => (
-              <PresetChoice key={preset.key} presetKey={preset.key} label={preset.label} />
-            ))}
-          </fieldset>
-        </details>
-        <details>
-          <summary>Add a custom measure</summary>
-          <CustomMetricSlot index={1} errors={errors} />
-          <CustomMetricSlot index={2} errors={errors} />
-        </details>
+          <button
+            type="button"
+            className="secondary-action"
+            disabled={atMeasureLimit}
+            onClick={() => {
+              const slot = customMeasureSlots.find((item) => !measureSlots.includes(item));
+              if (slot !== undefined) setMeasureSlots([...measureSlots, slot]);
+            }}
+          >
+            Add a custom measure
+          </button>
+          {atMeasureLimit ? (
+            <p className="form-help" role="status">
+              Up to {maximumMetricsPerTower} measures per tower.
+            </p>
+          ) : null}
+        </section>
       </section>
 
       <section aria-labelledby="setup-rhythm">
@@ -262,7 +354,7 @@ export function TowerSetupForm(props: {
         </h2>
         {fieldError("setup-rhythm")}
         <fieldset>
-          <legend>How often</legend>
+          <legend>How often (required)</legend>
           {cadences.map((cadence) => (
             <label key={cadence}>
               <input
@@ -271,24 +363,24 @@ export function TowerSetupForm(props: {
                 value={cadence}
                 defaultChecked={cadence === "weekly"}
                 required
+                onChange={() => setCadence(cadence)}
               />
               {cadenceChoiceLabels[cadence]}
             </label>
           ))}
         </fieldset>
-        <details>
-          <summary>Specific dates</summary>
-          <p className="form-help">Used only when the rhythm is specific dates.</p>
+        <fieldset hidden={cadence !== "custom"} disabled={cadence !== "custom"}>
+          <legend>Specific dates (at least one required)</legend>
           {[1, 2, 3, 4, 5, 6].map((slot) => (
             <input key={slot} type="date" name="customDate" aria-label={`Specific date ${slot}`} />
           ))}
-        </details>
+        </fieldset>
       </section>
 
       <section aria-labelledby="setup-visibility">
         <h2 id="setup-visibility">Visibility</h2>
         <fieldset className="visibility-fieldset">
-          <legend>Who can see it</legend>
+          <legend>Who can see it (required)</legend>
           <label>
             <input type="radio" name="audience" value="private" defaultChecked required />
             Private
@@ -326,18 +418,49 @@ export function TowerSetupForm(props: {
   );
 }
 
-function PresetChoice(props: { presetKey: string; label: string }) {
+function PresetChoice(props: {
+  preset: MetricPreset;
+  selected: boolean;
+  atLimit: boolean;
+  error: React.ReactNode;
+}) {
+  const { preset } = props;
   return (
-    <label>
-      <input type="checkbox" name="preset" value={props.presetKey} />
-      {props.label}
-      <input type="hidden" name={`presetLabel.${props.presetKey}`} value={props.label} />
-    </label>
+    <div>
+      <label>
+        <input
+          type="checkbox"
+          name="preset"
+          value={preset.key}
+          disabled={!props.selected && props.atLimit}
+        />
+        {`${preset.label} (${metricScale(preset.shape)})`}
+      </label>
+      <div hidden={!props.selected}>
+        <label htmlFor={`preset-label-${preset.key}`}>
+          Display name for {preset.label} (optional)
+        </label>
+        <input
+          id={`preset-label-${preset.key}`}
+          name={`presetLabel.${preset.key}`}
+          maxLength={80}
+          placeholder={preset.label}
+        />
+        {props.error}
+      </div>
+    </div>
   );
 }
 
-function CustomMetricSlot(props: { index: 1 | 2; errors: readonly SetupFieldError[] }) {
-  const suffix = props.index === 1 ? "" : ` ${props.index}`;
+function CustomMetricSlot(props: {
+  index: number;
+  position: number;
+  errors: readonly SetupFieldError[];
+  onRemove: () => void;
+}) {
+  const suffix = ` ${props.position}`;
+  const [kind, setKind] = useState<MetricKind>("final");
+  const [shape, setShape] = useState("");
   const errorFor = (name: string) => {
     const field = `custom-metric-${name}-${props.index}`;
     const error = props.errors.find((item) => item.field === field);
@@ -348,46 +471,67 @@ function CustomMetricSlot(props: { index: 1 | 2; errors: readonly SetupFieldErro
     ) : null;
   };
   return (
-    <>
-      <label htmlFor={`custom-metric-name-${props.index}`}>Custom measure name{suffix}</label>
+    <fieldset>
+      <legend>Custom measure{suffix}</legend>
+      <label htmlFor={`custom-metric-name-${props.index}`}>
+        Custom measure name{suffix} (required)
+      </label>
       <input
         id={`custom-metric-name-${props.index}`}
         name={`customMetricLabel${props.index}`}
         maxLength={80}
+        aria-required="true"
       />
       {errorFor("name")}
-      <label htmlFor={`custom-metric-kind-${props.index}`}>Measure role{suffix}</label>
+      <label htmlFor={`custom-metric-kind-${props.index}`}>Measure role{suffix} (required)</label>
       <select
         id={`custom-metric-kind-${props.index}`}
         name={`customMetricKind${props.index}`}
-        defaultValue="final"
+        value={kind}
+        onChange={(event) => {
+          const nextKind = metricKindSchema.parse(event.currentTarget.value);
+          setKind(nextKind);
+          if (!shapesForKind(nextKind).some((item) => item === shape)) setShape("");
+        }}
       >
         <option value="final">Outcome · what changes</option>
         <option value="ongoing">Ongoing · what you monitor</option>
         <option value="proxy">Practice · what you do</option>
       </select>
-      <label htmlFor={`custom-metric-shape-${props.index}`}>What you record{suffix}</label>
+      <label htmlFor={`custom-metric-shape-${props.index}`}>
+        Response type for custom measure{suffix} (required)
+      </label>
       <select
         id={`custom-metric-shape-${props.index}`}
         name={`customMetricShape${props.index}`}
-        defaultValue=""
+        value={shape}
+        onChange={(event) => setShape(event.currentTarget.value)}
+        aria-required="true"
       >
-        <option value="">No custom measure</option>
-        {customShapes.map(([value, label]) => (
+        <option value="">Choose a response type</option>
+        {shapesForKind(kind).map((value) => (
           <option key={value} value={value}>
-            {label}
+            {customShapeLabels[value]}
           </option>
         ))}
       </select>
       {errorFor("shape")}
-      <label htmlFor={`custom-metric-unit-${props.index}`}>Unit for Number, optional{suffix}</label>
-      <input
-        id={`custom-metric-unit-${props.index}`}
-        name={`customMetricUnit${props.index}`}
-        maxLength={24}
-      />
-      {errorFor("unit")}
-    </>
+      <div hidden={shape !== "number"}>
+        <label htmlFor={`custom-metric-unit-${props.index}`}>
+          Unit for custom measure{suffix} (optional)
+        </label>
+        <input
+          id={`custom-metric-unit-${props.index}`}
+          name={`customMetricUnit${props.index}`}
+          maxLength={24}
+          disabled={shape !== "number"}
+        />
+        {errorFor("unit")}
+      </div>
+      <button type="button" onClick={props.onRemove}>
+        Remove custom measure{suffix}
+      </button>
+    </fieldset>
   );
 }
 
