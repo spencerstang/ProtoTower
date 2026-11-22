@@ -1,6 +1,6 @@
 # Tower setup and check-ins
 
-An authenticated user can create a tower from a name, 1–3 protocols, one final outcome,
+An authenticated user can create a tower from a name, 1–20 protocols, one final outcome,
 a weekly rhythm, and private visibility, then record a check-in for the current period.
 Ongoing and proxy presets, custom protocols, and custom measures are available in the
 same setup. Specific dates, other cadences, and a shared named or anonymous preference

@@ -51,13 +51,24 @@ describe("tower setup", () => {
     expect(visibilityLabel("shared", "anonymous")).toBe("Shared · Anonymous");
   });
 
-  it("requires one to three protocols and a final on the first tower", () => {
+  it("requires one to 20 protocols and an outcome on the first tower", () => {
     expect(interpretCreateForm({ ...base, protocols: [] })).toEqual({
       ok: false,
       code: "protocols",
     });
     const missingFinal = interpretCreateForm({ ...base, metrics: [] });
     expect(missingFinal).toEqual({ ok: false, code: "final" });
+    for (const count of [4, firstTowerProtocolLimit]) {
+      const accepted = interpretCreateForm({
+        ...base,
+        protocols: Array.from({ length: count }, (_, index) => ({
+          ...protocol,
+          title: `Protocol ${index + 1}`,
+        })),
+      });
+      expect(accepted.ok).toBe(true);
+      if (accepted.ok) expect(accepted.draft.protocols).toHaveLength(count);
+    }
     const tooMany = interpretCreateForm({
       ...base,
       protocols: Array.from({ length: firstTowerProtocolLimit + 1 }, (_, index) => ({

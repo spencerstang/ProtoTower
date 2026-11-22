@@ -226,7 +226,9 @@ export default async function TowerDetailPage(props: {
         ) : tower.protocols.length === 0 && tower.metrics.length === 0 ? (
           <div className="state-card">
             <h2>Finish this tower</h2>
-            <p>Add 1–3 protocols and one final outcome. Weekly and private are already selected.</p>
+            <p>
+              Add 1–20 protocols and one final outcome. Weekly and private are already selected.
+            </p>
             <Link className="primary-action" href={`/towers/${tower.id}/setup`}>
               Finish tower setup
             </Link>

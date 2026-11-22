@@ -6,7 +6,7 @@ protocols keep editable names and instructions.
 
 Preset display names can be changed during setup or later. Preset keys, response
 types, metric IDs, and existing readings are retained. Scales appear in setup and
-alongside check-in inputs. Initial setup accepts one to three protocols and up to
+alongside check-in inputs. Initial setup accepts one to 20 protocols and up to
 12 total measures, including any combination of preset and custom measures.
 
 Configured protocols appear on the Tower page. Existing library practice blocks

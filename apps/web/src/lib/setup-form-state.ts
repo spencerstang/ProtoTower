@@ -137,7 +137,7 @@ export function validateSetupForm(
     const messages = {
       protocols: {
         field: "setup-protocols",
-        message: "Choose between one and three protocols to start.",
+        message: "Choose between one and 20 protocols.",
       },
       final: {
         field: "setup-outcomes",

@@ -26,7 +26,7 @@ import {
 } from "../lib/tower-setup-form";
 
 const setupErrors = {
-  protocols: "Choose 1–3 library or custom protocols.",
+  protocols: "Choose 1–20 library or custom protocols.",
   final: "Add at least one final outcome. Ongoing and proxy measures are optional.",
   dates: "Add at least one specific date, or choose another rhythm.",
   invalid: "Check the setup and try again. Names stay on one line.",
@@ -140,7 +140,7 @@ export function TowerSetupForm(props: {
           setErrors([
             {
               field: "setup-protocols",
-              message: "Choose between one and three protocols to start.",
+              message: "Choose between one and 20 protocols.",
             },
           ]);
           return;
@@ -205,7 +205,7 @@ export function TowerSetupForm(props: {
         </h2>
         {fieldError("setup-protocols")}
         <p className="form-help" role="status">
-          Choose 1–3 protocols (required). {protocolCount} of {firstTowerProtocolLimit} selected.
+          Choose 1–20 protocols (required). {protocolCount} of {firstTowerProtocolLimit} selected.
         </p>
         {props.catalogUnavailable ? (
           <p className="form-help">
@@ -251,7 +251,7 @@ export function TowerSetupForm(props: {
         {customProtocolSlots.slice(0, visibleCustomProtocols).map((slot) => {
           const suffix = slot === 1 ? "" : `-${slot}`;
           const active = activeCustomProtocols.includes(slot);
-          const label = customProtocolNames[slot - 1];
+          const label = customProtocolNames[slot - 1] ?? `Custom protocol ${slot}`;
           return (
             <fieldset key={slot} disabled={!active && atProtocolLimit}>
               <legend>
