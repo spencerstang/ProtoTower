@@ -469,7 +469,9 @@ test("a tower can start with twenty custom protocols and keep them after reload"
   }
   await expect(page.getByRole("status").filter({ hasText: "20 of 20 selected" })).toBeVisible();
   await expect(page.locator(".setup-choice-list input[type=checkbox]").first()).toBeDisabled();
-  await page.getByRole("checkbox", { name: "Goal complete", exact: true }).check();
+  await page
+    .getByRole("checkbox", { name: "Goal complete (complete or incomplete)", exact: true })
+    .check();
   await page.getByRole("button", { name: "Create tower", exact: true }).click();
   await expect(page).toHaveURL(/\/towers\/[0-9a-f-]{36}$/u);
   await page.reload();
