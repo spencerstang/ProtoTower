@@ -7,6 +7,7 @@ import {
   maximumMetricsPerTower,
   metricPresets,
   metricScale,
+  metricGuidance,
   shapesForKind,
   metricKindSchema,
   type MetricKind,
@@ -26,7 +27,7 @@ import {
 } from "../lib/tower-setup-form";
 
 const setupErrors = {
-  protocols: "Choose 1–3 library or custom protocols.",
+  protocols: "Choose 1–20 library or custom protocols.",
   final: "Add at least one final outcome. Ongoing and proxy measures are optional.",
   dates: "Add at least one specific date, or choose another rhythm.",
   invalid: "Check the setup and try again. Names stay on one line.",
@@ -39,13 +40,13 @@ const customShapeLabels: Record<MetricShape, string> = {
   number: "Number · actual decimal value",
   text: "Text · written response",
   weight: "Weight",
-  rating: "Rating from 1 to 5",
+  rating: "Whole-number rating from 1 to 5",
   blood_pressure: "Blood pressure",
   qualitative: "Short note",
   count: "Count · whole number",
   hours: "Hours",
   complete_incomplete: "Complete or incomplete",
-  scale_1_5: "Rating from 1 to 5",
+  scale_1_5: "Whole-number rating from 1 to 5",
   percent: "Percentage · 0–100%",
 };
 
@@ -140,7 +141,7 @@ export function TowerSetupForm(props: {
           setErrors([
             {
               field: "setup-protocols",
-              message: "Choose between one and three protocols to start.",
+              message: "Choose between one and 20 protocols.",
             },
           ]);
           return;
@@ -205,7 +206,7 @@ export function TowerSetupForm(props: {
         </h2>
         {fieldError("setup-protocols")}
         <p className="form-help" role="status">
-          Choose 1–3 protocols (required). {protocolCount} of {firstTowerProtocolLimit} selected.
+          Choose 1–20 protocols (required). {protocolCount} of {firstTowerProtocolLimit} selected.
         </p>
         {props.catalogUnavailable ? (
           <p className="form-help">
@@ -251,7 +252,7 @@ export function TowerSetupForm(props: {
         {customProtocolSlots.slice(0, visibleCustomProtocols).map((slot) => {
           const suffix = slot === 1 ? "" : `-${slot}`;
           const active = activeCustomProtocols.includes(slot);
-          const label = customProtocolNames[slot - 1];
+          const label = customProtocolNames[slot - 1] ?? `Custom protocol ${slot}`;
           return (
             <fieldset key={slot} disabled={!active && atProtocolLimit}>
               <legend>
@@ -296,13 +297,14 @@ export function TowerSetupForm(props: {
         </h2>
         {fieldError("setup-outcomes")}
         <p className="form-help">
-          At least one outcome measure is required. Ongoing and practice measures are optional.
+          Choose how you will track this goal. Goal-progress measures are required at check-in;
+          other measurements can be skipped.
         </p>
         {(
           [
-            ["Outcome presets", finals],
-            ["Ongoing presets", ongoing],
-            ["Practice presets", proxies],
+            ["Goal progress · required at check-in", finals],
+            ["Other measurements · optional", ongoing],
+            ["Activity and duration · optional", proxies],
           ] as const
         ).map(([heading, presets]) => (
           <fieldset key={heading}>
@@ -446,6 +448,9 @@ function PresetChoice(props: {
           maxLength={80}
           placeholder={preset.label}
         />
+        {metricGuidance(preset.key) ? (
+          <p className="form-help">{metricGuidance(preset.key)}</p>
+        ) : null}
         {props.error}
       </div>
     </div>
@@ -483,7 +488,9 @@ function CustomMetricSlot(props: {
         aria-required="true"
       />
       {errorFor("name")}
-      <label htmlFor={`custom-metric-kind-${props.index}`}>Measure role{suffix} (required)</label>
+      <label htmlFor={`custom-metric-kind-${props.index}`}>
+        Check-in use for custom measure{suffix} (required)
+      </label>
       <select
         id={`custom-metric-kind-${props.index}`}
         name={`customMetricKind${props.index}`}
@@ -494,9 +501,9 @@ function CustomMetricSlot(props: {
           if (!shapesForKind(nextKind).some((item) => item === shape)) setShape("");
         }}
       >
-        <option value="final">Outcome · what changes</option>
-        <option value="ongoing">Ongoing · what you monitor</option>
-        <option value="proxy">Practice · what you do</option>
+        <option value="final">Required · goal progress</option>
+        <option value="ongoing">Optional · measurement</option>
+        <option value="proxy">Optional · activity or duration</option>
       </select>
       <label htmlFor={`custom-metric-shape-${props.index}`}>
         Response type for custom measure{suffix} (required)

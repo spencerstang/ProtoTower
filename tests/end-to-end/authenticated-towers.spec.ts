@@ -411,8 +411,9 @@ test("library personalizations and preset names keep their original definitions"
   await page
     .getByLabel("Custom protocol instructions", { exact: true })
     .fill("Use the synthetic plan.");
-  await expect(library.nth(2).getByRole("checkbox")).toBeDisabled();
-  await expect(page.getByRole("button", { name: "Add another custom protocol" })).toBeDisabled();
+  await expect(library.nth(2).getByRole("checkbox")).toBeEnabled();
+  await library.nth(2).getByRole("checkbox").check();
+  await expect(page.getByRole("button", { name: "Add another custom protocol" })).toBeEnabled();
   await page.getByRole("checkbox", { name: "Percent successful (0–100%)", exact: true }).check();
   await page
     .getByLabel("Display name for Percent successful (optional)")
@@ -420,11 +421,13 @@ test("library personalizations and preset names keep their original definitions"
   await page.getByRole("checkbox", { name: "How it feels (1–5)", exact: true }).check();
   await page.getByRole("button", { name: "Create tower", exact: true }).click();
   const blocks = page.getByRole("region", { name: "Tower blocks", exact: true });
-  await expect(blocks).toContainText("3 of 20 configured protocols");
+  await expect(blocks).toContainText("4 of 20 configured protocols");
+  await page.reload();
+  await expect(page.locator(".owned-protocol-list > li")).toHaveCount(4);
   await expect(blocks).toContainText("My original adaptation");
   await expect(blocks).toContainText(title);
   const rating = page.getByRole("spinbutton", { name: "How it feels", exact: true });
-  await expect(rating).toHaveAccessibleDescription("1–5");
+  await expect(rating).toHaveAccessibleDescription("1–5 · Choose a whole number from 1 to 5.");
   const percent = page.getByRole("spinbutton", { name: "Planned sessions done", exact: true });
   await expect(percent).toHaveAccessibleDescription("0–100%");
   await percent.fill("75");
@@ -446,4 +449,43 @@ test("library personalizations and preset names keep their original definitions"
   await expect(blocks).toContainText("My updated adaptation");
   await page.reload();
   await expect(blocks).toContainText("My updated adaptation");
+});
+
+test("a tower can start with twenty custom protocols and keep them after reload", async ({
+  page,
+  request,
+}) => {
+  await requestAndConfirm(page, request, "tower-capacity@example.test");
+  await page.goto("/towers/new/detailed");
+  await page
+    .getByRole("textbox", { name: "Goal (required)", exact: true })
+    .fill("Synthetic capacity goal");
+  for (let slot = 1; slot <= 20; slot++) {
+    if (slot > 1)
+      await page.getByRole("button", { name: "Add another custom protocol", exact: true }).click();
+    const suffix = slot === 1 ? "" : `-${slot}`;
+    await page.locator(`#custom-protocol-name${suffix}`).fill(`Synthetic practice ${slot}`);
+    await page.locator(`#custom-how-to${suffix}`).fill(`Follow synthetic instructions ${slot}.`);
+  }
+  await expect(page.getByRole("status").filter({ hasText: "20 of 20 selected" })).toBeVisible();
+  await expect(page.locator(".setup-choice-list input[type=checkbox]").first()).toBeDisabled();
+  await page
+    .getByRole("checkbox", { name: "Goal complete (complete or incomplete)", exact: true })
+    .check();
+  await page.getByRole("checkbox", { name: "Subjective sleep quality (1–5)", exact: true }).check();
+  await page.getByRole("button", { name: "Create tower", exact: true }).click();
+  await expect(page).toHaveURL(/\/towers\/[0-9a-f-]{36}$/u);
+  await page.reload();
+  await expect(page.locator(".owned-protocol-list > li")).toHaveCount(20);
+  const measurements = page.getByRole("group", { name: "Measurements", exact: true });
+  await expect(measurements).toBeVisible();
+  await expect(page.getByRole("group", { name: "Ongoing", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("group", { name: "Completion", exact: true })).toHaveCount(0);
+  await expect(
+    measurements.getByRole("spinbutton", { name: "Subjective sleep quality", exact: true }),
+  ).toHaveAccessibleDescription(/1 = very poor.*5 = excellent/u);
+
+  await expect(page.getByRole("region", { name: "Tower blocks", exact: true })).toContainText(
+    "20 of 20 configured protocols",
+  );
 });

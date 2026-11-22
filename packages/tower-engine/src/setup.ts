@@ -12,7 +12,7 @@ import { z } from "zod";
 import { assertPlainLine } from "./plain-line";
 
 export const maximumTowerProtocols = 20;
-export const firstTowerProtocolLimit = 3;
+export const firstTowerProtocolLimit = maximumTowerProtocols;
 
 export const towerCadenceSchema = z.enum([
   "daily",
@@ -240,6 +240,8 @@ export function interpretCreateForm(input: unknown): SetupCommitResult {
   const metrics = Array.isArray(record["metrics"]) ? record["metrics"] : null;
   const customDates = Array.isArray(record["customDates"]) ? record["customDates"] : null;
   if (!protocols || !metrics || !customDates) return { ok: false, code: "invalid" };
+  if (protocols.length < 1 || protocols.length > firstTowerProtocolLimit)
+    return { ok: false, code: "protocols" };
   return commitTowerSetup(
     {
       definition: record["definition"] ?? null,

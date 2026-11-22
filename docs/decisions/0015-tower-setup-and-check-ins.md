@@ -31,7 +31,7 @@ are private owner data and must not become analytics, medical claims, or shared 
 - Deny direct writes. Mutations go through fixed-search-path RPCs. Readings are not logged.
 - Show the check-in summary from stored readings. The summary is calm and is not a score,
   streak, or clinical interpretation.
-- The first create accepts 1–3 protocols. Later edits accept up to the existing tower cap.
+- Creation and later edits both accept 1–20 protocols.
 
 ## Consequences
 

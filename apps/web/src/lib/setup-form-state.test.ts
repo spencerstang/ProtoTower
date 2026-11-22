@@ -32,6 +32,16 @@ describe("setup validation", () => {
       unit: "units/mL",
     });
   });
+  it("parses all twenty custom protocol slots and preserves overflow errors", () => {
+    const data = setup();
+    for (let slot = 1; slot <= 20; slot++) {
+      data.set(`customTitle${slot}`, `Practice ${slot}`);
+      data.set(`customHowTo${slot}`, `Follow synthetic instructions ${slot}.`);
+    }
+    const result = validateSetupForm(data, []);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.draft.protocols).toHaveLength(20);
+  });
   it("identifies the missing response type without changing submitted answers", () => {
     const data = setup();
     data.set("customMetricShape1", "");

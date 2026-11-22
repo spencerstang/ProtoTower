@@ -1,3 +1,4 @@
+import { firstTowerProtocolLimit } from "@protostack/tower-engine";
 import { maximumMetricsPerTower, metricPresetByKey } from "@protostack/outcomes-engine";
 
 export function clipPlainLine(value: string, maximum = 280): string {
@@ -23,7 +24,10 @@ export const customMeasureSlots = Array.from(
   { length: maximumMetricsPerTower },
   (_, index) => index + 1,
 );
-export const customProtocolSlots = [1, 2, 3] as const;
+export const customProtocolSlots = Array.from(
+  { length: firstTowerProtocolLimit },
+  (_, index) => index + 1,
+);
 
 export type SetupProtocolChoice = Readonly<{
   id: string;

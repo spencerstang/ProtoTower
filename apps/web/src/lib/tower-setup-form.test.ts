@@ -89,7 +89,7 @@ describe("tower setup form", () => {
     ]);
   });
 
-  it("rejects a first tower with more than three protocols", () => {
+  it("accepts four protocols during initial setup", () => {
     const interpreted = interpretCreateForm(
       configuredTowerInputFromForm(
         form([
@@ -109,6 +109,7 @@ describe("tower setup form", () => {
         starters,
       ),
     );
-    expect(interpreted).toEqual({ ok: false, code: "protocols" });
+    expect(interpreted.ok).toBe(true);
+    if (interpreted.ok) expect(interpreted.draft.protocols).toHaveLength(4);
   });
 });

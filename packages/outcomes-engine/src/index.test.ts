@@ -3,6 +3,7 @@ import {
   calmCheckInSummary,
   formatMetricReading,
   metricPresetMatches,
+  metricGuidance,
   metricPresets,
   outcomesEngineStatus,
   parseMetricSubmission,
@@ -141,4 +142,12 @@ describe("generic measurements", () => {
       ).toBe(false);
     }
   });
+});
+
+it("keeps sleep quality distinct from sleep duration with stable scoring anchors", () => {
+  expect(metricPresetMatches("sleep-quality", "ongoing", "rating")).toBe(true);
+  expect(metricPresetMatches("sleep-quality", "proxy", "hours")).toBe(false);
+  expect(metricPresetMatches("sleep-hours", "proxy", "hours")).toBe(true);
+  expect(metricGuidance("sleep-quality")).toContain("1 = very poor");
+  expect(metricGuidance("sleep-quality")).toContain("5 = excellent");
 });

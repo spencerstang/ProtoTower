@@ -44,8 +44,8 @@ export default async function DetailedTowerPage(props: {
         <p className="eyebrow">Optional</p>
         <h1 id="detailed-tower-heading">Choose the pieces yourself.</h1>
         <p>
-          Name it, choose 1–3 protocols, add one final outcome, then keep the weekly private rhythm.
-          This page is optional. The one-question start does not wait for it.
+          Name it, choose 1–20 protocols, add one final outcome, then keep the weekly private
+          rhythm. This page is optional. The one-question start does not wait for it.
         </p>
         {principal.status === "unavailable" || !outcomesEnabled ? (
           <div className="state-card" role="status">
