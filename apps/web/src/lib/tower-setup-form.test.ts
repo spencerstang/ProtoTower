@@ -8,6 +8,16 @@ function form(entries: readonly (readonly [string, string])[]): FormData {
   return data;
 }
 
+const starters = [
+  { id: "20000000-0000-4000-8000-000000000001", version: 1, title: "One", howTo: "Do one." },
+  {
+    id: "20000000-0000-4000-8000-000000000002",
+    version: 1,
+    title: "Published strength",
+    howTo: "Published instructions.",
+  },
+];
+
 describe("tower setup form", () => {
   it("builds a private weekly tower from a name, one protocol, and one final", () => {
     const interpreted = interpretCreateForm(
@@ -23,6 +33,7 @@ describe("tower setup form", () => {
           ["audience", "private"],
           ["identity", "anonymous"],
         ]),
+        starters,
       ),
     );
     expect(interpreted.ok).toBe(true);
@@ -33,33 +44,47 @@ describe("tower setup form", () => {
     expect(interpreted.draft.metrics.map((metric) => metric.kind)).toEqual(["final"]);
   });
 
-  it("keeps edited starters, ongoing and proxy presets, a custom metric, and anonymity when shared", () => {
+  it("keeps the published definition, personal note, renamed preset, and three custom measures", () => {
     const interpreted = interpretCreateForm(
       configuredTowerInputFromForm(
         form([
           ["title", "Train"],
           ["starter", "20000000-0000-4000-8000-000000000002@1"],
           ["starterTitle.20000000-0000-4000-8000-000000000002", "Short strength"],
-          ["starterHowTo.20000000-0000-4000-8000-000000000002", "Two comfortable sets."],
+          ["starterNote.20000000-0000-4000-8000-000000000002", "Two comfortable sets."],
           ["preset", "goal-complete"],
           ["preset", "weight"],
+          ["presetLabel.weight", "Morning weigh-in"],
           ["preset", "sleep-hours"],
           ["customMetricShape1", "proxy:count"],
           ["customMetricLabel1", "Pages read"],
+          ["customMetricShape2", "ongoing:number"],
+          ["customMetricLabel2", "Sample value"],
+          ["customMetricShape3", "ongoing:text"],
+          ["customMetricLabel3", "Sample note"],
           ["cadence", "weekly"],
           ["audience", "shared"],
           ["identity", "anonymous"],
         ]),
+        starters,
       ),
     );
     expect(interpreted.ok).toBe(true);
     if (!interpreted.ok) return;
     expect(interpreted.draft.identity).toBe("anonymous");
-    expect(interpreted.draft.protocols[0]?.title).toBe("Short strength");
+    expect(interpreted.draft.protocols[0]).toMatchObject({
+      title: "Published strength",
+      howTo: "Published instructions.",
+      personalNote: "Two comfortable sets.",
+      sourceProtocolVersion: 1,
+    });
+    expect(interpreted.draft.metrics[1]?.label).toBe("Morning weigh-in");
     expect(interpreted.draft.metrics.map((metric) => metric.presetKey)).toEqual([
       "goal-complete",
       "weight",
       "sleep-hours",
+      null,
+      null,
       null,
     ]);
   });
@@ -70,8 +95,6 @@ describe("tower setup form", () => {
         form([
           ["title", "Too many"],
           ["starter", "20000000-0000-4000-8000-000000000001@1"],
-          ["starterTitle.20000000-0000-4000-8000-000000000001", "One"],
-          ["starterHowTo.20000000-0000-4000-8000-000000000001", "Do one."],
           ["customTitle1", "Two"],
           ["customHowTo1", "Do two."],
           ["customTitle2", "Three"],
@@ -83,6 +106,7 @@ describe("tower setup form", () => {
           ["audience", "private"],
           ["identity", "named"],
         ]),
+        starters,
       ),
     );
     expect(interpreted).toEqual({ ok: false, code: "protocols" });

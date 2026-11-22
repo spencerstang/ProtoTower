@@ -167,7 +167,7 @@ test("scanner-safe sign-in persists isolated goal-specific towers", async ({
   const replayContext = await browser.newContext();
   const replayPage = await replayContext.newPage();
   await replayPage.goto(alphaLink);
-  await replayPage.getByRole("button", { name: "Confirm and open my towers" }).click();
+  await replayPage.getByRole("button", { name: "Confirm sign-in" }).click();
   await expect(
     replayPage.getByRole("heading", { name: "This sign-in link cannot be confirmed" }),
   ).toBeVisible();
@@ -200,11 +200,11 @@ test("one question starts a reviewed pair or a tower with a manual next step", a
 
   await page
     .getByRole("group", { name: "Andrew Huberman: Daily sleep-wake blueprint" })
-    .getByLabel("Did this")
+    .getByLabel(/: Did this$/u)
     .check();
   await page
     .getByRole("group", { name: "Bryan Johnson: Pre-sleep resting-heart-rate routine" })
-    .getByLabel("Skip")
+    .getByLabel(/: Skip$/u)
     .check();
   await page.getByRole("button", { name: "Save practice" }).click();
   await expect(page.getByText("Practice for this week was saved.")).toBeVisible();
@@ -251,28 +251,34 @@ test("one question starts a reviewed pair or a tower with a manual next step", a
   const unmatchedPath = new URL(page.url()).pathname;
   await page.getByRole("link", { name: "Set up this tower yourself", exact: true }).click();
   await expect(page).toHaveURL((url) => url.pathname === `${unmatchedPath}/setup`);
-  await expect(page.getByRole("textbox", { name: "Goal or context", exact: true })).toHaveValue(
+  await expect(page.getByRole("textbox", { name: "Goal (required)", exact: true })).toHaveValue(
     "Save for a kitchen renovation",
   );
   await page
     .getByRole("textbox", { name: "Custom protocol name", exact: true })
     .fill("Weekly review");
   await page
-    .getByRole("textbox", { name: "Custom how-to", exact: true })
+    .getByRole("textbox", { name: "Custom protocol instructions", exact: true })
     .fill("Review the project budget.");
-  await page.getByRole("checkbox", { name: "Goal complete", exact: true }).check();
+  await page
+    .getByRole("checkbox", { name: "Goal complete (complete or incomplete)", exact: true })
+    .check();
   await page.getByRole("button", { name: "Save tower setup", exact: true }).click();
   await expect(page.getByText("Tower saved.", { exact: true })).toBeVisible();
   await expect(page).toHaveURL((url) => url.pathname === unmatchedPath);
   await expect(
-    page.locator(".owned-protocol-list").getByRole("textbox", { name: "Name", exact: true }),
+    page
+      .locator(".owned-protocol-list")
+      .getByRole("textbox", { name: "Name for Weekly review", exact: true }),
   ).toHaveValue("Weekly review");
   await expect(
     page.getByRole("link", { name: "Set up this tower yourself", exact: true }),
   ).toHaveCount(0);
   await page.reload();
   await expect(
-    page.locator(".owned-protocol-list").getByRole("textbox", { name: "Name", exact: true }),
+    page
+      .locator(".owned-protocol-list")
+      .getByRole("textbox", { name: "Name for Weekly review", exact: true }),
   ).toHaveValue("Weekly review");
 });
 
@@ -292,23 +298,27 @@ test("setup errors retain every answer and dated measurements survive reload", a
   ).toBeVisible();
   const towerPath = new URL(page.url()).pathname;
   await page.getByRole("link", { name: "Set up this tower yourself", exact: true }).click();
-  await page.getByLabel("Goal or context", { exact: true }).fill("Synthetic measurement goal");
+  await page.getByLabel("Goal (required)", { exact: true }).fill("Synthetic measurement goal");
   await page.getByLabel("Custom protocol name", { exact: true }).fill("First practice");
-  await page.getByLabel("Custom how-to", { exact: true }).fill("Do the first practice.");
+  await page
+    .getByLabel("Custom protocol instructions", { exact: true })
+    .fill("Do the first practice.");
   await page.getByText("Add another custom protocol", { exact: true }).click();
   await page.getByLabel("Second custom protocol name", { exact: true }).fill("Second practice");
-  await page.getByLabel("Second custom how-to", { exact: true }).fill("Do the second practice.");
+  await page
+    .getByLabel("Second custom protocol instructions", { exact: true })
+    .fill("Do the second practice.");
   await page.getByText("Add a custom measure", { exact: true }).click();
   await page.locator("#custom-metric-name-1").fill("Concentration");
   await page.getByRole("button", { name: "Save tower setup", exact: true }).click();
   await expect(page.locator(".setup-error-summary")).toContainText("Choose what to record");
-  await expect(page.getByLabel("Goal or context", { exact: true })).toHaveValue(
+  await expect(page.getByLabel("Goal (required)", { exact: true })).toHaveValue(
     "Synthetic measurement goal",
   );
   await expect(page.getByLabel("Custom protocol name", { exact: true })).toHaveValue(
     "First practice",
   );
-  await expect(page.getByLabel("Second custom how-to", { exact: true })).toHaveValue(
+  await expect(page.getByLabel("Second custom protocol instructions", { exact: true })).toHaveValue(
     "Do the second practice.",
   );
   await expect(page.locator("#custom-metric-name-1")).toHaveValue("Concentration");
@@ -324,13 +334,23 @@ test("setup errors retain every answer and dated measurements survive reload", a
   }
   await page.locator("#custom-metric-shape-1").selectOption("number");
   await page.locator("#custom-metric-unit-1").fill("units/mL");
+  await page.getByRole("button", { name: "Add a custom measure" }).click();
   await page.locator("#custom-metric-name-2").fill("Observation");
   await page.locator("#custom-metric-kind-2").selectOption("ongoing");
   await page.locator("#custom-metric-shape-2").selectOption("text");
+  await page.getByRole("button", { name: "Add a custom measure" }).click();
+  await page.locator("#custom-metric-name-3").fill("Practice count");
+  await page.locator("#custom-metric-kind-3").selectOption("proxy");
+  await page.locator("#custom-metric-shape-3").selectOption("count");
   await page.getByRole("button", { name: "Save tower setup", exact: true }).click();
   await expect(page).toHaveURL((url) => url.pathname === towerPath);
   await page.reload();
   await expect(page.locator(".owned-protocol-list > li")).toHaveCount(2);
+  const blocks = page.getByRole("region", { name: "Tower blocks", exact: true });
+  await expect(blocks).toContainText("2 of 20 configured protocols");
+  await expect(blocks.getByRole("heading", { name: "First practice", exact: true })).toBeVisible();
+  await expect(page.getByText("This tower has no blocks yet.")).toHaveCount(0);
+  await expect(page.getByRole("spinbutton", { name: "Practice count", exact: true })).toBeVisible();
   await page.getByLabel("Measurement date", { exact: true }).fill("2020-02-03");
   await page.getByRole("textbox", { name: "Concentration", exact: true }).fill("3.250000");
   await page
@@ -350,4 +370,75 @@ test("setup errors retain every answer and dated measurements survive reload", a
   await expect(page.locator(".measurement-history")).toContainText("2020-02-03");
   await expect(page.locator(".measurement-history")).toContainText("3.250000");
   await expect(page.locator(".measurement-history")).toContainText("units/mL");
+});
+
+test("sign-in returns to the requested page when email opens in another browser context", async ({
+  browser,
+  page,
+  request,
+}) => {
+  const context = await browser.newContext();
+  const confirmationPage = await context.newPage();
+  await requestAndConfirm(page, request, "tower-return@example.test", {
+    destination: "/towers/new/detailed",
+    confirmationPage,
+  });
+  await expect(confirmationPage.getByLabel("Goal (required)", { exact: true })).toBeVisible();
+  await context.close();
+});
+
+test("library personalizations and preset names keep their original definitions", async ({
+  page,
+  request,
+}) => {
+  await requestAndConfirm(page, request, "tower-personalization@example.test");
+  await page.goto("/towers/new/detailed");
+  await page.getByLabel("Goal (required)", { exact: true }).fill("Synthetic practice goal");
+  const library = page.locator(".setup-choice-list > li");
+  const firstProtocol = library.nth(0);
+  const title = (await firstProtocol.locator("label").first().innerText()).trim();
+  await firstProtocol.getByRole("checkbox").check();
+  await firstProtocol
+    .getByLabel(`My version of ${title} (optional)`, { exact: true })
+    .fill("My original adaptation");
+  await library.nth(1).getByRole("checkbox").check();
+  await page.getByLabel("Custom protocol name", { exact: true }).fill("Personal practice");
+  await page
+    .getByLabel("Custom protocol instructions", { exact: true })
+    .fill("Use the synthetic plan.");
+  await expect(library.nth(2).getByRole("checkbox")).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Add another custom protocol" })).toBeDisabled();
+  await page.getByRole("checkbox", { name: "Percent successful (0–100%)", exact: true }).check();
+  await page
+    .getByLabel("Display name for Percent successful (optional)")
+    .fill("Planned sessions done");
+  await page.getByRole("checkbox", { name: "How it feels (1–5)", exact: true }).check();
+  await page.getByRole("button", { name: "Create tower", exact: true }).click();
+  const blocks = page.getByRole("region", { name: "Tower blocks", exact: true });
+  await expect(blocks).toContainText("3 of 20 configured protocols");
+  await expect(blocks).toContainText("My original adaptation");
+  await expect(blocks).toContainText(title);
+  const rating = page.getByRole("spinbutton", { name: "How it feels", exact: true });
+  await expect(rating).toHaveAccessibleDescription("1–5");
+  const percent = page.getByRole("spinbutton", { name: "Planned sessions done", exact: true });
+  await expect(percent).toHaveAccessibleDescription("0–100%");
+  await percent.fill("75");
+  await page.getByRole("button", { name: "Save check-in", exact: true }).click();
+  await expect(page.getByText("Check-in saved.", { exact: true })).toBeVisible();
+  await page
+    .getByLabel("Display name for Planned sessions done", { exact: true })
+    .fill("Sessions done");
+  await page
+    .getByRole("button", { name: "Save measure name: Planned sessions done", exact: true })
+    .click();
+  await expect(page.getByRole("spinbutton", { name: "Sessions done", exact: true })).toHaveValue(
+    "75",
+  );
+  await page
+    .getByLabel(`My version of ${title} (optional)`, { exact: true })
+    .fill("My updated adaptation");
+  await page.getByRole("button", { name: `Save protocol: ${title}`, exact: true }).click();
+  await expect(blocks).toContainText("My updated adaptation");
+  await page.reload();
+  await expect(blocks).toContainText("My updated adaptation");
 });

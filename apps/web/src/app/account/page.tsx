@@ -1,6 +1,7 @@
 import { savePseudonym } from "@/app/account/actions";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { createServerAccountProfileRepository } from "@/lib/account-profile";
+import { signInPath } from "@/lib/auth-return";
 import { getVerifiedPrincipal } from "@/lib/auth";
 import { DEFAULT_PSEUDONYM_SUGGESTIONS } from "@protostack/authorization";
 import { redirect } from "next/navigation";
@@ -12,7 +13,7 @@ export default async function AccountPage(props: {
   const searchParams = await props.searchParams;
   const principal = await getVerifiedPrincipal();
   if (principal.status === "available" && principal.principal.kind === "anonymous") {
-    redirect("/sign-in");
+    redirect(signInPath("/account"));
   }
   const result =
     principal.status === "available"

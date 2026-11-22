@@ -61,6 +61,7 @@ export type Database = {
       personal_tower_items: {
         Row: {
           created_at: string
+          personal_note: string | null
           position: number
           protocol_id: string
           protocol_version: number
@@ -68,6 +69,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          personal_note?: string | null
           position: number
           protocol_id: string
           protocol_version: number
@@ -75,6 +77,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          personal_note?: string | null
           position?: number
           protocol_id?: string
           protocol_version?: number
@@ -417,6 +420,7 @@ export type Database = {
           created_at: string
           how_to: string
           id: string
+          personal_note: string | null
           position: number
           source_protocol_id: string | null
           source_protocol_version: number | null
@@ -427,6 +431,7 @@ export type Database = {
           created_at?: string
           how_to: string
           id?: string
+          personal_note?: string | null
           position: number
           source_protocol_id?: string | null
           source_protocol_version?: number | null
@@ -437,6 +442,7 @@ export type Database = {
           created_at?: string
           how_to?: string
           id?: string
+          personal_note?: string | null
           position?: number
           source_protocol_id?: string | null
           source_protocol_version?: number | null
@@ -712,6 +718,16 @@ export type Database = {
           title: string
           updated_at: string
         }[]
+      }
+      save_tower_item_note: {
+        Args: {
+          candidate_id: string
+          candidate_note: string | null
+          candidate_protocol_id: string
+          candidate_protocol_version: number
+          expected_revision: number
+        }
+        Returns: undefined
       }
       set_protocol_practice_checkin: {
         Args: {

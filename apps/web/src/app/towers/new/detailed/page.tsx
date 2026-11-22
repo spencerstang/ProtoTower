@@ -1,5 +1,6 @@
 import { TowerSetupForm } from "@/components/tower-setup-form";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { signInPath } from "@/lib/auth-return";
 import { getVerifiedPrincipal } from "@/lib/auth";
 import { createServerProtocolCatalogRepository } from "@/lib/protocol-catalog";
 import { clipPlainLine } from "@/lib/tower-setup-form";
@@ -13,7 +14,7 @@ export default async function DetailedTowerPage(props: {
 }) {
   const principal = await getVerifiedPrincipal();
   if (principal.status === "available" && principal.principal.kind === "anonymous") {
-    redirect("/sign-in");
+    redirect(signInPath("/towers/new/detailed"));
   }
   const searchParams = await props.searchParams;
   const error = typeof searchParams["error"] === "string" ? searchParams["error"] : null;

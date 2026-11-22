@@ -1,3 +1,4 @@
+import { LibraryBlockNoteForm } from "./library-block-note-form";
 import type { StarterSurface } from "@/lib/starter-surface";
 import { recordStarterAdherence, recordStarterOutcome } from "@/app/towers/starter-actions";
 import type { PersonalTower } from "@protostack/tower-engine";
@@ -43,14 +44,27 @@ export function StarterTowerPanel(props: { tower: PersonalTower; surface: Starte
           <section aria-labelledby="starter-protocols">
             <h2 id="starter-protocols">Protocols</h2>
             <ul className="owned-protocol-list">
-              {protocols.map((protocol) => (
-                <li key={protocol.id}>
-                  <h3>
-                    <Link href={`/protocols/${protocol.slug}`}>{protocol.title}</Link>
-                  </h3>
-                  <p className="form-help">Published version {protocol.version}.</p>
-                </li>
-              ))}
+              {protocols.map((protocol) => {
+                const item = props.tower.items.find(
+                  (block) =>
+                    block.protocolId === protocol.id && block.protocolVersion === protocol.version,
+                );
+                return (
+                  <li key={protocol.id}>
+                    <h3>
+                      <Link href={`/protocols/${protocol.slug}`}>{protocol.title}</Link>
+                    </h3>
+                    <p className="form-help">Published version {protocol.version}.</p>
+                    {item ? (
+                      <LibraryBlockNoteForm
+                        tower={props.tower}
+                        item={item}
+                        title={protocol.title}
+                      />
+                    ) : null}
+                  </li>
+                );
+              })}
             </ul>
             {props.tower.starterMatchKey === "training" ? (
               <p>A second reviewed protocol was not added.</p>
@@ -96,7 +110,7 @@ export function StarterTowerPanel(props: { tower: PersonalTower; surface: Starte
                           defaultChecked={saved?.status === value}
                           required
                         />
-                        {label}
+                        {protocol.title}: {label}
                       </label>
                     ))}
                   </fieldset>

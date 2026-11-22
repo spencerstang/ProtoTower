@@ -5,16 +5,23 @@ import {
   parseAuthEmailOtpType,
   parseAuthTokenHash,
 } from "@/lib/auth-intake";
+import {
+  authReturnCookieName,
+  parseAuthReturnPath,
+  returnPathFromEmailRedirect,
+} from "@/lib/auth-return";
 import { getServerEnvironment } from "@/lib/runtime";
 
-function privateRedirect(request: NextRequest, path: string): NextResponse {
-  let baseUrl = request.nextUrl.origin;
+function appOrigin(request: NextRequest): string {
   try {
-    baseUrl = getServerEnvironment().PUBLIC_APP_URL ?? "http://127.0.0.1:3000";
+    return new URL(getServerEnvironment().PUBLIC_APP_URL ?? "http://127.0.0.1:3000").origin;
   } catch {
-    // Invalid configuration still redirects to a clean, token-free local path.
+    return request.nextUrl.origin;
   }
-  const response = NextResponse.redirect(new URL(path, baseUrl), 303);
+}
+
+function privateRedirect(origin: string, path: string): NextResponse {
+  const response = NextResponse.redirect(new URL(path, origin), 303);
   response.headers.set("Cache-Control", "private, no-store, max-age=0");
   response.headers.set("Referrer-Policy", "no-referrer");
   response.headers.set("Pragma", "no-cache");
@@ -24,13 +31,17 @@ function privateRedirect(request: NextRequest, path: string): NextResponse {
 export function GET(request: NextRequest): NextResponse {
   const tokenHash = parseAuthTokenHash(request.nextUrl.searchParams.get("token_hash"));
   const type = parseAuthEmailOtpType(request.nextUrl.searchParams.get("type"));
+  const origin = appOrigin(request);
   const response = privateRedirect(
-    request,
+    origin,
     tokenHash && type ? "/auth/confirm" : "/auth/confirm?error=invalid",
   );
   response.cookies.delete(authIntakeCookieName);
   if (tokenHash && type) {
-    response.cookies.set(authIntakeCookieName, createAuthIntakeCookie(type, tokenHash), {
+    const next =
+      returnPathFromEmailRedirect(request.nextUrl.searchParams.get("redirect_to"), origin) ??
+      parseAuthReturnPath(request.cookies.get(authReturnCookieName)?.value);
+    response.cookies.set(authIntakeCookieName, createAuthIntakeCookie(type, tokenHash, next), {
       httpOnly: true,
       secure: process.env["APP_ENV"] !== "local",
       sameSite: "strict",

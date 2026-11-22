@@ -3,8 +3,19 @@ import {
   parseTowerTitle,
   type TowerSetupDraft,
 } from "@protostack/tower-engine";
-import { assertPlainLine, metricKindSchema, shapesForKind } from "@protostack/outcomes-engine";
-import { configuredTowerInputFromForm } from "./tower-setup-form";
+import {
+  assertPlainLine,
+  maximumMetricsPerTower,
+  metricKindSchema,
+  metricPresetByKey,
+  shapesForKind,
+} from "@protostack/outcomes-engine";
+import {
+  configuredTowerInputFromForm,
+  customMeasureSlots,
+  customProtocolSlots,
+  type SetupProtocolChoice,
+} from "./tower-setup-form";
 
 export type SetupFieldError = Readonly<{ field: string; message: string }>;
 export type SetupActionState = Readonly<{ errors: readonly SetupFieldError[] }>;
@@ -20,6 +31,7 @@ function value(data: FormData, name: string): string {
 
 export function validateSetupForm(
   data: FormData,
+  starters: readonly SetupProtocolChoice[],
 ):
   | Readonly<{ ok: true; title: ReturnType<typeof parseTowerTitle>; draft: TowerSetupDraft }>
   | Readonly<{ ok: false; errors: readonly SetupFieldError[] }> {
@@ -36,7 +48,7 @@ export function validateSetupForm(
       });
     }
   };
-  line("title", "title", "Goal or context", 80);
+  line("title", "title", "Goal", 80);
   line("definition", "definition", "Definition", 160, true);
   const titles = new Set<string>();
   const checkProtocol = (name: string, id: string, howName: string, howId: string) => {
@@ -48,22 +60,18 @@ export function validateSetupForm(
     titles.add(title);
   };
   for (const entry of data.getAll("starter")) {
-    if (typeof entry !== "string" || !/^[0-9a-f-]{36}@[1-9][0-9]*$/u.test(entry)) {
+    const starter = starters.find((item) => `${item.id}@${item.version}` === entry);
+    if (!starter) {
       errors.push({
         field: "setup-protocols",
         message: "Choose a published protocol from this list.",
       });
       continue;
     }
-    const id = entry.slice(0, entry.lastIndexOf("@"));
-    checkProtocol(
-      `starterTitle.${id}`,
-      `starter-title-${id}`,
-      `starterHowTo.${id}`,
-      `starter-how-${id}`,
-    );
+    titles.add(starter.title.toLocaleLowerCase("en-US"));
+    line(`starterNote.${starter.id}`, `starter-note-${starter.id}`, "My version note", 280, true);
   }
-  for (const slot of [1, 2, 3]) {
+  for (const slot of customProtocolSlots) {
     if (value(data, `customTitle${slot}`).trim() || value(data, `customHowTo${slot}`).trim()) {
       const suffix = slot === 1 ? "" : `-${slot}`;
       checkProtocol(
@@ -74,11 +82,21 @@ export function validateSetupForm(
       );
     }
   }
-  for (const slot of [1, 2]) {
+  const presetEntries = data.getAll("preset");
+  for (const key of presetEntries) {
+    if (typeof key !== "string" || !metricPresetByKey(key)) {
+      errors.push({ field: "setup-outcomes", message: "Choose a measure from the preset list." });
+      continue;
+    }
+    line(`presetLabel.${key}`, `preset-label-${key}`, "Measure name", 80, true);
+  }
+  let measureCount = presetEntries.length;
+  for (const slot of customMeasureSlots) {
     const label = value(data, `customMetricLabel${slot}`);
     const encoded = value(data, `customMetricShape${slot}`);
     const unit = value(data, `customMetricUnit${slot}`);
     if (!label.trim() && !encoded.trim() && !unit.trim()) continue;
+    measureCount += 1;
     line(`customMetricLabel${slot}`, `custom-metric-name-${slot}`, "Measure name", 80);
     if (!encoded)
       errors.push({
@@ -105,10 +123,16 @@ export function validateSetupForm(
         message: "Units can be added to a Number measure.",
       });
   }
+  if (measureCount > maximumMetricsPerTower) {
+    errors.push({
+      field: "setup-outcomes",
+      message: `Choose up to ${maximumMetricsPerTower} measures.`,
+    });
+  }
   if (errors.length) return { ok: false, errors };
   try {
     const title = parseTowerTitle(value(data, "title"));
-    const result = interpretCreateForm(configuredTowerInputFromForm(data));
+    const result = interpretCreateForm(configuredTowerInputFromForm(data, starters));
     if (result.ok) return { ok: true, title, draft: result.draft };
     const messages = {
       protocols: {

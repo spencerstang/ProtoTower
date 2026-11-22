@@ -8,6 +8,7 @@ import {
   addMetricToDraft,
   addProtocolToDraft,
   removeMetricFromDraft,
+  renameMetricInDraft,
   removeProtocolFromDraft,
   replaceDefinition,
   replaceProtocolInDraft,
@@ -31,7 +32,7 @@ import { getVerifiedPrincipal } from "@/lib/auth";
 import { createServerPersonalTowerRepository } from "@/lib/personal-towers";
 import { createServerProtocolCatalogRepository } from "@/lib/protocol-catalog";
 import { createServerTowerCheckInRepository } from "@/lib/tower-checkins";
-import { clipPlainLine } from "@/lib/tower-setup-form";
+import { clipPlainLine, type SetupProtocolChoice } from "@/lib/tower-setup-form";
 import { validateSetupForm, setupFailure, type SetupActionState } from "@/lib/setup-form-state";
 
 function formString(formData: FormData, name: string): string | null {
@@ -64,12 +65,9 @@ async function ownedTower(rawId: string | null): Promise<PersonalTower> {
 }
 
 function sameRevision(tower: PersonalTower, formData: FormData): void {
-  try {
-    const revision = towerRevisionSchema.parse(Number(formString(formData, "revision")));
-    if (revision !== tower.revision) redirect(`/towers/${tower.id}?error=stale`);
-  } catch {
-    redirect(`/towers/${tower.id}?error=invalid`);
-  }
+  const revision = towerRevisionSchema.safeParse(Number(formString(formData, "revision")));
+  if (!revision.success) redirect(`/towers/${tower.id}?error=invalid`);
+  if (revision.data !== tower.revision) redirect(`/towers/${tower.id}?error=stale`);
 }
 
 function configuredDraft(tower: PersonalTower): SetupCommitResult {
@@ -103,6 +101,19 @@ async function persist(tower: PersonalTower, result: SetupCommitResult): Promise
   redirect(`/towers/${tower.id}?error=unavailable`);
 }
 
+async function setupCatalog(formData: FormData): Promise<readonly SetupProtocolChoice[] | null> {
+  if (!formData.has("starter")) return [];
+  const catalog = await createServerProtocolCatalogRepository().listPublished();
+  return catalog.status === "available"
+    ? catalog.value.map((protocol) => ({
+        id: protocol.id,
+        title: protocol.title,
+        version: protocol.version,
+        howTo: clipPlainLine(protocol.summary),
+      }))
+    : null;
+}
+
 export async function createConfiguredTower(formData: FormData): Promise<SetupActionState> {
   const principal = await getVerifiedPrincipal();
   if (principal.status === "unavailable" || !isFeatureEnabled("outcomes"))
@@ -110,7 +121,13 @@ export async function createConfiguredTower(formData: FormData): Promise<SetupAc
       "Tower creation is temporarily unavailable. Your responses have been kept; try again.",
     );
   if (principal.principal.kind !== "authenticated") redirect("/sign-in");
-  const input = validateSetupForm(formData);
+  const catalog = await setupCatalog(formData);
+  if (!catalog)
+    return setupFailure(
+      "The protocol library is temporarily unavailable. Try again.",
+      "setup-protocols",
+    );
+  const input = validateSetupForm(formData, catalog);
   if (!input.ok) return { errors: input.errors };
   const result = await (
     await createServerPersonalTowerRepository()
@@ -146,7 +163,13 @@ export async function saveFinishedSetup(formData: FormData): Promise<SetupAction
     );
   if (tower.protocols.length > 0 || tower.metrics.length > 0)
     return setupFailure("This tower already has a setup. Open the tower to review it.");
-  const input = validateSetupForm(formData);
+  const catalog = await setupCatalog(formData);
+  if (!catalog)
+    return setupFailure(
+      "The protocol library is temporarily unavailable. Try again.",
+      "setup-protocols",
+    );
+  const input = validateSetupForm(formData, catalog);
   if (!input.ok) return { errors: input.errors };
   const saved = await repository.saveSetup({
     id: tower.id,
@@ -173,8 +196,9 @@ export async function saveTowerProtocol(formData: FormData): Promise<never> {
   return persist(
     tower,
     replaceProtocolInDraft(current.draft, protocolId, {
-      title: formString(formData, "title") ?? "",
-      howTo: formString(formData, "howTo") ?? "",
+      title: existing.sourceProtocolId ? existing.title : (formString(formData, "title") ?? ""),
+      howTo: existing.sourceProtocolId ? existing.howTo : (formString(formData, "howTo") ?? ""),
+      personalNote: existing.sourceProtocolId ? formString(formData, "personalNote") : null,
       sourceProtocolId: existing.sourceProtocolId,
       sourceProtocolVersion: existing.sourceProtocolVersion,
     }),
@@ -210,7 +234,13 @@ export async function addStarterTowerProtocol(formData: FormData): Promise<never
     (item) => `${item.id}@${item.version}` === starter && separator > 0,
   );
   if (!protocol) redirect(`/towers/${tower.id}?error=invalid`);
-  return persist(tower, addProtocolToDraft(current.draft, starterProtocol(protocol)));
+  return persist(
+    tower,
+    addProtocolToDraft(current.draft, {
+      ...starterProtocol(protocol),
+      personalNote: formString(formData, "personalNote"),
+    }),
+  );
 }
 
 export async function removeTowerProtocol(formData: FormData): Promise<never> {
@@ -229,7 +259,10 @@ export async function addPresetMetric(formData: FormData): Promise<never> {
   sameRevision(tower, formData);
   const current = configuredDraft(tower);
   if (!current.ok) return persist(tower, current);
-  const metric = presetMetric(formString(formData, "preset") ?? "", "");
+  const metric = presetMetric(
+    formString(formData, "preset") ?? "",
+    formString(formData, "presetLabel") ?? "",
+  );
   if (!metric) redirect(`/towers/${tower.id}?error=invalid`);
   return persist(tower, addMetricToDraft(current.draft, metric));
 }
@@ -250,6 +283,21 @@ export async function addCustomMetric(formData: FormData): Promise<never> {
       presetKey: null,
       unit: formString(formData, "customMetricUnit") || null,
     }),
+  );
+}
+
+export async function renameTowerMetric(formData: FormData): Promise<never> {
+  const tower = await ownedTower(formString(formData, "towerId"));
+  sameRevision(tower, formData);
+  const current = configuredDraft(tower);
+  if (!current.ok) return persist(tower, current);
+  return persist(
+    tower,
+    renameMetricInDraft(
+      current.draft,
+      formString(formData, "metricId") ?? "",
+      formString(formData, "label") ?? "",
+    ),
   );
 }
 

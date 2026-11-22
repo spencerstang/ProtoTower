@@ -1,6 +1,7 @@
 import {
   maximumMetricsPerTower,
   metricPresets,
+  metricScale,
   metricReadingLine,
   parseMetricSubmission,
   type MetricReading,
@@ -22,6 +23,7 @@ import {
   addStarterTowerProtocol,
   recordTowerCheckIn,
   removeTowerMetric,
+  renameTowerMetric,
   removeTowerProtocol,
   saveTowerDefinition,
   saveTowerProtocol,
@@ -79,6 +81,31 @@ export function TowerProductPanel(props: {
         {cadenceChoiceLabels[tower.cadence]} · {visibilityLabel(tower.audience, tower.identity)}
       </p>
       {tower.definition ? <p>{tower.definition}</p> : null}
+
+      <section aria-labelledby="configured-blocks-heading">
+        <h2 id="configured-blocks-heading">Tower blocks</h2>
+        <p>
+          {tower.protocols.length} of {maximumTowerProtocols} configured protocols
+        </p>
+        <ol className="tower-item-list">
+          {tower.protocols.map((protocol) => (
+            <li key={protocol.id}>
+              <div>
+                <h3>{protocol.title}</h3>
+                <p>{protocol.howTo}</p>
+                {protocol.sourceProtocolVersion ? (
+                  <p>Library version {protocol.sourceProtocolVersion}</p>
+                ) : null}
+                {protocol.personalNote ? (
+                  <p>
+                    <strong>My version</strong> · {protocol.personalNote}
+                  </p>
+                ) : null}
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
 
       <section className="check-in" aria-labelledby="check-in-heading">
         <p className="eyebrow">Same form every time</p>
@@ -174,9 +201,9 @@ export function TowerProductPanel(props: {
                           props.checkIn.record?.markedProtocolIds.includes(protocol.id) === true
                         }
                       />
-                      {protocol.title}
+                      Practiced {protocol.title}
                     </label>
-                    <p className="form-help">{protocol.howTo}</p>
+                    <p className="form-help">{protocol.personalNote ?? protocol.howTo}</p>
                   </li>
                 ))}
               </ul>
@@ -225,7 +252,7 @@ export function TowerProductPanel(props: {
       ) : null}
 
       <section aria-labelledby="owned-protocols-heading">
-        <h2 id="owned-protocols-heading">Protocols</h2>
+        <h2 id="owned-protocols-heading">Edit protocols</h2>
         <ul className="owned-protocol-list">
           {tower.protocols.map((protocol) => (
             <li key={protocol.id}>
@@ -233,31 +260,52 @@ export function TowerProductPanel(props: {
                 <input type="hidden" name="towerId" value={tower.id} />
                 <input type="hidden" name="revision" value={tower.revision} />
                 <input type="hidden" name="protocolId" value={protocol.id} />
-                <label htmlFor={`protocol-name-${protocol.id}`}>Name</label>
-                <input
-                  id={`protocol-name-${protocol.id}`}
-                  name="title"
-                  defaultValue={protocol.title}
-                  maxLength={80}
-                  required
-                />
-                <label htmlFor={`protocol-how-${protocol.id}`}>How to</label>
-                <input
-                  id={`protocol-how-${protocol.id}`}
-                  name="howTo"
-                  defaultValue={protocol.howTo}
-                  maxLength={280}
-                  required
-                />
+                {protocol.sourceProtocolId ? (
+                  <>
+                    <label htmlFor={`protocol-note-${protocol.id}`}>
+                      My version of {protocol.title} (optional)
+                    </label>
+                    <textarea
+                      id={`protocol-note-${protocol.id}`}
+                      name="personalNote"
+                      defaultValue={protocol.personalNote ?? ""}
+                      maxLength={280}
+                      rows={2}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <label htmlFor={`protocol-name-${protocol.id}`}>
+                      Name for {protocol.title}
+                    </label>
+                    <input
+                      id={`protocol-name-${protocol.id}`}
+                      name="title"
+                      defaultValue={protocol.title}
+                      maxLength={80}
+                      required
+                    />
+                    <label htmlFor={`protocol-how-${protocol.id}`}>
+                      Instructions for {protocol.title}
+                    </label>
+                    <input
+                      id={`protocol-how-${protocol.id}`}
+                      name="howTo"
+                      defaultValue={protocol.howTo}
+                      maxLength={280}
+                      required
+                    />
+                  </>
+                )}
                 <button className="secondary-action" type="submit">
-                  Save protocol
+                  Save protocol: {protocol.title}
                 </button>
               </form>
               <form action={removeTowerProtocol}>
                 <input type="hidden" name="towerId" value={tower.id} />
                 <input type="hidden" name="revision" value={tower.revision} />
                 <input type="hidden" name="protocolId" value={protocol.id} />
-                <button type="submit">Remove protocol</button>
+                <button type="submit">Remove protocol: {protocol.title}</button>
               </form>
             </li>
           ))}
@@ -280,7 +328,7 @@ export function TowerProductPanel(props: {
         <form action={addStarterTowerProtocol} className="inline-form">
           <input type="hidden" name="towerId" value={tower.id} />
           <input type="hidden" name="revision" value={tower.revision} />
-          <label htmlFor="starter-protocol">Starter protocol</label>
+          <label htmlFor="starter-protocol">Library protocol</label>
           <select
             id="starter-protocol"
             name="starter"
@@ -293,6 +341,15 @@ export function TowerProductPanel(props: {
               </option>
             ))}
           </select>
+          <label htmlFor="added-library-note">
+            My version of the selected library protocol (optional)
+          </label>
+          <input
+            id="added-library-note"
+            name="personalNote"
+            maxLength={280}
+            disabled={props.starters.length === 0}
+          />
           <button
             className="secondary-action"
             type="submit"
@@ -302,7 +359,7 @@ export function TowerProductPanel(props: {
               tower.protocols.length >= maximumTowerProtocols
             }
           >
-            Add starter
+            Add library protocol
           </button>
         </form>
       </section>
@@ -313,13 +370,29 @@ export function TowerProductPanel(props: {
           {tower.metrics.map((metric) => (
             <li key={metric.id}>
               <span>
-                {metric.kind} · {metric.label}
+                {metric.label} ({metricScale(metric.shape, metric.unit)})
               </span>
+              <form action={renameTowerMetric} className="inline-form">
+                <input type="hidden" name="towerId" value={tower.id} />
+                <input type="hidden" name="revision" value={tower.revision} />
+                <input type="hidden" name="metricId" value={metric.id} />
+                <label htmlFor={`rename-metric-${metric.id}`}>
+                  Display name for {metric.label}
+                </label>
+                <input
+                  id={`rename-metric-${metric.id}`}
+                  name="label"
+                  defaultValue={metric.label}
+                  maxLength={80}
+                  required
+                />
+                <button type="submit">Save measure name: {metric.label}</button>
+              </form>
               <form action={removeTowerMetric}>
                 <input type="hidden" name="towerId" value={tower.id} />
                 <input type="hidden" name="revision" value={tower.revision} />
                 <input type="hidden" name="metricId" value={metric.id} />
-                <button type="submit">Remove measure</button>
+                <button type="submit">Remove measure: {metric.label}</button>
               </form>
             </li>
           ))}
@@ -336,10 +409,17 @@ export function TowerProductPanel(props: {
           >
             {availablePresets.map((preset) => (
               <option key={preset.key} value={preset.key}>
-                {preset.kind} · {preset.label}
+                {preset.kind} · {preset.label} ({metricScale(preset.shape)})
               </option>
             ))}
           </select>
+          <label htmlFor="new-preset-name">Display name for the selected preset (optional)</label>
+          <input
+            id="new-preset-name"
+            name="presetLabel"
+            maxLength={80}
+            disabled={availablePresets.length === 0}
+          />
           <button
             className="secondary-action"
             type="submit"
@@ -520,12 +600,18 @@ function MetricFields(props: {
 }) {
   const { metric, saved } = props;
   const skipped = saved?.skipped === true;
+  const scale = metricScale(metric.shape, metric.unit);
+  const scaleId = `metric-scale-${metric.id}`;
   return (
     <div className="metric-fields">
-      <p>
-        {metric.label}
-        {metric.unit ? ` (${metric.unit})` : ""}
-      </p>
+      {metric.shape !== "complete_incomplete" && metric.shape !== "blood_pressure" ? (
+        <label htmlFor={`reading-${metric.id}`}>{metric.label}</label>
+      ) : null}
+      {scale && metric.shape !== "complete_incomplete" ? (
+        <p id={scaleId} className="form-help">
+          {scale}
+        </p>
+      ) : null}
       {metric.shape === "number" ||
       metric.shape === "weight" ||
       metric.shape === "rating" ||
@@ -537,7 +623,8 @@ function MetricFields(props: {
           name={`numeric.${metric.id}`}
           type={metric.shape === "number" ? "text" : "number"}
           inputMode="decimal"
-          aria-label={metric.label}
+          id={`reading-${metric.id}`}
+          aria-describedby={scale ? scaleId : undefined}
           defaultValue={skipped ? "" : (saved?.numericValue ?? "")}
           required={metric.kind === "final"}
           {...(metric.shape === "number" ? { maxLength: 30 } : numberBounds(metric.shape))}
@@ -545,21 +632,23 @@ function MetricFields(props: {
       ) : null}
       {metric.shape === "blood_pressure" ? (
         <>
-          <label htmlFor={`systolic-${metric.id}`}>Systolic</label>
+          <label htmlFor={`systolic-${metric.id}`}>{metric.label} — systolic</label>
           <input
             id={`systolic-${metric.id}`}
             name={`numeric.${metric.id}`}
             type="number"
+            aria-describedby={scaleId}
             min={70}
             max={250}
             step={1}
             defaultValue={skipped ? "" : (saved?.numericValue ?? "")}
           />
-          <label htmlFor={`diastolic-${metric.id}`}>Diastolic</label>
+          <label htmlFor={`diastolic-${metric.id}`}>{metric.label} — diastolic</label>
           <input
             id={`diastolic-${metric.id}`}
             name={`secondary.${metric.id}`}
             type="number"
+            aria-describedby={scaleId}
             min={40}
             max={150}
             step={1}
@@ -571,7 +660,8 @@ function MetricFields(props: {
         <input
           name={`text.${metric.id}`}
           required={metric.kind === "final"}
-          aria-label={metric.label}
+          id={`reading-${metric.id}`}
+          aria-describedby={scale ? scaleId : undefined}
           maxLength={280}
           defaultValue={skipped ? "" : (saved?.textValue ?? "")}
         />
@@ -587,7 +677,7 @@ function MetricFields(props: {
               defaultChecked={saved?.completion === "complete"}
               required
             />
-            Complete
+            {metric.label}: Complete
           </label>
           <label>
             <input
@@ -596,7 +686,7 @@ function MetricFields(props: {
               value="incomplete"
               defaultChecked={saved?.completion === "incomplete"}
             />
-            Incomplete
+            {metric.label}: Incomplete
           </label>
         </fieldset>
       ) : null}

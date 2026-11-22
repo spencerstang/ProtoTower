@@ -7,7 +7,9 @@
     </p>
     <p>Use the button below to create your account or sign in with a one-time link.</p>
     <p>
-      <a href="{{ .SiteURL }}/auth/intake?token_hash={{ .TokenHash }}&amp;type=email">
+      <a
+        href="{{ .SiteURL }}/auth/intake?token_hash={{ .TokenHash }}&amp;type=email&amp;redirect_to={{ .RedirectTo | urlquery }}"
+      >
         Continue to ProtoTower
       </a>
     </p>

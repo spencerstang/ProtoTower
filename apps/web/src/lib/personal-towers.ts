@@ -51,6 +51,7 @@ function parseTower(
         id: protocol.id,
         title: protocol.title,
         howTo: protocol.how_to,
+        personalNote: protocol.personal_note,
         sourceProtocolId: protocol.source_protocol_id,
         sourceProtocolVersion: protocol.source_protocol_version,
         position: protocol.position,
@@ -78,6 +79,7 @@ function parseTower(
       .map((item) => ({
         protocolId: item.protocol_id,
         protocolVersion: item.protocol_version,
+        personalNote: item.personal_note,
         position: item.position,
       })),
   });
@@ -88,6 +90,7 @@ function protocolPayload(protocol: TowerProtocolDraft): Json {
     ...(protocol.id === undefined ? {} : { id: protocol.id }),
     title: protocol.title,
     how_to: protocol.howTo,
+    personal_note: protocol.personalNote,
     source_protocol_id: protocol.sourceProtocolId,
     source_protocol_version: protocol.sourceProtocolVersion,
   };
@@ -148,7 +151,7 @@ async function loadItems(
   if (towerIds.length === 0) return [];
   const { data, error } = await client
     .from("personal_tower_items")
-    .select("tower_id,protocol_id,protocol_version,position,created_at")
+    .select("tower_id,protocol_id,protocol_version,position,personal_note,created_at")
     .in("tower_id", [...towerIds])
     .order("position", { ascending: true });
   if (error) return null;
@@ -163,7 +166,7 @@ async function loadProtocols(
   const { data, error } = await client
     .from("tower_protocols")
     .select(
-      "id,tower_id,position,title,how_to,source_protocol_id,source_protocol_version,created_at",
+      "id,tower_id,position,title,how_to,personal_note,source_protocol_id,source_protocol_version,created_at",
     )
     .in("tower_id", [...towerIds])
     .order("position", { ascending: true });
