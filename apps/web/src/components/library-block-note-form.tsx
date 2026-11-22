@@ -17,7 +17,7 @@ export function LibraryBlockNoteForm({
       <input type="hidden" name="revision" value={tower.revision} />
       <input type="hidden" name="protocolId" value={item.protocolId} />
       <input type="hidden" name="protocolVersion" value={item.protocolVersion} />
-      <label htmlFor={fieldId}>My version of {title} (optional)</label>
+      <label htmlFor={fieldId}>My version of library block {title} (optional)</label>
       <textarea
         id={fieldId}
         name="personalNote"
