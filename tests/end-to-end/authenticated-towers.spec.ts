@@ -429,7 +429,7 @@ test("library personalizations and preset names keep their original definitions"
   await expect(percent).toHaveAccessibleDescription("0–100%");
   await percent.fill("75");
   await page.getByRole("button", { name: "Save check-in", exact: true }).click();
-  await expect(page.getByText("Check-in saved.", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Check-in saved.", exact: true })).toBeVisible();
   await page
     .getByLabel("Display name for Planned sessions done", { exact: true })
     .fill("Sessions done");
