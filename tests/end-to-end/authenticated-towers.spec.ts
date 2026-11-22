@@ -427,7 +427,7 @@ test("library personalizations and preset names keep their original definitions"
   await expect(blocks).toContainText("My original adaptation");
   await expect(blocks).toContainText(title);
   const rating = page.getByRole("spinbutton", { name: "How it feels", exact: true });
-  await expect(rating).toHaveAccessibleDescription("1–5");
+  await expect(rating).toHaveAccessibleDescription("1–5 · Choose a whole number from 1 to 5.");
   const percent = page.getByRole("spinbutton", { name: "Planned sessions done", exact: true });
   await expect(percent).toHaveAccessibleDescription("0–100%");
   await percent.fill("75");

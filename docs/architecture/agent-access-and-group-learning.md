@@ -4,6 +4,11 @@ Status: requested; planned after the setup usability release. These capabilities
 
 ProtoTower connects goals/systems, protocol stacks/treatments, and outcomes/metrics. The minimum useful tower is one goal, two relevant protocols, and one outcome, growing over time. These relationships are many-to-many; comparable overlap can support learning across participants.
 
+The [learning framework](../product/learning-framework.md) governs future statistics:
+track goal–protocol–outcome patterns, prioritize all-success/all-failure signals
+with visible sample sizes and uncertainty, compare absolute and relative success
+for protocols pursuing the same goal, then assess incremental benefit from stacks.
+
 ## 1. Agent access
 
 Provide owner-bound agent sign-in using scoped, revocable, expiring tokens. Store token hashes, show credentials only once, and expose scope and last-use controls. Introduce `/api/v1` with documented authorization, pagination, validation, rate limits, and stable error contracts. An MCP server should reuse the same domain services and permissions. Separate catalog read, private tower read, tower write, and observation write scopes. Audit metadata must exclude private response text and token secrets.

@@ -40,13 +40,13 @@ const customShapeLabels: Record<MetricShape, string> = {
   number: "Number · actual decimal value",
   text: "Text · written response",
   weight: "Weight",
-  rating: "Rating from 1 to 5",
+  rating: "Whole-number rating from 1 to 5",
   blood_pressure: "Blood pressure",
   qualitative: "Short note",
   count: "Count · whole number",
   hours: "Hours",
   complete_incomplete: "Complete or incomplete",
-  scale_1_5: "Rating from 1 to 5",
+  scale_1_5: "Whole-number rating from 1 to 5",
   percent: "Percentage · 0–100%",
 };
 

@@ -10,7 +10,17 @@ accepted milestone by itself.
 The proposed validation slice is specified in
 `docs/product/milestone-6-systems-beta-validation.md`.
 
-## Systems over goals
+## Core learning objective
+
+The current [learning framework](learning-framework.md) is durable product context:
+identify goal–protocol–outcome patterns, prioritize observed 100% success/failure
+signals with visible sample sizes and uncertainty, compare protocols pursuing the
+same goal by absolute and relative success, then assess whether stacks add benefit.
+The system-oriented guidance below supports this objective. For analysis, a
+pattern needs an explicit goal or desired state and comparable outcome definition;
+a system need not be reduced to a one-time finish line.
+
+## Goals and durable systems
 
 ProtoTower should favor systems over goals whenever practical. A user may still set
 a specific goal, target, or milestone, but the product's primary job is to help a

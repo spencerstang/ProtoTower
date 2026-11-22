@@ -52,3 +52,7 @@ These rules are authoritative for every future AI coding session in this reposit
 - Update the README, operations docs, security docs, release notes, and ADRs when behavior or architecture changes.
 - Keep rollback and troubleshooting steps current.
 - Leave clear human steps for external accounts, DNS, secrets, and environment protection rules.
+
+## Product context
+
+Read `docs/product/learning-framework.md` before product, schema, analytics, ranking, or agent-workflow changes. Its core objective is learning goal–protocol–outcome patterns: prioritize observed all-success/all-failure signals with visible sample sizes and uncertainty, compare absolute and relative protocol success for the same goal, then evaluate whether protocol stacks add benefit. Preserve the distinction between product objectives and features that have actually shipped.

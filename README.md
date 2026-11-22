@@ -2,9 +2,13 @@
 
 ProtoTower is a model-neutral product for stacking understandable protocols into an
 effective personal system represented as a durable tower of intentional practices.
-It favors systems that can be practiced and improved over finish-line goal tracking,
-while still allowing users to define specific goals when useful. Its long-term scope
-spans Health & Fitness, Relationships, Financial Well-Being, and Mental Optimization.
+It connects goals and ongoing systems with protocol use and observed outcomes.
+Its learning objective is to identify goal–protocol–outcome patterns, compare
+absolute and relative protocol success for the same goal, then evaluate whether
+stacking protocols increases benefit. Preserve the full
+[learning framework](docs/product/learning-framework.md) in future work.
+Its long-term scope spans Health & Fitness, Relationships, Financial Well-Being,
+and Mental Optimization.
 The current beta begins with wellness-oriented educational content, but shared
 product and domain models must preserve a credible path to every major life domain.
 ProtoTower is also intended for direct, user-authorized operation by personal AI

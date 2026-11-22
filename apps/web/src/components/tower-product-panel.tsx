@@ -36,14 +36,14 @@ import type { SetupStarter } from "./tower-setup-form";
 const customShapes = [
   ["ongoing:number", "Number · optional"],
   ["ongoing:text", "Text · optional"],
-  ["ongoing:rating", "Rating from 1 to 5 · optional"],
+  ["ongoing:rating", "Whole-number rating from 1 to 5 · optional"],
   ["proxy:hours", "Duration in hours · optional"],
   ["proxy:count", "Count · optional"],
   ["ongoing:weight", "Weight · optional"],
   ["ongoing:blood_pressure", "Blood pressure · optional"],
   ["final:number", "Number · required"],
   ["final:text", "Text · required"],
-  ["final:scale_1_5", "Rating from 1 to 5 · required"],
+  ["final:scale_1_5", "Whole-number rating from 1 to 5 · required"],
   ["final:percent", "Percentage from 0 to 100 · required"],
   ["final:complete_incomplete", "Complete or incomplete · required"],
 ] as const;
@@ -596,7 +596,11 @@ function MetricFields(props: {
   const skipped = saved?.skipped === true;
   const scale = metricScale(metric.shape, metric.unit);
   const scaleId = `metric-scale-${metric.id}`;
-  const guidance = metricGuidance(metric.presetKey);
+  const guidance =
+    metricGuidance(metric.presetKey) ??
+    (metric.shape === "rating" || metric.shape === "scale_1_5"
+      ? "Choose a whole number from 1 to 5."
+      : null);
   return (
     <div className="metric-fields">
       {metric.shape !== "complete_incomplete" && metric.shape !== "blood_pressure" ? (

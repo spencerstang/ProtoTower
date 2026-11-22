@@ -80,7 +80,7 @@ export function metricScale(shape: MetricShape, unit?: string | null): string | 
 
 export function metricGuidance(presetKey: string | null): string | null {
   if (presetKey === "sleep-quality")
-    return "1 = very poor, 2 = poor, 3 = fair, 4 = good, 5 = excellent. Rate how well you slept.";
+    return "1 = very poor, 2 = poor, 3 = fair, 4 = good, 5 = excellent. Choose a whole number to rate how well you slept.";
   if (presetKey === "sleep-hours")
     return "Duration in hours, for example 7.5. Sleep duration and subjective sleep quality are separate measurements.";
   return null;
