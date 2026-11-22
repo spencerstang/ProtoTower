@@ -7,6 +7,7 @@ import {
   maximumMetricsPerTower,
   metricPresets,
   metricScale,
+  metricGuidance,
   shapesForKind,
   metricKindSchema,
   type MetricKind,
@@ -296,13 +297,14 @@ export function TowerSetupForm(props: {
         </h2>
         {fieldError("setup-outcomes")}
         <p className="form-help">
-          At least one outcome measure is required. Ongoing and practice measures are optional.
+          Choose how you will track this goal. Goal-progress measures are required at check-in;
+          other measurements can be skipped.
         </p>
         {(
           [
-            ["Outcome presets", finals],
-            ["Ongoing presets", ongoing],
-            ["Practice presets", proxies],
+            ["Goal progress · required at check-in", finals],
+            ["Other measurements · optional", ongoing],
+            ["Activity and duration · optional", proxies],
           ] as const
         ).map(([heading, presets]) => (
           <fieldset key={heading}>
@@ -446,6 +448,9 @@ function PresetChoice(props: {
           maxLength={80}
           placeholder={preset.label}
         />
+        {metricGuidance(preset.key) ? (
+          <p className="form-help">{metricGuidance(preset.key)}</p>
+        ) : null}
         {props.error}
       </div>
     </div>
@@ -483,7 +488,9 @@ function CustomMetricSlot(props: {
         aria-required="true"
       />
       {errorFor("name")}
-      <label htmlFor={`custom-metric-kind-${props.index}`}>Measure role{suffix} (required)</label>
+      <label htmlFor={`custom-metric-kind-${props.index}`}>
+        Check-in use for custom measure{suffix} (required)
+      </label>
       <select
         id={`custom-metric-kind-${props.index}`}
         name={`customMetricKind${props.index}`}
@@ -494,9 +501,9 @@ function CustomMetricSlot(props: {
           if (!shapesForKind(nextKind).some((item) => item === shape)) setShape("");
         }}
       >
-        <option value="final">Outcome · what changes</option>
-        <option value="ongoing">Ongoing · what you monitor</option>
-        <option value="proxy">Practice · what you do</option>
+        <option value="final">Required · goal progress</option>
+        <option value="ongoing">Optional · measurement</option>
+        <option value="proxy">Optional · activity or duration</option>
       </select>
       <label htmlFor={`custom-metric-shape-${props.index}`}>
         Response type for custom measure{suffix} (required)

@@ -472,10 +472,19 @@ test("a tower can start with twenty custom protocols and keep them after reload"
   await page
     .getByRole("checkbox", { name: "Goal complete (complete or incomplete)", exact: true })
     .check();
+  await page.getByRole("checkbox", { name: "Subjective sleep quality (1–5)", exact: true }).check();
   await page.getByRole("button", { name: "Create tower", exact: true }).click();
   await expect(page).toHaveURL(/\/towers\/[0-9a-f-]{36}$/u);
   await page.reload();
   await expect(page.locator(".owned-protocol-list > li")).toHaveCount(20);
+  const measurements = page.getByRole("group", { name: "Measurements", exact: true });
+  await expect(measurements).toBeVisible();
+  await expect(page.getByRole("group", { name: "Ongoing", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("group", { name: "Completion", exact: true })).toHaveCount(0);
+  await expect(
+    measurements.getByRole("spinbutton", { name: "Subjective sleep quality", exact: true }),
+  ).toHaveAccessibleDescription(/1 = very poor.*5 = excellent/u);
+
   await expect(page.getByRole("region", { name: "Tower blocks", exact: true })).toContainText(
     "20 of 20 configured protocols",
   );

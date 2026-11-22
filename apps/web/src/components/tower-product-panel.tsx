@@ -2,6 +2,7 @@ import {
   maximumMetricsPerTower,
   metricPresets,
   metricScale,
+  metricGuidance,
   metricReadingLine,
   parseMetricSubmission,
   type MetricReading,
@@ -156,38 +157,21 @@ export function TowerProductPanel(props: {
               </>
             ) : null}
             <fieldset>
-              <legend>Ongoing</legend>
-              {tower.metrics
-                .filter((metric) => metric.kind === "ongoing")
-                .map((metric) => (
-                  <MetricFields
-                    key={metric.id}
-                    metric={metric}
-                    saved={savedResponse(props.checkIn, metric.id)}
-                  />
-                ))}
-              {tower.metrics.every((metric) => metric.kind !== "ongoing") ? (
-                <p className="form-help">
-                  No ongoing measure on this tower. You can add one below.
-                </p>
-              ) : (
-                <p className="form-help">Leave an ongoing measure blank to skip it.</p>
-              )}
-            </fieldset>
-            <fieldset>
-              <legend>Completion</legend>
-              {tower.metrics
-                .filter((metric) => metric.kind === "proxy" || metric.kind === "final")
-                .map((metric) => (
-                  <MetricFields
-                    key={metric.id}
-                    metric={metric}
-                    saved={savedResponse(props.checkIn, metric.id)}
-                  />
-                ))}
+              <legend>Measurements</legend>
+              <p className="form-help">
+                Record each measurement below. Required measurements are marked; leave optional ones
+                blank to skip them.
+              </p>
+              {tower.metrics.map((metric) => (
+                <MetricFields
+                  key={metric.id}
+                  metric={metric}
+                  saved={savedResponse(props.checkIn, metric.id)}
+                />
+              ))}
             </fieldset>
             <details>
-              <summary>Optional protocol checklist</summary>
+              <summary>What you did · optional protocol checklist</summary>
               <ul className="setup-choice-list">
                 {tower.protocols.map((protocol) => (
                   <li key={protocol.id}>
@@ -365,13 +349,25 @@ export function TowerProductPanel(props: {
       </section>
 
       <section aria-labelledby="owned-outcomes-heading">
-        <h2 id="owned-outcomes-heading">Outcomes</h2>
+        <h2 id="owned-outcomes-heading">Manage measurements</h2>
+        <p className="form-help">
+          A display name describes the measure; its response type defines what values it records. To
+          use another scale, add a new measure below so earlier entries keep their original meaning.
+        </p>
         <ul className="metric-list">
           {tower.metrics.map((metric) => (
             <li key={metric.id}>
               <span>
                 {metric.label} ({metricScale(metric.shape, metric.unit)})
               </span>
+              <p className="form-help">
+                Response type: {metricScale(metric.shape, metric.unit)} ·{" "}
+                {metric.kind === "final" ? "Required at check-in" : "Optional at check-in"}.{" "}
+                <a href="#add-custom-measure">Add a measure with another response type</a>.
+              </p>
+              {metricGuidance(metric.presetKey) ? (
+                <p className="form-help">{metricGuidance(metric.presetKey)}</p>
+              ) : null}
               <form action={renameTowerMetric} className="inline-form">
                 <input type="hidden" name="towerId" value={tower.id} />
                 <input type="hidden" name="revision" value={tower.revision} />
@@ -430,12 +426,17 @@ export function TowerProductPanel(props: {
             Add preset
           </button>
         </form>
-        <form action={addCustomMetric} className="stacked-form">
+        <form id="add-custom-measure" action={addCustomMetric} className="stacked-form">
+          <h3>Add a measurement</h3>
+          <p className="form-help">
+            Choose a name and response type. Use a rating for subjective quality, hours for
+            duration, or Number for an actual measured value.
+          </p>
           <input type="hidden" name="towerId" value={tower.id} />
           <input type="hidden" name="revision" value={tower.revision} />
           <label htmlFor="custom-measure-name">Custom measure name</label>
           <input id="custom-measure-name" name="customMetricLabel" maxLength={80} required />
-          <label htmlFor="custom-measure-shape">What you record</label>
+          <label htmlFor="custom-measure-shape">Response type</label>
           <select
             id="custom-measure-shape"
             name="customMetricShape"
@@ -602,6 +603,7 @@ function MetricFields(props: {
   const skipped = saved?.skipped === true;
   const scale = metricScale(metric.shape, metric.unit);
   const scaleId = `metric-scale-${metric.id}`;
+  const guidance = metricGuidance(metric.presetKey);
   return (
     <div className="metric-fields">
       {metric.shape !== "complete_incomplete" && metric.shape !== "blood_pressure" ? (
@@ -610,8 +612,12 @@ function MetricFields(props: {
       {scale && metric.shape !== "complete_incomplete" ? (
         <p id={scaleId} className="form-help">
           {scale}
+          {guidance ? ` · ${guidance}` : ""}
         </p>
       ) : null}
+      <p className="form-help">
+        {metric.kind === "final" ? "Required for this check-in" : "Optional · leave blank to skip"}
+      </p>
       {metric.shape === "number" ||
       metric.shape === "weight" ||
       metric.shape === "rating" ||

@@ -89,7 +89,7 @@ describe("tower setup", () => {
       presetKey: null,
     };
     expect(ongoing?.label).toBe("Morning weight");
-    expect(proxy?.label).toBe("Sleep hours");
+    expect(proxy?.label).toBe("Sleep duration");
     const result = interpretCreateForm({
       ...base,
       metrics: [finalMetric, ongoing, proxy, custom],

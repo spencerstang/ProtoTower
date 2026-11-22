@@ -28,7 +28,8 @@ export const metricPresets = [
   { key: "blood-pressure", kind: "ongoing", shape: "blood_pressure", label: "Blood pressure" },
   { key: "note", kind: "ongoing", shape: "qualitative", label: "Progress note" },
   { key: "workouts", kind: "proxy", shape: "count", label: "Workouts logged" },
-  { key: "sleep-hours", kind: "proxy", shape: "hours", label: "Sleep hours" },
+  { key: "sleep-hours", kind: "proxy", shape: "hours", label: "Sleep duration" },
+  { key: "sleep-quality", kind: "ongoing", shape: "rating", label: "Subjective sleep quality" },
   { key: "outreach", kind: "proxy", shape: "count", label: "People contacted" },
   { key: "goal-complete", kind: "final", shape: "complete_incomplete", label: "Goal complete" },
   { key: "success-rating", kind: "final", shape: "scale_1_5", label: "Success rating" },
@@ -45,6 +46,7 @@ export const metricPresetKeySchema = z.enum([
   "note",
   "workouts",
   "sleep-hours",
+  "sleep-quality",
   "outreach",
   "goal-complete",
   "success-rating",
@@ -74,6 +76,14 @@ export function metricScale(shape: MetricShape, unit?: string | null): string | 
     case "qualitative":
       return "text";
   }
+}
+
+export function metricGuidance(presetKey: string | null): string | null {
+  if (presetKey === "sleep-quality")
+    return "1 = very poor, 2 = poor, 3 = fair, 4 = good, 5 = excellent. Rate how well you slept.";
+  if (presetKey === "sleep-hours")
+    return "Duration in hours, for example 7.5. Sleep duration and subjective sleep quality are separate measurements.";
+  return null;
 }
 
 const shapesByKind: Record<MetricKind, readonly MetricShape[]> = {
