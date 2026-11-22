@@ -34,22 +34,18 @@ import {
 import type { SetupStarter } from "./tower-setup-form";
 
 const customShapes = [
-  ["final:number", "Outcome · number"],
-  ["final:text", "Outcome · text"],
-  ["ongoing:number", "Ongoing · number"],
-  ["ongoing:text", "Ongoing · text"],
-  ["proxy:number", "Practice · number"],
-  ["proxy:text", "Practice · text"],
-  ["ongoing:weight", "Ongoing · weight"],
-  ["ongoing:rating", "Ongoing · rating from 1 to 5"],
-  ["ongoing:blood_pressure", "Ongoing · blood pressure"],
-  ["ongoing:qualitative", "Ongoing · short note"],
-  ["proxy:count", "Proxy · count"],
-  ["proxy:hours", "Proxy · hours"],
-  ["proxy:rating", "Proxy · rating from 1 to 5"],
-  ["final:complete_incomplete", "Final · complete or incomplete"],
-  ["final:scale_1_5", "Final · rating from 1 to 5"],
-  ["final:percent", "Final · percent successful"],
+  ["ongoing:number", "Number · optional"],
+  ["ongoing:text", "Text · optional"],
+  ["ongoing:rating", "Rating from 1 to 5 · optional"],
+  ["proxy:hours", "Duration in hours · optional"],
+  ["proxy:count", "Count · optional"],
+  ["ongoing:weight", "Weight · optional"],
+  ["ongoing:blood_pressure", "Blood pressure · optional"],
+  ["final:number", "Number · required"],
+  ["final:text", "Text · required"],
+  ["final:scale_1_5", "Rating from 1 to 5 · required"],
+  ["final:percent", "Percentage from 0 to 100 · required"],
+  ["final:complete_incomplete", "Complete or incomplete · required"],
 ] as const;
 
 const cadences = Object.keys(cadenceChoiceLabels) as TowerCadence[];
@@ -405,7 +401,8 @@ export function TowerProductPanel(props: {
           >
             {availablePresets.map((preset) => (
               <option key={preset.key} value={preset.key}>
-                {preset.kind} · {preset.label} ({metricScale(preset.shape)})
+                {preset.label} ({metricScale(preset.shape)}) ·{" "}
+                {preset.kind === "final" ? "required" : "optional"}
               </option>
             ))}
           </select>
@@ -437,12 +434,8 @@ export function TowerProductPanel(props: {
           <label htmlFor="custom-measure-name">Custom measure name</label>
           <input id="custom-measure-name" name="customMetricLabel" maxLength={80} required />
           <label htmlFor="custom-measure-shape">Response type</label>
-          <select
-            id="custom-measure-shape"
-            name="customMetricShape"
-            required
-            defaultValue="proxy:count"
-          >
+          <select id="custom-measure-shape" name="customMetricShape" required defaultValue="">
+            <option value="">Choose a response type</option>
             {customShapes.map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
