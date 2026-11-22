@@ -180,7 +180,7 @@ export function TowerSetupForm(props: {
         <input type="hidden" name="revision" value={props.revision} />
       ) : null}
 
-      <section aria-labelledby="setup-name">
+      <section>
         <h2 id="setup-name" tabIndex={-1}>
           <label htmlFor="title">Goal (required)</label>
         </h2>

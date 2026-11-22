@@ -69,10 +69,9 @@ test("scanner-safe sign-in persists isolated goal-specific towers", async ({
     .getByRole("button", { name: /Move .* down/u })
     .first()
     .click();
-  await expect(page.locator(".tower-item-list h3")).toHaveText([
-    "Evening wind-down",
-    "Desk movement breaks",
-  ]);
+  await expect(
+    page.getByRole("region", { name: "Dated practice blocks" }).getByRole("heading", { level: 3 }),
+  ).toHaveText(["Evening wind-down", "Desk movement breaks"]);
   let practicedBlock = page
     .locator(".tower-item-list > li")
     .filter({ hasText: "Evening wind-down" });
@@ -298,7 +297,9 @@ test("setup errors retain every answer and dated measurements survive reload", a
   ).toBeVisible();
   const towerPath = new URL(page.url()).pathname;
   await page.getByRole("link", { name: "Set up this tower yourself", exact: true }).click();
-  await page.getByLabel("Goal (required)", { exact: true }).fill("Synthetic measurement goal");
+  await page
+    .getByRole("textbox", { name: "Goal (required)", exact: true })
+    .fill("Synthetic measurement goal");
   await page.getByLabel("Custom protocol name", { exact: true }).fill("First practice");
   await page
     .getByLabel("Custom protocol instructions", { exact: true })
@@ -312,7 +313,7 @@ test("setup errors retain every answer and dated measurements survive reload", a
   await page.locator("#custom-metric-name-1").fill("Concentration");
   await page.getByRole("button", { name: "Save tower setup", exact: true }).click();
   await expect(page.locator(".setup-error-summary")).toContainText("Choose what to record");
-  await expect(page.getByLabel("Goal (required)", { exact: true })).toHaveValue(
+  await expect(page.getByRole("textbox", { name: "Goal (required)", exact: true })).toHaveValue(
     "Synthetic measurement goal",
   );
   await expect(page.getByLabel("Custom protocol name", { exact: true })).toHaveValue(
@@ -383,7 +384,9 @@ test("sign-in returns to the requested page when email opens in another browser 
     destination: "/towers/new/detailed",
     confirmationPage,
   });
-  await expect(confirmationPage.getByLabel("Goal (required)", { exact: true })).toBeVisible();
+  await expect(
+    confirmationPage.getByRole("textbox", { name: "Goal (required)", exact: true }),
+  ).toBeVisible();
   await context.close();
 });
 
@@ -393,7 +396,9 @@ test("library personalizations and preset names keep their original definitions"
 }) => {
   await requestAndConfirm(page, request, "tower-personalization@example.test");
   await page.goto("/towers/new/detailed");
-  await page.getByLabel("Goal (required)", { exact: true }).fill("Synthetic practice goal");
+  await page
+    .getByRole("textbox", { name: "Goal (required)", exact: true })
+    .fill("Synthetic practice goal");
   const library = page.locator(".setup-choice-list > li");
   const firstProtocol = library.nth(0);
   const title = (await firstProtocol.locator("label").first().innerText()).trim();
