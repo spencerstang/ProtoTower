@@ -390,7 +390,7 @@ test("sign-in returns to the requested page when email opens in another browser 
   await context.close();
 });
 
-test("library personalizations and preset names keep their original definitions", async ({
+test("two library and two custom protocols retain personalizations and measurements", async ({
   page,
   request,
 }) => {
@@ -399,6 +399,7 @@ test("library personalizations and preset names keep their original definitions"
   await page
     .getByRole("textbox", { name: "Goal (required)", exact: true })
     .fill("Synthetic practice goal");
+  await expect(page.getByRole("heading", { name: "Measurements", exact: true })).toBeVisible();
   const library = page.locator(".setup-choice-list > li");
   const firstProtocol = library.nth(0);
   const title = (await firstProtocol.locator("label").first().innerText()).trim();
@@ -412,7 +413,11 @@ test("library personalizations and preset names keep their original definitions"
     .getByLabel("Custom protocol instructions", { exact: true })
     .fill("Use the synthetic plan.");
   await expect(library.nth(2).getByRole("checkbox")).toBeEnabled();
-  await library.nth(2).getByRole("checkbox").check();
+  await page.getByRole("button", { name: "Add another custom protocol", exact: true }).click();
+  await page.getByLabel("Second custom protocol name", { exact: true }).fill("Second practice");
+  await page
+    .getByLabel("Second custom protocol instructions", { exact: true })
+    .fill("Use the second synthetic plan.");
   await expect(page.getByRole("button", { name: "Add another custom protocol" })).toBeEnabled();
   await page.getByRole("checkbox", { name: "Percent successful (0–100%)", exact: true }).check();
   await page
@@ -426,6 +431,17 @@ test("library personalizations and preset names keep their original definitions"
   await expect(page.locator(".owned-protocol-list > li")).toHaveCount(4);
   await expect(blocks).toContainText("My original adaptation");
   await expect(blocks).toContainText(title);
+  await expect(blocks).toContainText("Personal practice");
+  await expect(blocks).toContainText("Second practice");
+  await expect(page.getByRole("heading", { name: "This tower has no blocks yet." })).toHaveCount(0);
+  for (const name of [title, "Personal practice", "Second practice"]) {
+    await expect(
+      page.getByRole("button", { name: `Save protocol: ${name}`, exact: true }),
+    ).toHaveCount(1);
+    await expect(
+      page.getByRole("button", { name: `Remove protocol: ${name}`, exact: true }),
+    ).toHaveCount(1);
+  }
   const rating = page.getByRole("spinbutton", { name: "How it feels", exact: true });
   await expect(rating).toHaveAccessibleDescription("1–5 · Choose a whole number from 1 to 5.");
   const percent = page.getByRole("spinbutton", { name: "Planned sessions done", exact: true });

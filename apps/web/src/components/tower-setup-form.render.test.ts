@@ -29,6 +29,8 @@ describe("tower setup form markup", () => {
     expect(html).toContain("Goal complete");
     expect(html).toContain("Weight");
     expect(html).toContain("Sleep duration");
+    expect(html).toContain("Measurements");
+    expect(html).not.toContain("Outcome measures");
     expect(html).toContain("Other measurements · optional");
     expect(html).toContain("Activity and duration · optional");
     expect(html).toContain("Add a custom measure");
