@@ -89,18 +89,18 @@ describe("tower setup form", () => {
     ]);
   });
 
-  it("accepts four protocols during initial setup", () => {
+  it("accepts two library and two custom protocols during initial setup", () => {
     const interpreted = interpretCreateForm(
       configuredTowerInputFromForm(
         form([
-          ["title", "Too many"],
+          ["title", "Mixed protocol goal"],
           ["starter", "20000000-0000-4000-8000-000000000001@1"],
-          ["customTitle1", "Two"],
-          ["customHowTo1", "Do two."],
-          ["customTitle2", "Three"],
-          ["customHowTo2", "Do three."],
-          ["customTitle3", "Four"],
-          ["customHowTo3", "Do four."],
+          ["starter", "20000000-0000-4000-8000-000000000002@1"],
+          ["starterNote.20000000-0000-4000-8000-000000000001", "Use my timing."],
+          ["customTitle1", "Three"],
+          ["customHowTo1", "Do three."],
+          ["customTitle2", "Four"],
+          ["customHowTo2", "Do four."],
           ["preset", "goal-complete"],
           ["cadence", "weekly"],
           ["audience", "private"],
@@ -110,6 +110,19 @@ describe("tower setup form", () => {
       ),
     );
     expect(interpreted.ok).toBe(true);
-    if (interpreted.ok) expect(interpreted.draft.protocols).toHaveLength(4);
+    if (!interpreted.ok) return;
+    expect(interpreted.draft.protocols.map((protocol) => protocol.title)).toEqual([
+      "One",
+      "Published strength",
+      "Three",
+      "Four",
+    ]);
+    expect(interpreted.draft.protocols.map((protocol) => protocol.sourceProtocolId)).toEqual([
+      starters[0]?.id,
+      starters[1]?.id,
+      null,
+      null,
+    ]);
+    expect(interpreted.draft.protocols[0]?.personalNote).toBe("Use my timing.");
   });
 });

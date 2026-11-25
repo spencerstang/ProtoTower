@@ -79,6 +79,10 @@ value in `.env.local`. Open <http://127.0.0.1:3000>.
 
 ## Verification
 
+The [Grok feedback review](docs/releases/grok-feedback-review.md) maps the setup
+usability requests to implementation, regression coverage, and remaining live-QA
+limits.
+
 ```bash
 CI=true pnpm verify
 pnpm audit --audit-level=high --prod

@@ -293,7 +293,7 @@ export function TowerSetupForm(props: {
 
       <section aria-labelledby="setup-outcomes">
         <h2 id="setup-outcomes" tabIndex={-1}>
-          Outcome measures
+          Measurements
         </h2>
         {fieldError("setup-outcomes")}
         <p className="form-help">

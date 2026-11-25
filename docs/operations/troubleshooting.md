@@ -18,6 +18,11 @@
 - **OpenNext preview failure**: run `pnpm --filter @protostack/web build` first, then `pnpm --filter @protostack/web preview`.
 - **Browser tests fail locally**: run `pnpm playwright:install` and confirm ports
   3000 and 54329 are available.
+- **Health is OK but the deployed commit is unclear**: public `/api/health` reports
+  availability only. Inspect the accepted production workflow's build-identity
+  verification and its expected SHA. A successful historical run is evidence for
+  that deployment time; use authenticated build diagnostics for a fresh version
+  check. Never put diagnostic credentials in URLs, screenshots, or chat.
 - **Production Worker passes but the domain does not**: keep invitations disabled,
   verify `DEPLOYMENT_HEALTH_URL`, confirm the custom-domain route and TLS status, and
   remove the route if the accepted build cannot be proven. Never point production at
