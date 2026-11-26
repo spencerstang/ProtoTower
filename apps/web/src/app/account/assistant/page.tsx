@@ -43,7 +43,7 @@ export default async function AssistantPage({
             authentication.
           </p>
           {result && messages[result] && <p role="status">{messages[result]}</p>}
-          <Connect active={!!view.data.expires && Date.parse(view.data.expires) > Date.now()} />
+          <Connect active={view.data.active} />
           {view.data.expires && (
             <form action={action}>
               <p>

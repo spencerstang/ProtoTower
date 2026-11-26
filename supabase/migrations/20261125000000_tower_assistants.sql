@@ -61,7 +61,7 @@ begin
     delete from app_private.tower_assistants where owner_id=auth.uid();
     return '{"state":"revoked"}';
   elsif operation='list' then
-    return jsonb_build_object('expires',g.expires_at,'lastUsed',g.last_used_at,'pending',
+    return jsonb_build_object('active',coalesce(g.expires_at>now(),false),'expires',g.expires_at,'lastUsed',g.last_used_at,'pending',
       coalesce((select jsonb_agg(jsonb_build_object('id',request_id,'towerId',m.tower_id,'goal',towers.title,'label',label,'shape',shape,'unit',unit,'stale',m.revision<>towers.revision) order by request_id)
       from app_private.measurement_proposals m join public.personal_towers towers on towers.id=m.tower_id where m.owner_id=auth.uid() and towers.owner_id=auth.uid() and m.state='pending'),'[]'::jsonb));
   end if;

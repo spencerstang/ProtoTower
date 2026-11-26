@@ -513,6 +513,7 @@ export const measurementProposalSchema = z
   })
   .refine((value) => !value.unit || value.shape === "number");
 export const assistantReviewSchema = z.object({
+  active: z.boolean(),
   expires: z.string().nullable(),
   lastUsed: z.string().nullable(),
   pending: z.array(

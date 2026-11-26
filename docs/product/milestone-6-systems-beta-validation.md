@@ -1,5 +1,7 @@
 # Milestone 6: systems beta validation
 
+**Agent access amendment (November 25).** The owner has superseded the original single-Tower, mandatory-proposal scope below. One approved agent connection covers all of the owner’s current and future Towers. Each user-facing operation should gain an equivalent agent operation with the same ownership and confirmation rules. Direct routine writes and optional draft review are supported by design. See the [current coverage table](../architecture/agent-access-and-group-learning.md#account-wide-agent-parity-november-25-product-decision).
+
 Status: Accepted by the owner on 2026-08-28; implementation remains subject to the
 existing protected deployment and production gates
 
