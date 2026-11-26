@@ -15,7 +15,7 @@ create table app_private.measurement_proposals (
   revision bigint not null,
   label text not null check (app_private.plain_text_is_valid(label,1,80)),
   shape text not null check (shape in ('rating','number','hours')),
-  unit text check (shape='number' and app_private.plain_text_is_valid(unit,1,24)),
+  unit text check (unit is null or (shape='number' and app_private.plain_text_is_valid(unit,1,24))),
   state text not null default 'pending' check (state in ('pending','approved','declined')),
   metric_id uuid,
   primary key(tower_id, request_id)
@@ -59,7 +59,7 @@ begin
     return jsonb_build_object('token',secret);
   elsif operation='revoke' then
     delete from app_private.tower_assistants where owner_id=auth.uid();
-    return '{"state":"revoked"}';
+    return jsonb_build_object('state','revoked');
   elsif operation='list' then
     return jsonb_build_object('active',coalesce(g.expires_at>now(),false),'expires',g.expires_at,'lastUsed',g.last_used_at,'pending',
       coalesce((select jsonb_agg(jsonb_build_object('id',request_id,'towerId',m.tower_id,'goal',towers.title,'label',label,'shape',shape,'unit',unit,'stale',m.revision<>towers.revision) order by request_id)

@@ -514,6 +514,11 @@ test("approved assistant discovers new Towers, saves a measurement once and lose
   await submitDetailedTower(page, "First synthetic system");
   const first = page.url();
   await page.getByRole("link", { name: "Connect my assistant" }).click();
+  const prior = page.getByRole("button", { name: "Revoke connection" });
+  if (await prior.count()) {
+    await prior.click();
+    await expect(page.getByRole("status")).toHaveText("Connection revoked.");
+  }
   await page.getByRole("button", { name: "Connect an assistant for 30 days" }).click();
   const key = page.getByLabel("Connection key (shown once)");
   await expect(key).toBeVisible();
@@ -527,7 +532,9 @@ test("approved assistant discovers new Towers, saves a measurement once and lose
     expect.arrayContaining(["First synthetic system", "Second synthetic system"]),
   );
   const endpoint = "/api/v1/assistant?towerId=" + id;
-  const snapshot = await (await request.get(endpoint, { headers })).json();
+  const detail = await request.get(endpoint, { headers });
+  expect(detail.status()).toBe(200);
+  const snapshot = await detail.json();
   const data = {
     mode: "save",
     revision: snapshot.revision,

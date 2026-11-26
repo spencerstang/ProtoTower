@@ -1,9 +1,13 @@
 begin;
-select plan(10);
+select plan(13);
 insert into auth.users(id) values ('70600000-0000-4000-8000-000000000001'), ('70600000-0000-4000-8000-000000000002');
 insert into public.personal_towers(id,owner_id,title) values
 ('71600000-0000-4000-8000-000000000001','70600000-0000-4000-8000-000000000001','Synthetic alpha'),
 ('71600000-0000-4000-8000-000000000002','70600000-0000-4000-8000-000000000002','Synthetic beta');
+insert into public.tower_metrics(tower_id,position,kind,shape,label) values('71600000-0000-4000-8000-000000000001',1,'final','complete_incomplete','Synthetic goal');
+create function pg_temp.rating_payload() returns jsonb language sql as $$
+ select '{"mode":"save","requestId":"72600000-0000-4000-8000-000000000001","revision":0,"shape":"rating","label":"Synthetic rating"}'::jsonb;
+$$;
 create temp table assistant_test_key(k text);
 grant insert,select on assistant_test_key to authenticated, anon;
 set local role authenticated;
@@ -13,6 +17,9 @@ set local role anon;
 select is(jsonb_array_length(public.use_tower_assistant(k)->'towers'),1,'only owned Towers listed') from assistant_test_key;
 select throws_ok($$select public.use_tower_assistant(k,'71600000-0000-4000-8000-000000000002') from assistant_test_key$$,'P0002',null,'other owner Tower inaccessible');
 select throws_ok($$select public.use_tower_assistant(k,'71600000-0000-4000-8000-000000000002','{}') from assistant_test_key$$,'P0002',null,'foreign write denied');
+select is(public.use_tower_assistant(k,'71600000-0000-4000-8000-000000000001',pg_temp.rating_payload())->>'state','approved','rating needs no unit and saves directly') from assistant_test_key;
+select is(public.use_tower_assistant(k,'71600000-0000-4000-8000-000000000001',pg_temp.rating_payload())->>'state','approved','retry of same save returns receipt') from assistant_test_key;
+select throws_ok($$select public.use_tower_assistant(k,'71600000-0000-4000-8000-000000000001',pg_temp.rating_payload() || jsonb_build_object('requestId',gen_random_uuid())) from assistant_test_key$$,'40001',null,'stale write rejected');
 select throws_ok($$select public.manage_tower_assistant('connect')$$,'42501',null,'anonymous client cannot mint keys');
 select throws_ok($$select * from app_private.tower_assistants$$,'42501',null,'credential table private');
 reset role;
