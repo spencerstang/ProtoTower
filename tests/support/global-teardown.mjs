@@ -10,6 +10,7 @@ const syntheticUsers = [
   "starter-flow@example.invalid",
   "setup-retest@example.test",
   "tower-capacity@example.test",
+  "assistant-owner@example.test",
 ];
 
 export default async function globalTeardown() {

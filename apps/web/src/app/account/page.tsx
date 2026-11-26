@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { savePseudonym } from "@/app/account/actions";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { createServerAccountProfileRepository } from "@/lib/account-profile";
@@ -26,6 +27,7 @@ export default async function AccountPage(props: {
       <section className="auth-shell account-shell" aria-labelledby="account-heading">
         <p className="eyebrow">Your private identity</p>
         <h1 id="account-heading">Choose how ProtoTower addresses you.</h1>
+        <Link href="/account/assistant">Connect my assistant</Link>
         <p>
           Use a pseudonym instead of your legal name. It stays private for now and is not a public
           handle, search key, or proof of identity.

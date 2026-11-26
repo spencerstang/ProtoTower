@@ -1,0 +1,288 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ProtoTower assistant",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://prototower.ai"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "accountConnection": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "security": [
+    {
+      "accountConnection": []
+    }
+  ],
+  "paths": {
+    "/api/v1/assistant": {
+      "get": {
+        "operationId": "readTowers",
+        "description": "List all current Towers, or pass towerId to read the goal, configured protocols and measurement definitions.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "towerId",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Select one of the account\u2019s Tower IDs."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "towers": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "towerId": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "goal": {
+                                "type": "string"
+                              },
+                              "revision": {
+                                "type": "integer",
+                                "minimum": 0
+                              }
+                            },
+                            "required": ["towerId", "goal", "revision"]
+                          }
+                        }
+                      },
+                      "required": ["towers"]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "towerId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "goal": {
+                          "type": "string"
+                        },
+                        "revision": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "definition": {
+                          "type": ["string", "null"]
+                        },
+                        "protocols": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "title": {
+                                "type": "string"
+                              },
+                              "instructions": {
+                                "type": "string"
+                              },
+                              "myVersion": {
+                                "type": ["string", "null"]
+                              },
+                              "sourceId": {
+                                "type": ["string", "null"]
+                              },
+                              "version": {
+                                "type": ["integer", "null"]
+                              }
+                            },
+                            "required": [
+                              "title",
+                              "instructions",
+                              "myVersion",
+                              "sourceId",
+                              "version"
+                            ]
+                          }
+                        },
+                        "measurements": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "shape": {
+                                "type": "string"
+                              },
+                              "scale": {
+                                "type": ["string", "null"]
+                              },
+                              "unit": {
+                                "type": ["string", "null"]
+                              },
+                              "required": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": ["id", "label", "shape", "scale", "unit", "required"]
+                          }
+                        }
+                      },
+                      "required": [
+                        "towerId",
+                        "goal",
+                        "revision",
+                        "definition",
+                        "protocols",
+                        "measurements"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid or revoked credential"
+          },
+          "404": {
+            "description": "Tower unavailable"
+          },
+          "409": {
+            "description": "Read the current revision or use a fresh request ID for a new operation"
+          },
+          "429": {
+            "description": "Connection proposal limit"
+          },
+          "503": {
+            "description": "Service unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "addMeasurement",
+        "description": "Use save to apply a measurement immediately or propose to leave an optional draft. Use the revision from readTowers. Reuse the same requestId and exact payload for retries. Shape rating is whole numbers 1\u20135. Hours is 0\u201324. An optional unit is supported for number.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "towerId",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Select one of the account\u2019s Tower IDs.",
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "requestId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "mode": {
+                    "enum": ["save", "propose"],
+                    "type": "string"
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "shape": {
+                    "enum": ["rating", "number", "hours"],
+                    "type": "string"
+                  },
+                  "unit": {
+                    "type": ["string", "null"],
+                    "maxLength": 24
+                  }
+                },
+                "required": ["requestId", "revision", "mode", "label", "shape"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "state": {
+                      "type": "string",
+                      "enum": ["pending", "approved", "declined"]
+                    },
+                    "metricId": {
+                      "type": ["string", "null"]
+                    },
+                    "towerId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": ["requestId", "state", "metricId", "towerId"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid or revoked credential"
+          },
+          "404": {
+            "description": "Tower unavailable"
+          },
+          "409": {
+            "description": "Read the current revision or use a fresh request ID for a new operation"
+          },
+          "429": {
+            "description": "Connection proposal limit"
+          },
+          "503": {
+            "description": "Service unavailable"
+          }
+        }
+      }
+    }
+  }
+}

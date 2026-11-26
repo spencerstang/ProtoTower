@@ -505,3 +505,66 @@ test("a tower can start with twenty custom protocols and keep them after reload"
     "20 of 20 configured protocols",
   );
 });
+
+test("approved assistant discovers new Towers, saves a measurement once and loses access on revocation", async ({
+  page,
+  request,
+}) => {
+  await requestAndConfirm(page, request, "assistant-owner@example.test");
+  await submitDetailedTower(page, "First synthetic system");
+  const first = page.url();
+  await page.getByRole("link", { name: "Connect my assistant" }).click();
+  await page.getByRole("button", { name: "Connect an assistant for 30 days" }).click();
+  const key = page.getByLabel("Connection key (shown once)");
+  await expect(key).toBeVisible();
+  const headers = { Authorization: "Bearer " + (await key.inputValue()) };
+  await submitDetailedTower(page, "Second synthetic system");
+  const id = new URL(page.url()).pathname.split("/").pop();
+  const listing = await request.get("/api/v1/assistant", { headers });
+  expect(listing.status()).toBe(200);
+  const list = await listing.json();
+  expect(list.towers.map((t: { goal: string }) => t.goal)).toEqual(
+    expect.arrayContaining(["First synthetic system", "Second synthetic system"]),
+  );
+  const endpoint = "/api/v1/assistant?towerId=" + id;
+  const snapshot = await (await request.get(endpoint, { headers })).json();
+  const data = {
+    mode: "save",
+    revision: snapshot.revision,
+    requestId: crypto.randomUUID(),
+    shape: "rating",
+    label: "Practice quality",
+  };
+  const save = await request.post(endpoint, { headers, data });
+  expect(save.status()).toBe(200);
+  const receipt = await save.json();
+  expect(receipt.state).toBe("approved");
+  const replay = await request.post(endpoint, { headers, data });
+  expect(await replay.json()).toEqual(receipt);
+  await page.reload();
+  await expect(page.getByRole("spinbutton", { name: "Practice quality", exact: true })).toHaveCount(
+    1,
+  );
+  const updated = await (await request.get(endpoint, { headers })).json();
+  const draft = await request.post(endpoint, {
+    headers,
+    data: {
+      ...data,
+      requestId: crypto.randomUUID(),
+      revision: updated.revision,
+      mode: "propose",
+      label: "Session quality",
+    },
+  });
+  expect((await draft.json()).state).toBe("pending");
+  await page.goto("/account/assistant");
+  await page.getByRole("button", { name: "Approve Session quality" }).click();
+  await expect(page.getByRole("status")).toHaveText("Review saved.");
+  await page.getByRole("button", { name: "Revoke connection" }).click();
+  await expect(page.getByRole("status")).toHaveText("Connection revoked.");
+  expect((await request.get(endpoint, { headers })).status()).toBe(401);
+  await page.goto(first);
+  await expect(page.getByRole("spinbutton", { name: "Practice quality", exact: true })).toHaveCount(
+    0,
+  );
+});

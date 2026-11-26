@@ -188,6 +188,9 @@ export default async function TowerDetailPage(props: {
           <div>
             <p className="eyebrow">{starter ? "Starter tower" : "Goal-specific tower"}</p>
             <h1 id="tower-heading">{tower.title}</h1>
+            {tower.metrics.some((metric) => metric.kind === "final") && (
+              <Link href="/account/assistant">Connect my assistant</Link>
+            )}
             {tower.items.length > 0 && !starter ? (
               <p>
                 {tower.items.length} of {maximumItemsPerTower} protocol blocks
@@ -255,6 +258,9 @@ export default async function TowerDetailPage(props: {
 
         {starter ? null : (
           <>
+            {tower.metrics.some((metric) => metric.kind === "final") && (
+              <Link href="/account/assistant">Connect my assistant</Link>
+            )}
             {tower.items.length > 0 || tower.protocols.length === 0 ? (
               <section className="tower-levels" aria-labelledby="tower-levels-heading">
                 <div className="section-heading compact-heading">

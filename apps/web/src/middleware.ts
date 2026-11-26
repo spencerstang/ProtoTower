@@ -40,7 +40,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   let response = NextResponse.next({ request: { headers: requestHeaders } });
   const privateResponse =
-    /^(?:\/auth(?:\/|$)|\/sign-in(?:\/|$)|\/towers(?:\/|$)|\/reminders(?:\/|$))/.test(
+    /^(?:\/auth(?:\/|$)|\/sign-in(?:\/|$)|\/towers(?:\/|$)|\/account(?:\/|$)|\/api\/v1(?:\/|$)|\/reminders(?:\/|$))/.test(
       request.nextUrl.pathname,
     );
   const hasAuthCookie = request.cookies

@@ -590,6 +590,14 @@ export type Database = {
       }
     }
     Functions: {
+      manage_tower_assistant: {
+        Args: { tid?: string; operation: string; proposal?: string }
+        Returns: Json
+      }
+      use_tower_assistant: {
+        Args: { credential: string; tid?: string; payload?: Json }
+        Returns: Json
+      }
       create_configured_personal_tower: {
         Args: {
           candidate_audience: string
