@@ -105,4 +105,4 @@ The proposed Systems Beta Validation scope and gate are in
 `docs/product/milestone-6-systems-beta-validation.md` and
 `docs/operations/milestone-6-gate.md`.
 
-The [agent access roadmap](docs/architecture/agent-access-and-group-learning.md) tracks user-facing feature parity. The first account connection supports Tower discovery and measurement additions through the [OpenAPI definition](apps/web/public/assistant-openapi.json).
+The [agent access roadmap](docs/architecture/agent-access-and-group-learning.md) tracks user-facing feature parity. The first account connection supports Tower discovery and measurement additions through the OpenAPI definition served by each deployment at `/assistant-openapi.json`.

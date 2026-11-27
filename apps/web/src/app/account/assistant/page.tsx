@@ -9,7 +9,7 @@ import { manage } from "./actions";
 export default async function AssistantPage({
   searchParams,
 }: {
-  searchParams: Promise<{ result?: string }>;
+  searchParams: Promise<{ result?: string; confirm?: string }>;
 }) {
   const principal = await getVerifiedPrincipal();
   if (principal.status === "available" && principal.principal.kind === "anonymous")
@@ -19,7 +19,7 @@ export default async function AssistantPage({
   if (response?.error?.code === "42501") notFound();
   const view = assistantReviewSchema.safeParse(response?.data);
   const action = manage;
-  const result = (await searchParams).result;
+  const { result, confirm } = await searchParams;
   const messages: Readonly<Record<string, string>> = {
     approve: "Review saved.",
     decline: "Proposal declined.",
@@ -45,15 +45,24 @@ export default async function AssistantPage({
           {result && messages[result] && <p role="status">{messages[result]}</p>}
           <Connect active={view.data.active} />
           {view.data.expires && (
-            <form action={action}>
+            <section aria-label="Connection details">
               <p>
                 Connection expires {view.data.expires.slice(0, 10)} UTC. Last used{" "}
                 {view.data.lastUsed?.slice(0, 10) ?? "never"}.
               </p>
-              <button name="operation" value="revoke">
-                Revoke connection
-              </button>
-            </form>
+              {confirm === "revoke" ? (
+                <form action={action}>
+                  <h2>Revoke this connection?</h2>
+                  <p>Your assistant will immediately lose access to every Tower in your account.</p>
+                  <Link href="/account/assistant">Cancel</Link>{" "}
+                  <button name="operation" value="revoke">
+                    Confirm revocation
+                  </button>
+                </form>
+              ) : (
+                <Link href="/account/assistant?confirm=revoke">Revoke connection</Link>
+              )}
+            </section>
           )}
           <h2>Proposed measurements</h2>
           {!view.data.pending.length && <p>No pending proposals.</p>}

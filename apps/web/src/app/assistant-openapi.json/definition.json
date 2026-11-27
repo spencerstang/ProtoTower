@@ -4,11 +4,6 @@
     "title": "ProtoTower assistant",
     "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "https://prototower.ai"
-    }
-  ],
   "components": {
     "securitySchemes": {
       "accountConnection": {
@@ -35,7 +30,7 @@
               "type": "string",
               "format": "uuid"
             },
-            "description": "Select one of the account\u2019s Tower IDs."
+            "description": "Select one of the account’s Tower IDs."
           }
         ],
         "responses": {
@@ -131,7 +126,8 @@
                                 "type": "string"
                               },
                               "shape": {
-                                "type": "string"
+                                "type": "string",
+                                "description": "All 1–5 measurements use rating. The required field indicates whether a response is mandatory."
                               },
                               "scale": {
                                 "type": ["string", "null"]
@@ -183,7 +179,7 @@
       },
       "post": {
         "operationId": "addMeasurement",
-        "description": "Use save to apply a measurement immediately or propose to leave an optional draft. Use the revision from readTowers. Reuse the same requestId and exact payload for retries. Shape rating is whole numbers 1\u20135. Hours is 0\u201324. An optional unit is supported for number.",
+        "description": "Use save to apply a measurement immediately or propose to leave an optional draft. Use the revision from readTowers. Reuse the same requestId and exact payload for retries. Shape rating is whole numbers 1–5. Hours is 0–24. An optional unit is supported for number. Reads and writes use rating for 1–5 values. Writes also accept the older scale_1_5 spelling.",
         "parameters": [
           {
             "in": "query",
@@ -192,7 +188,7 @@
               "type": "string",
               "format": "uuid"
             },
-            "description": "Select one of the account\u2019s Tower IDs.",
+            "description": "Select one of the account’s Tower IDs.",
             "required": true
           }
         ],
@@ -221,7 +217,7 @@
                     "maxLength": 80
                   },
                   "shape": {
-                    "enum": ["rating", "number", "hours"],
+                    "enum": ["rating", "number", "hours", "scale_1_5"],
                     "type": "string"
                   },
                   "unit": {

@@ -492,6 +492,10 @@ export function readingFromPayload(
 
 export const outcomesEngineStatus = "tower-outcome-metrics" as const;
 
+function assistantShape(shape: MetricShape) {
+  return shape === "scale_1_5" ? "rating" : shape;
+}
+
 export const assistantShapes = z.enum(["number", "rating", "hours"]);
 const assistantLine = (max: number) =>
   z
@@ -508,7 +512,7 @@ export const measurementProposalSchema = z
     requestId: z.uuid(),
     revision: z.int().nonnegative(),
     label: assistantLine(80),
-    shape: assistantShapes,
+    shape: z.enum(["number", "rating", "hours", "scale_1_5"]).transform(assistantShape),
     unit: assistantLine(24).nullable().optional(),
   })
   .refine((value) => !value.unit || value.shape === "number");
@@ -557,7 +561,11 @@ export const assistantTowerSnapshot = z.object({
         unit: z.string().nullable(),
         required: z.boolean(),
       })
-      .transform((m) => ({ ...m, scale: metricScale(m.shape, m.unit) })),
+      .transform((m) => ({
+        ...m,
+        shape: assistantShape(m.shape),
+        scale: metricScale(m.shape, m.unit),
+      })),
   ),
 });
 
