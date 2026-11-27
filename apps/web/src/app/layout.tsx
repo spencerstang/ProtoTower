@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     template: "%s · ProtoTower",
   },
   description:
-    "A versioned catalog of wellness protocol building blocks for creating a durable tower of great habits.",
+    "Explore sourced protocols, build a private tower around a goal and track your outcomes.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

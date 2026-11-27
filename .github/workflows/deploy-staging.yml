@@ -229,7 +229,7 @@ jobs:
             (body) =>
               body.includes("Andrew Huberman: Daily sleep-wake blueprint") &&
               body.includes("Get outdoor morning light") &&
-              body.includes("General educational wellness information"),
+              body.includes("General educational information"),
           );
           console.log(
             "Staging health, protected build diagnostics, and public catalog verified.",

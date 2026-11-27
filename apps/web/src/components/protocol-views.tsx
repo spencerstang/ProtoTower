@@ -147,8 +147,8 @@ export function ProtocolDetailView(props: Readonly<{ protocol: PublishedProtocol
           ) : null}
 
           <p className="educational-note">
-            General educational wellness information—not medical advice or an individualized
-            recommendation.
+            General educational information. For individual medical decisions, consult your
+            clinician.
           </p>
         </aside>
       </div>

@@ -22,8 +22,8 @@ export default async function ProtocolCatalogPage() {
         <p className="eyebrow">The protocol catalog</p>
         <h1>Choose the first blocks for a better habit tower.</h1>
         <p>
-          Explore reviewed, versioned wellness routines. Every published version is read-only, so
-          the steps you see cannot silently change beneath you.
+          Explore reviewed protocols and their sources. Every published version is read-only, so the
+          steps you see cannot silently change beneath you.
         </p>
       </header>
       <section className="catalog-content" aria-label="Catalog results">
