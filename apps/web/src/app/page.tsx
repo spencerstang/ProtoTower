@@ -38,9 +38,8 @@ export default function LandingPage() {
           <p className="eyebrow">Small protocols. Stronger foundations.</p>
           <h1>Build a beautiful tower of great habits.</h1>
           <p className="hero-copy">
-            ProtoTower pairs a careful catalog of versioned wellness routines with private,
-            goal-specific towers. Keep a sleep routine separate from marathon preparation, while
-            reusing the protocol blocks that fit each goal.
+            Choose a goal, compare protocols and build a private tower. Record what you tried and
+            what happened so you can decide what to keep or change.
           </p>
           <div className="hero-actions">
             <Link className="primary-action" href="/protocols">
@@ -49,9 +48,6 @@ export default function LandingPage() {
             <Link className="secondary-action" href="/towers">
               Open my towers
             </Link>
-            <a className="secondary-action" href="/api/health">
-              Service health
-            </a>
           </div>
         </div>
 

@@ -11,6 +11,7 @@ test("public landing page renders without external services", async ({ page }) =
       .getByText("Open beta", { exact: true }),
   ).toBeVisible();
   await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Service health" })).toHaveCount(0);
   await expect(page.getByText("Account", { exact: true })).toHaveCount(0);
 });
 
@@ -47,7 +48,7 @@ test("catalog navigation opens an immutable protocol detail", async ({ page }) =
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Morning outdoor cue");
   await expect(page.getByText("Published building block · Version 2")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Cautions" })).toBeVisible();
-  await expect(page.getByText("General educational wellness information")).toBeVisible();
+  await expect(page.getByText("General educational information")).toBeVisible();
 });
 
 test("catalog distinguishes unavailable and not-found records", async ({ page }) => {

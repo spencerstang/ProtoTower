@@ -36,3 +36,7 @@ The following details support the user's direction; they are not substitutes for
 The minimum useful starting point remains one goal, two relevant protocols and one outcome; grow from there. Two is an onboarding target, not a maximum or a reason to recommend irrelevant protocols. Initial setup and later expansion should support substantial protocol stacks.
 
 Present goals/systems, protocols/treatments and outcomes/measurements in terms users understand. Technical storage roles must not obscure what was done, what changed, or how success is evaluated. Preserve the core pattern in future APIs, discovery formats, agent workflows and analytics.
+
+## Public positioning
+
+Describe ProtoTower as a way to choose protocols, track outcomes and make better decisions across domains. Use concrete goals and observable measures in marketing copy. Avoid using “wellness” as the product category. Credit a protocol’s source separately from the evidence for the outcome.

@@ -28,14 +28,14 @@ export function StarterTowerPanel(props: { tower: PersonalTower; surface: Starte
           </p>
           <p>
             You can add steps from a plan you already have and choose what to track. For a medical
-            goal, use a plan agreed with your treating clinician. The wellness catalog is not a
+            goal, use a plan agreed with your treating clinician. The protocol catalog is not a
             treatment plan.
           </p>
           <Link className="primary-action" href={`/towers/${props.tower.id}/setup`}>
             Set up this tower yourself
           </Link>
           <p>
-            <Link href="/protocols">Browse the reviewed wellness catalog</Link>
+            <Link href="/protocols">Browse the protocol catalog</Link>
           </p>
         </section>
       ) : (
