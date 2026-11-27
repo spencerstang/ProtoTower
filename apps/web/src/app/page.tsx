@@ -1,92 +1,72 @@
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
+import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
+import styles from "./homepage.module.css";
 
-const capabilities = [
-  {
-    title: "Versioned protocol catalog",
-    status: "Available now · Reviewed and read-only",
-  },
-  {
-    title: "Personal tower builder",
-    status: "Available now · Private account access",
-  },
-  {
-    title: "Private practice check-ins",
-    status: "Available now · Bounded and owner-only",
-  },
-  {
-    title: "Private outcome check-ins",
-    status: "Available now · Separate from practice",
-  },
-  {
-    title: "Aggregate learning",
-    status: "Planned · Not active in the beta",
-  },
-  {
-    title: "Model-neutral interoperability",
-    status: "Planned · Not active in the beta",
-  },
-] as const;
+export const metadata: Metadata = {
+  description: "Set a goal. Test a method. Track what changes with ProtoTower.",
+};
 
 export default function LandingPage() {
   return (
-    <main id="main-content">
-      <SiteHeader status="Open beta" />
+    <main className={styles["homepage"]} id="main-content">
+      <SiteHeader variant="homepage" />
 
-      <section className="hero tower-hero">
-        <div>
-          <p className="eyebrow">Small protocols. Stronger foundations.</p>
-          <h1>Build a beautiful tower of great habits.</h1>
-          <p className="hero-copy">
-            ProtoTower pairs a careful catalog of versioned wellness routines with private,
-            goal-specific towers. Keep a sleep routine separate from marathon preparation, while
-            reusing the protocol blocks that fit each goal.
-          </p>
-          <div className="hero-actions">
-            <Link className="primary-action" href="/protocols">
-              Browse protocols
-            </Link>
-            <Link className="secondary-action" href="/towers">
-              Open my towers
-            </Link>
-            <a className="secondary-action" href="/api/health">
-              Service health
-            </a>
+      <section className={styles["hero"]} aria-labelledby="homepage-heading">
+        <div className={styles["heroInner"]}>
+          <div className={styles["intro"]}>
+            <h1 id="homepage-heading">
+              Find what works <br />
+              for you.
+            </h1>
+            <p>Set a goal. Test a method. Track what changes.</p>
+            <div className={styles["actions"]}>
+              <Link className={styles["start"]} href="/towers/new">
+                Start a tower
+              </Link>
+              <Link className={styles["browse"]} href="/protocols">
+                Browse protocols <span aria-hidden="true">→</span>
+              </Link>
+            </div>
           </div>
-        </div>
 
-        <div
-          className="tower-mark"
-          role="img"
-          aria-label="Five offset blocks forming a rising tower"
-        >
-          <span>Explore</span>
-          <span>Understand</span>
-          <span>Choose</span>
-          <span>Practice</span>
-          <span>Grow</span>
+          <div className={styles["illustration"]}>
+            <Image
+              className={styles["tower"]}
+              src="/precision-tower.webp"
+              alt=""
+              width={1024}
+              height={1024}
+              unoptimized
+              fetchPriority="high"
+            />
+            <ol className={styles["labels"]} aria-label="Parts of a tower">
+              <li>Goal</li>
+              <li>Protocol</li>
+              <li>Outcome</li>
+            </ol>
+          </div>
         </div>
       </section>
 
-      <section className="foundation" id="foundation" aria-labelledby="foundation-heading">
-        <div>
-          <p className="eyebrow">Quiet-launch beta</p>
-          <h2 id="foundation-heading">The first trustworthy building blocks.</h2>
-          <p>
-            Published protocol versions stay immutable, towers and practice history are isolated by
-            owner, and public catalog browsing continues independently. A check-in means only what
-            its owner chose to record; it is never an outcome or proof of adherence.
-          </p>
-          <p>We are still testing ProtoTower, and some features are not functional yet.</p>
+      <section className={styles["example"]} aria-labelledby="example-goal">
+        <h2 id="example-goal">Remember more of what you read.</h2>
+        <div className={styles["exampleDetails"]}>
+          <p>Example tower</p>
+          <dl>
+            <div>
+              <dt>Protocol</dt>
+              <dd>Retrieval practice</dd>
+              <dd>Close the book and write down what you remember.</dd>
+            </div>
+            <div>
+              <dt>Outcome</dt>
+              <dd>Next-day recall</dd>
+              <dd>Count how many key ideas you can recall the next day.</dd>
+            </div>
+          </dl>
         </div>
-        <ul className="capability-grid">
-          {capabilities.map((capability) => (
-            <li key={capability.title}>
-              {capability.title}
-              <span>{capability.status}</span>
-            </li>
-          ))}
-        </ul>
       </section>
 
       <SiteFooter />

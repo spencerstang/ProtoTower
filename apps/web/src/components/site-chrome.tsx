@@ -34,10 +34,19 @@ async function AccountNavigation(): Promise<ReactNode> {
   );
 }
 
-export async function SiteHeader(props: Readonly<{ status?: ReactNode }>): Promise<ReactNode> {
+export async function SiteHeader(
+  props: Readonly<{ status?: ReactNode; variant?: "homepage" }>,
+): Promise<ReactNode> {
   return (
     <nav className="site-nav" aria-label="Primary navigation">
       <Link className="wordmark" href="/">
+        {props.variant === "homepage" && (
+          <span className="homepage-mark" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </span>
+        )}
         ProtoTower
       </Link>
       <div className="nav-actions">
@@ -48,7 +57,9 @@ export async function SiteHeader(props: Readonly<{ status?: ReactNode }>): Promi
           My towers
         </Link>
         <AccountNavigation />
-        <StatusPill>{props.status ?? "Read-only catalog"}</StatusPill>
+        {props.variant !== "homepage" && (
+          <StatusPill>{props.status ?? "Read-only catalog"}</StatusPill>
+        )}
       </div>
     </nav>
   );

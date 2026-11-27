@@ -1,17 +1,32 @@
 import { expect, test } from "@playwright/test";
 
-test("public landing page renders without external services", async ({ page }) => {
+test("public landing page introduces towers and opens the sign-in path for new users", async ({
+  page,
+}) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "beautiful tower of great habits",
-  );
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Find what works for you.");
   await expect(
-    page
-      .getByRole("navigation", { name: "Primary navigation" })
-      .getByText("Open beta", { exact: true }),
-  ).toBeVisible();
+    page.getByRole("list", { name: "Parts of a tower" }).getByRole("listitem"),
+  ).toHaveText(["Goal", "Protocol", "Outcome"]);
   await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible();
   await expect(page.getByText("Account", { exact: true })).toHaveCount(0);
+  await expect(
+    page.getByRole("heading", { name: "Remember more of what you read." }),
+  ).toBeVisible();
+
+  await page.getByRole("link", { name: "Start a tower" }).click();
+  await expect(page).toHaveURL(/\/sign-in\?next=%2Ftowers%2Fnew$/u);
+});
+
+test("the mobile landing page keeps protocol browsing accessible", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 720 });
+  await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Start a tower" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+
+  await page.getByRole("link", { name: "Browse protocols" }).click();
+  await expect(page).toHaveURL(/\/protocols$/u);
 });
 
 test("privacy and deletion routes disclose the open-beta data lifecycle", async ({ page }) => {
