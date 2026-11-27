@@ -188,6 +188,7 @@ export default async function TowerDetailPage(props: {
           <div>
             <p className="eyebrow">{starter ? "Starter tower" : "Goal-specific tower"}</p>
             <h1 id="tower-heading">{tower.title}</h1>
+            <Link href="/account/assistant">Connect my assistant</Link>
             {tower.items.length > 0 && !starter ? (
               <p>
                 {tower.items.length} of {maximumItemsPerTower} protocol blocks

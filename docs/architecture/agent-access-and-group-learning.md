@@ -28,3 +28,18 @@ Make contribution consent explicit and separate from display identity and tower 
 Show distinct participant count and observation count separately, the eligible time window, missingness, and the applicable suppression rule. Select and document a minimum participant threshold before publication; suppress small groups and prevent differencing across filters. Exclude free-text responses, private “My version” notes, and identifiers from public aggregates. Use the pinned library ID and version rather than display names for aggregation. Read access to group statistics must not grant access to underlying records. Explain that observational associations do not establish treatment effects.
 
 Acceptance: only opted-in eligible records contribute; withdrawing consent updates aggregates; repeated readings do not inflate participant counts; small cohorts stay suppressed; protocol pages show sample sizes; tests prove isolation and suppression behavior.
+
+## Account-wide agent parity (November 25 product decision)
+
+The account owner authorizes an assistant once for all current and future Towers. Every user-facing capability should have a documented agent equivalent with the same ownership boundaries and user-visible effects. Routine writes can apply directly. Explicit proposals remain available when the user wants review. This direction supersedes the one-system, proposal-only target in the original milestone 6 plan.
+
+| Workflow                                                                            | Initial HTTP coverage                            |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------ |
+| Discover all owned Towers and read configured protocols and measurement definitions | List or read by Tower ID                         |
+| Add a numeric, hours, or 1–5 measurement to a configured Tower                      | Save directly or propose, then review in Account |
+| Create or edit Towers, library blocks, protocols, and other measurement types       | Planned                                          |
+| Log, correct, and export observations and check-ins                                 | Planned                                          |
+| Manage account settings, sharing, and deletion                                      | Planned, with the same confirmations as the site |
+| Reminder preferences and monthly findings                                           | Add equivalent tools when these ship             |
+
+Use the versioned API from tool-capable clients. Connect through Account → Connect my assistant, import the OpenAPI definition, then store the expiring key in the client's secure Bearer credential setting. Revoke the connection on the same page. The initial release supports one active connection per account. A remote MCP adapter and native account linking are future work.

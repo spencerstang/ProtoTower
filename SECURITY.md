@@ -28,3 +28,5 @@ private-title, session, and cache controls are documented in
 `docs/security/threat-model-authenticated-towers.md`. The approved but not yet
 implemented practice-history controls are documented in
 `docs/security/threat-model-private-practice.md`.
+
+Assistant credentials authorize one owner's current and future Towers. Only a fingerprint is stored. Keys expire after 30 days and can be revoked in Account after confirmation. Authentication for the assistant API uses a dedicated Bearer key. Requests resolve ownership in the database. Keep keys out of chats, URLs, logs, and issue reports.

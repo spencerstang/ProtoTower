@@ -491,3 +491,86 @@ export function readingFromPayload(
 }
 
 export const outcomesEngineStatus = "tower-outcome-metrics" as const;
+
+function assistantShape(shape: MetricShape) {
+  return shape === "scale_1_5" ? "rating" : shape;
+}
+
+export const assistantShapes = z.enum(["number", "rating", "hours"]);
+const assistantLine = (max: number) =>
+  z
+    .string()
+    .min(1)
+    .max(max)
+    .refine(
+      (value) =>
+        value === value.trim() && !forbiddenLineCharacters.test(value) && !/\s{2,}/u.test(value),
+    );
+export const measurementProposalSchema = z
+  .strictObject({
+    mode: z.enum(["save", "propose"]),
+    requestId: z.uuid(),
+    revision: z.int().nonnegative(),
+    label: assistantLine(80),
+    shape: z.enum(["number", "rating", "hours", "scale_1_5"]).transform(assistantShape),
+    unit: assistantLine(24).nullable().optional(),
+  })
+  .refine((value) => !value.unit || value.shape === "number");
+export const assistantReviewSchema = z.object({
+  active: z.boolean(),
+  expires: z.string().nullable(),
+  lastUsed: z.string().nullable(),
+  pending: z.array(
+    z.object({
+      id: z.uuid(),
+      towerId: z.uuid(),
+      goal: z.string(),
+      label: z.string(),
+      shape: assistantShapes,
+      unit: z.string().nullable(),
+      stale: z.boolean(),
+    }),
+  ),
+});
+export const assistantProposalReceipt = z.object({
+  requestId: z.uuid(),
+  towerId: z.uuid(),
+  state: z.enum(["pending", "approved", "declined"]),
+  metricId: z.uuid().nullable(),
+});
+export const assistantTowerSnapshot = z.object({
+  towerId: z.uuid(),
+  goal: z.string(),
+  definition: z.string().nullable(),
+  revision: z.int().nonnegative(),
+  protocols: z.array(
+    z.object({
+      title: z.string(),
+      instructions: z.string(),
+      myVersion: z.string().nullable(),
+      sourceId: z.uuid().nullable(),
+      version: z.int().nullable(),
+    }),
+  ),
+  measurements: z.array(
+    z
+      .object({
+        id: z.uuid(),
+        label: z.string(),
+        shape: metricShapeSchema,
+        unit: z.string().nullable(),
+        required: z.boolean(),
+      })
+      .transform((m) => ({
+        ...m,
+        shape: assistantShape(m.shape),
+        scale: metricScale(m.shape, m.unit),
+      })),
+  ),
+});
+
+export const assistantTowerList = z.object({
+  towers: z.array(
+    z.object({ towerId: z.uuid(), goal: z.string(), revision: z.int().nonnegative() }),
+  ),
+});

@@ -505,3 +505,86 @@ test("a tower can start with twenty custom protocols and keep them after reload"
     "20 of 20 configured protocols",
   );
 });
+
+test("approved assistant discovers new Towers, saves a measurement once and loses access on revocation", async ({
+  page,
+  request,
+}) => {
+  await requestAndConfirm(page, request, "assistant-owner@example.test");
+  await submitDetailedTower(page, "First synthetic system");
+  const first = page.url();
+  const definition = await request.get("/assistant-openapi.json");
+  expect(definition.ok()).toBe(true);
+  expect((await definition.json()).servers).toEqual([{ url: new URL(first).origin }]);
+  await page.getByRole("link", { name: "Connect my assistant" }).click();
+  const prior = page.getByRole("link", { name: "Revoke connection" });
+  if (await prior.count()) {
+    await prior.click();
+    await page.getByRole("button", { name: "Confirm revocation" }).click();
+    await expect(page.getByRole("status")).toHaveText("Connection revoked.");
+  }
+  await page.getByRole("button", { name: "Connect an assistant for 30 days" }).click();
+  const key = page.getByLabel("Connection key (shown once)");
+  await expect(key).toBeVisible();
+  const headers = { Authorization: "Bearer " + (await key.inputValue()) };
+  await submitDetailedTower(page, "Second synthetic system");
+  const id = new URL(page.url()).pathname.split("/").pop();
+  const listing = await request.get("/api/v1/assistant", { headers });
+  expect(listing.status()).toBe(200);
+  const list = await listing.json();
+  expect(list.towers.map((t: { goal: string }) => t.goal)).toEqual(
+    expect.arrayContaining(["First synthetic system", "Second synthetic system"]),
+  );
+  const endpoint = "/api/v1/assistant?towerId=" + id;
+  const detail = await request.get(endpoint, { headers });
+  expect(detail.status()).toBe(200);
+  const snapshot = await detail.json();
+  const data = {
+    mode: "save",
+    revision: snapshot.revision,
+    requestId: crypto.randomUUID(),
+    shape: "rating",
+    label: "Practice quality",
+  };
+  const save = await request.post(endpoint, { headers, data: { ...data, shape: "scale_1_5" } });
+  expect(save.status()).toBe(200);
+  const receipt = await save.json();
+  expect(receipt.state).toBe("approved");
+  const replay = await request.post(endpoint, { headers, data });
+  expect(await replay.json()).toEqual(receipt);
+  await page.reload();
+  await expect(page.getByRole("spinbutton", { name: "Practice quality", exact: true })).toHaveCount(
+    1,
+  );
+  const updated = await (await request.get(endpoint, { headers })).json();
+  expect(updated.measurements).toContainEqual(
+    expect.objectContaining({ id: receipt.metricId, shape: "rating", scale: "1–5" }),
+  );
+  const draft = await request.post(endpoint, {
+    headers,
+    data: {
+      ...data,
+      requestId: crypto.randomUUID(),
+      revision: updated.revision,
+      mode: "propose",
+      label: "Session quality",
+    },
+  });
+  expect((await draft.json()).state).toBe("pending");
+  await page.goto("/account/assistant");
+  await page.getByRole("button", { name: "Approve Session quality" }).click();
+  await expect(page.getByRole("status")).toHaveText("Review saved.");
+  await page.getByRole("link", { name: "Revoke connection" }).click();
+  await expect(page.getByRole("heading", { name: "Revoke this connection?" })).toBeVisible();
+  await page.getByRole("link", { name: "Cancel" }).click();
+  await expect(page.getByRole("button", { name: "Confirm revocation" })).toHaveCount(0);
+  expect((await request.get(endpoint, { headers })).status()).toBe(200);
+  await page.getByRole("link", { name: "Revoke connection" }).click();
+  await page.getByRole("button", { name: "Confirm revocation" }).click();
+  await expect(page.getByRole("status")).toHaveText("Connection revoked.");
+  expect((await request.get(endpoint, { headers })).status()).toBe(401);
+  await page.goto(first);
+  await expect(page.getByRole("spinbutton", { name: "Practice quality", exact: true })).toHaveCount(
+    0,
+  );
+});
